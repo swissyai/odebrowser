@@ -1,0 +1,226 @@
+import SwiftUI
+
+/// The macOS content area, and the one place that decides between real columns
+/// and the single rounded page surface.
+///
+/// The branch is `BrowserPageSurfacePresentation`'s rather than this view's, so
+/// iPadOS opens and closes its columns on exactly the same conditions. What is
+/// left here is macOS's half: which surface draws the answer, and what the
+/// pointer may do to it.
+struct BrowserRootPageSurface: View, @MainActor Equatable {
+    @Environment(\.spaceContentPresentation) private var contentPresentation
+    @Environment(\.browserMacWindows) private var windows
+    let model: BrowserRootModel
+    let space: SpaceModel
+    let isSelectedSpace: Bool
+    let transientBrowsing: BrowserTransientBrowsingCoordinator
+    let tabPromotionNamespace: Namespace.ID
+    /// The chords the window's commands show in a Start Page's palette.
+    let shortcuts: BrowserShortcutStore?
+    var layoutDirection = LayoutDirection.leftToRight
+
+    /// The retained host needs a new root only when its inputs change. The
+    /// models publish their own changes directly to the views that read them,
+    /// the window's frame among them: the frame views read it from
+    /// ``BrowserDeviceAppearanceStore`` themselves, so a border drag never
+    /// rebuilds the page inside.
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.model === rhs.model && lhs.space === rhs.space
+            && lhs.isSelectedSpace == rhs.isSelectedSpace
+            && lhs.transientBrowsing === rhs.transientBrowsing
+            && lhs.tabPromotionNamespace == rhs.tabPromotionNamespace
+            && lhs.shortcuts === rhs.shortcuts && lhs.layoutDirection == rhs.layoutDirection
+    }
+
+    private var isInteractive: Bool {
+        isSelectedSpace && contentPresentation == .interactive
+    }
+
+    /// How the window shows this Space's pages: as the person's, as the
+    /// preview the pager draws while the person swipes to or from the Space,
+    /// or not at all.
+    private var pagePresentation: BrowserPagePresentation {
+        if isInteractive { return .presented }
+        return contentPresentation == .inactive ? .hidden : .preview
+    }
+
+    /// The tab the window shows in this Space.
+    private var shownTab: TabStateModel? {
+        model.browser.selectedTabID(in: space.id).flatMap { space.shownTab($0) }
+    }
+
+    private var surfacePage: BrowserPage? {
+        shownTab.flatMap { model.pages.surfacePage(for: $0.id, in: space, accessController: model.spaceAccess) }
+    }
+
+    private var previewsStartPage: Bool {
+        !isSelectedSpace && model.pages.requiresStartPageOnEntry(to: space)
+    }
+
+    private var pageSurfacePresentation: BrowserPageSurfacePresentation {
+        if previewsStartPage, !model.spaceAccess.isLocked(space) {
+            return .single(space: space, cardTabID: nil)
+        }
+        return BrowserPageSurfacePresentation(
+            space: space,
+            isLocked: model.spaceAccess.isLocked(space),
+            cards: model.browser.cards(in: space),
+            hasEnteredSplitContent:
+                isSelectedSpace && model.sidebarInteraction.sidebarReorderState.hasEnteredSplitContent,
+            resolvedTarget: isSelectedSpace ? model.sidebarInteraction.sidebarReorderState.resolvedTarget : nil,
+            presentsTrailingPanel: isSelectedSpace && model.extensionSidePanel.panel != nil
+        )
+    }
+
+    /// The window's frame around this Space's pages, as the device's border
+    /// draws it, with no extra top edge under the window's top chrome.
+    private var frameInsets: EdgeInsets {
+        BrowserChromeAppearance.device(windowCornerRadius: nil).pageInsets(
+            docked: model.sidebarPresentation.reservesSidebarWidth, belowTopBar: model.isPageBelowTopBar,
+            direction: layoutDirection)
+    }
+
+    var body: some View {
+        let presentation = pageSurfacePresentation
+        return surface(presentation)
+            .overlay { stoppedPage(presentation) }
+            .overlay(alignment: .top) { frozenPageBar }
+            // Every edge of the window's frame around this Space's pages moves
+            // the window.
+            .overlay {
+                BrowserPageFrameTitleBarSurface(
+                    docked: model.sidebarPresentation.reservesSidebarWidth, belowTopBar: model.isPageBelowTopBar)
+            }
+            .overlay {
+                BrowserRootPeekLayer(
+                    model: model,
+                    transientBrowsing: transientBrowsing,
+                    space: space,
+                    docked: model.sidebarPresentation.reservesSidebarWidth
+                )
+            }
+            .environment(\.browserPagePresentationWindowID, model.windowState?.id)
+            .environment(\.spaceContentIsInteractive, isInteractive)
+            .environment(\.browserPagePresentation, pagePresentation)
+            .allowsHitTesting(isInteractive)
+            .accessibilityHidden(!isInteractive)
+            .browserSplitContentDropZone(
+                assignment: isSelectedSpace ? presentation.dropAssignment : nil,
+                state: model.sidebarInteraction.sidebarReorderState
+            )
+            // The window's own focus is read only where a page takes focus
+            // back, so the window gaining or losing it never re-renders the
+            // Space's pages.
+            .environment(
+                \.browserWebFocusRestorationGate,
+                BrowserWebFocusRestorationGate(browserChromeOwnsFocus: !isInteractive, pageChromeOwnsFocus: false)
+            )
+            .environment(\.browserWebFocusWindow, model)
+    }
+
+    /// The bar across the top of the shown page while it does not answer.
+    @ViewBuilder
+    private var frozenPageBar: some View {
+        if isInteractive, let page = surfacePage, page.responsiveness.isFrozen, let tabID = shownTab?.id {
+            BrowserFrozenPageBar(
+                wait: { page.responsiveness.wait() },
+                stop: { model.pages.stopUnresponsivePage(tabID) }
+            )
+            .padding(.top, frameInsets.top + OdeSpacing.medium)
+            .padding(.horizontal, OdeSpacing.large)
+        }
+    }
+
+    /// What a single shown tab whose frozen page the person stopped shows,
+    /// until the person reloads it.
+    @ViewBuilder
+    private func stoppedPage(_ presentation: BrowserPageSurfacePresentation) -> some View {
+        if presentation.singleCardTabID != nil, let tabID = shownTab?.id, surfacePage == nil,
+            model.pages.stoppedTabIDs.contains(tabID)
+        {
+            BrowserStoppedPagePlaceholder { model.pages.reloadStoppedPage(tabID) }
+                .padding(frameInsets)
+        }
+    }
+
+    @ViewBuilder
+    private func surface(
+        _ presentation: BrowserPageSurfacePresentation
+    ) -> some View {
+        if case .columns(let space, let members, let placeholderIndex) =
+            presentation
+        {
+            BrowserSplitPageSurface(
+                model: model,
+                space: space,
+                members: members,
+                placeholderIndex: placeholderIndex,
+                tabPromotionNamespace: tabPromotionNamespace,
+                shortcuts: shortcuts
+            )
+        } else {
+            BrowserRootDetailSurface(
+                adjoinsLeadingSidebar:
+                    model.sidebarPresentation.reservesSidebarWidth,
+                usesBorderlessFrame: BrowserDeviceAppearanceStore.shared.isBorderless,
+                isStartPage: previewsStartPage || shownTab?.surface == .startPage,
+                hasActivePage: surfacePage != nil,
+                completedNavigationCount: surfacePage?.completedNavigationCount ?? 0,
+                hasSelectedSpace: true,
+                handleWebContentInteraction: {
+                    model.chrome.handleWebContentInteraction()
+                    if isInteractive { surfacePage?.responsiveness.interacted() }
+                },
+                // Top chrome already takes the frame's top edge.
+                frameInsets: { [isPageBelowTopBar = model.isPageBelowTopBar] insets in
+                    guard isPageBelowTopBar else { return insets }
+                    return EdgeInsets(top: 0, leading: insets.leading, bottom: insets.bottom, trailing: insets.trailing)
+                },
+                content: Group {
+                    if model.spaceAccess.isLocked(space) {
+                        BrowserSpaceAccessView(
+                            space: space,
+                            spaces: model.browser.availableSpaces,
+                            accessController: model.spaceAccess,
+                            selectSpace: { assignment in
+                                guard
+                                    let candidate = model.browser.unlockedSpace(
+                                        matching: assignment, accessController: model.spaceAccess)
+                                else { return }
+                                model.browser.selectSpace(candidate.id)
+                            },
+                            presentation: .contentOverlay
+                        )
+                        .background {
+                            LockedSpacePagePreview(
+                                space: space, cards: model.browser.cards(in: space), pages: model.pages)
+                        }
+                    } else {
+                        BrowserDetailView(
+                            presentation: presentation,
+                            browser: model.browser,
+                            pages: model.pages,
+                            spaceAccess: model.spaceAccess,
+                            tabPromotionNamespace: tabPromotionNamespace,
+                            startPageFocusRequest:
+                                model.chrome.startPageFocusRequest,
+                            isCommandPalettePresented:
+                                model.chrome.isCommandPalettePresented,
+                            commands: model.paletteRegistry(
+                                windows: windows, layoutDirection: layoutDirection, shortcuts: shortcuts),
+                            previewsStartPage: previewsStartPage
+                        )
+                    }
+                }
+            )
+            // The lone tab on show is a card as far as a drag is concerned: it
+            // is what a dropped tab would join, and the side of it the pointer
+            // is on is which side of it the new card lands.
+            .browserSplitDropCardFrame(
+                tabID: isSelectedSpace ? presentation.singleCardTabID : nil,
+                assignment: isSelectedSpace ? presentation.dropAssignment : nil,
+                state: model.sidebarInteraction.sidebarReorderState
+            )
+        }
+    }
+}

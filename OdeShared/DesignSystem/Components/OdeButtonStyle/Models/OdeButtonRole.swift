@@ -1,0 +1,18 @@
+import CoreGraphics
+
+/// What an Ode button is for. Call sites choose intent instead of restating
+/// visual treatment.
+enum OdeButtonRole: Equatable, Sendable {
+    /// The single action that carries a flow forward.
+    case primary
+    /// A real alternative to the primary action.
+    case secondary
+    /// A quiet action belonging to a row of content.
+    case tertiary
+    /// An action that removes something.
+    case destructive
+    /// A glyph-only circular control. Callers supply an accessibility label.
+    /// A quiet one is neutral and a prominent one wears the accent, unless
+    /// the caller tints it.
+    case icon(diameter: CGFloat, isProminent: Bool)
+}

@@ -1,0 +1,17 @@
+name: Feature request
+description: Something Ode should do, or do differently.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you are trying to do and what gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How Ode could handle it.
+    validations:
+      required: true

@@ -1,0 +1,42 @@
+using OdeCore.Application;
+
+namespace OdeCore.Contracts;
+
+/// The review is imported, with `PasswordCount` of its passwords, and
+/// `UnsavedPasswordCount` more that could not be saved, which the summary
+/// adds to those the setup's earlier imports could not save. Setup goes on to
+/// the next chosen browser; after the last, to setting up Spaces by hand when
+/// it walks the person through Ode, or else to what it did.
+public sealed record FinishImportCommit(int PasswordCount, int UnsavedPasswordCount, SetupImportOutcome? Outcome = null)
+    : SetupFlowIntent {
+    #region Actions - Device
+
+    /// Once its review is imported with `PasswordCount` passwords the flow
+    /// goes on to the next chosen browser, or after the last to the manual
+    /// setup when setup walks the person through Ode, or else to what it did.
+    internal override void Apply(Device device, DeviceTurn turn) => device.ReviseFlow(turn.Changes, (flow, session) => {
+        if (flow.Phase != SetupPhase.Committing || flow.Review is not { } review) return flow;
+        if (Outcome is { Status: SetupImportOutcomeStatus.Imported }) device.KeepImportOutcome(Outcome);
+        var previous = flow.Summary is { IsImport: true } imported ? imported : new SetupSummary(true, 0, 0, 0, 0);
+        var summary = new SetupSummary(IsImport: true, previous.TabCount + review.IncludedTabCount,
+            previous.PasswordCount + Math.Max(PasswordCount, 0),
+            previous.SpaceCount + review.Spaces.Count(space => space.Included),
+            Math.Max(UnsavedPasswordCount, 0) + (flow.Summary?.UnsavedPasswordCount ?? 0));
+        var queue = flow.Queue is { } current ? current with { Index = current.Index + 1 } : null;
+        var done = flow with {
+            Phase = SetupPhase.Idle,
+            Selected = [.. flow.Selected.Where(source => source != review.Source)],
+            Queue = queue,
+            Source = null,
+            Review = null,
+            Failure = null,
+            Summary = summary
+        };
+        if (queue?.Current is { } next) return done with { Step = SetupStep.ImportBrowser, Phase = SetupPhase.Reading, Source = next };
+        if (!flow.Entry.IsGuided) return done with { Step = SetupStep.Complete };
+        device.BeginSetup(flow.WorkspaceId, session, startsOver: false, flow.Look, turn.Changes, turn.Ids);
+        return done with { Step = SetupStep.ManualSetup };
+    });
+
+    #endregion
+}

@@ -1,0 +1,265 @@
+import SwiftUI
+import UIKit
+
+extension MobileBrowserRootContent {
+    var browser: BrowserStore { model.browser }
+    var pages: MobileBrowserPageStore { model.pages }
+    var navigation: MobileBrowserNavigationState { model.navigation }
+    var spaceAccess: BrowserSpaceAccessController { model.spaceAccess }
+    var address: String { model.address }
+
+    var presentation: MobileBrowserPresentation {
+        MobileBrowserPresentation.fitting(
+            availableWidth: availableRootSize.width,
+            horizontalSizeClass: horizontalSizeClass
+        )
+    }
+
+    var presentsSplitView: Bool {
+        guard let space = browser.shownSpace, !spaceAccess.isLocked(space) else { return false }
+        return model.presentedSplitMembers.count > 1
+    }
+
+    /// Whether the window shows the Start Page, or no tab at all.
+    var showsStartPage: Bool {
+        browser.shownTab.map { $0.surface == .startPage } ?? true
+    }
+
+    var usesBorderlessPageFrame: Bool {
+        presentation.usesBorderlessPageFrame(
+            // Only whether the page has a frame, so a drag of the border
+            // width leaves the root alone.
+            preferenceIsEnabled: BrowserDeviceAppearanceStore.shared.isBorderless,
+            sidebarPresentation: navigation.regularSidebarPresentation
+        )
+    }
+
+    var showsCompactPageToolbar: Bool {
+        Self.showsCompactPageToolbar(
+            sidebarPresentation: navigation.regularSidebarPresentation,
+            presentsSplitView: presentsSplitView
+        )
+    }
+
+    /// The compact toolbar shows under a docked sidebar's page, and under a
+    /// presented split whatever the sidebar's placement.
+    nonisolated static func showsCompactPageToolbar(
+        sidebarPresentation: BrowserSidebarPresentation,
+        presentsSplitView: Bool
+    ) -> Bool {
+        presentsSplitView || sidebarPresentation == .docked
+    }
+
+    /// Whether the window leaves the keyboard's room unused: a keyboard that
+    /// floats over the window, one narrower than most of it, or one that
+    /// covers nothing of the screen, as a software keyboard put away beside a
+    /// hardware one does, or one left behind as the window turns or moves to
+    /// the other display.
+    var ignoresKeyboardSafeArea: Bool {
+        let floatingKeyboardMaximumWidthRatio: CGFloat = 0.85
+        guard !keyboardEndFrame.isNull, !keyboardEndFrame.isEmpty else { return true }
+        if !keyboardScreenBounds.isNull, !keyboardEndFrame.intersects(keyboardScreenBounds) {
+            return true
+        }
+        guard availableRootSize.width > 0 else { return false }
+        return keyboardEndFrame.width
+            < availableRootSize.width * floatingKeyboardMaximumWidthRatio
+    }
+
+    var compactPagePresentation: Binding<Bool> {
+        Binding(
+            get: {
+                navigation.compactShowsPage
+                    && !suspendsCompactPagePresentation
+            },
+            set: { isPresented in
+                guard !suspendsCompactPagePresentation else { return }
+                if isPresented {
+                    navigation.selectTab()
+                } else {
+                    navigation.dismissPageToTabViewer()
+                }
+            }
+        )
+    }
+
+    /// Whether the page covers a narrow window, so a sheet shows from the
+    /// page rather than from the window: a sheet asked of the window while
+    /// the page covers it never appears.
+    var pageCoversWindow: Bool {
+        presentation.presentsPageOverTabViewer && compactPagePresentation.wrappedValue
+    }
+
+    /// Whether Settings shows as a sheet from the page, or from the window.
+    func settingsSheet(overPage: Bool) -> Binding<Bool> {
+        Binding(
+            get: { model.showsSettings && pageCoversWindow == overPage },
+            set: { model.showsSettings = $0 }
+        )
+    }
+
+    func passwordsSheet(overPage: Bool) -> Binding<Bool> {
+        Binding(
+            get: {
+                model.showsPasswords && !model.passwordsArePresentedFromSettings && pageCoversWindow == overPage
+            },
+            set: { if !$0 { model.dismissPasswords() } }
+        )
+    }
+
+    var passwordsSheetContent: some View {
+        MobilePasswordSettingsView(
+            browser: browser, spaceAccess: spaceAccess,
+            pendingOperationChanged: model.passwordsPendingOperationChanged
+        )
+        .onAppear(perform: model.passwordsSheetDidAppear)
+    }
+
+    /// Settings in its sheet, which shows the window's notices while it
+    /// covers the window, so what Settings reports is never hidden under it.
+    var settingsSheetContent: some View {
+        MobileBrowserSettingsView(
+            browser: browser, pages: pages, spaceAccess: spaceAccess, dataDeleter: dataDeleter,
+            state: model.settings.state
+        )
+        .environment(model)
+        .onAppear(perform: model.settings.sheetDidAppear)
+        .overlay(alignment: .top) {
+            BrowserNoticeLayer(
+                notices: pages.notices,
+                topInset: MobileBrowserRootLayout.compactOverlayTopPadding,
+                sideInset: MobileBrowserRootLayout.displayEdgeMargin
+            )
+        }
+    }
+
+    /// The Space list showing as a sheet from the page, or from the window.
+    func listSheet(overPage: Bool) -> Binding<MobileBrowserSidebarSpaceSheet?> {
+        Binding(
+            get: { pageCoversWindow == overPage ? model.presentedListSheet : nil },
+            set: { model.presentedListSheet = $0 }
+        )
+    }
+
+    func listSheetContent(_ request: MobileBrowserSidebarSpaceSheet) -> some View {
+        MobileBrowserSpaceListSheet(
+            request: request, browser: browser, pages: pages, spaceAccess: spaceAccess, selectTab: selectTab,
+            openURL: openURL
+        )
+        .onAppear(perform: model.listSheetDidAppear)
+    }
+
+    /// Puts the shown Space's `surface` up as a sheet, unless the Space is
+    /// locked.
+    func presentListSheet(_ surface: BrowserUtilitySurface) {
+        guard let space = browser.shownSpace, !spaceAccess.isLocked(space) else { return }
+        let assignment = BrowserSpaceRuntimeAssignment(space: space)
+        model.presentedListSheet = MobileBrowserSidebarSpaceSheet(surface: surface, assignment: assignment)
+        if surface == .downloads {
+            _ = pages.downloadCenter.acknowledgeItems(for: assignment.profileID)
+        }
+    }
+
+    /// Asks about a risky download from the page, or from the window.
+    func downloadRiskConfirmation(overPage: Bool) -> MobileDownloadRiskConfirmationModifier {
+        MobileDownloadRiskConfirmationModifier(
+            confirmation: pages.downloadRiskConfirmation,
+            profileIDs: Set(browser.spaceModels.map(\.profileID)),
+            asks: pageCoversWindow == overPage
+        )
+    }
+
+    /// The expanded detail area. The container decides whether it adjoins a
+    /// docked sidebar, while the page and split composition stay identical.
+    func regularPageSurface(
+        adjoinsSidebar: Bool,
+        commands: BrowserCommandPaletteCommandRegistry
+    ) -> MobileRegularPageSurface {
+        MobileRegularPageSurface(
+            model: model,
+            adjoinsSidebar: adjoinsSidebar,
+            usesBorderlessPageFrame:
+                usesBorderlessPageFrame,
+            address: model.addressBinding,
+            isAddressEditing: $isAddressEditing,
+            addressFocusRequest: addressFocusRequest,
+            isCommandPalettePresented: commandPaletteMode != nil,
+            commands: commands,
+            compactToolbarIsHidden: navigation.compactToolbarIsHidden,
+            submitAddress: submitAddress,
+            beginNewTab: beginNewTab,
+            showTabViewer: showTabViewer,
+            hideCompactToolbar: navigation.hideCompactToolbar,
+            showCompactToolbar: navigation.showCompactToolbar,
+            showSwipedTab: showSwipedTab,
+            compactTransitionEnded: finishCompactTransition
+        )
+    }
+
+    var compactTransition: MobileCompactChromeTransition {
+        navigation.compactShowsPage ? .revealTabViewer : .revealPage
+    }
+
+    var mobileBrowserCommandContext: MobileBrowserCommandContext {
+        model.commandContext(
+            transientBrowsing: transientBrowsing,
+            layoutDirection: layoutDirection,
+            usesPageToolbars: !presentation.usesEdgeToEdgeWebViewport(
+                isPhone: UIDevice.current.userInterfaceIdiom == .phone,
+                sidebarPresentation: navigation.regularSidebarPresentation
+            ),
+            togglePrivateBrowsing: togglePrivateBrowsing,
+            openNewTab: beginNewTab,
+            openLocation: openLocation,
+            prepareForSelectionSynchronization: dismissAddressFocus,
+            toggleSidebar: toggleSidebarFromCommand,
+            presentHistory: presentHistoryFromCommand,
+            presentArchive: presentArchiveFromCommand,
+            presentDownloads: presentDownloadsFromCommand
+        )
+    }
+}
+
+/// The root's concrete navigation sheets share the same native host and
+/// dismissal contract, whether presented over the compact page or the window.
+struct MobileBrowserRootNavigationSheets: ViewModifier {
+    let root: MobileBrowserRootContent
+    let overPage: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .sheet(isPresented: root.settingsSheet(overPage: overPage), onDismiss: root.settingsSheetDidDismiss) {
+                root.settingsSheetContent
+            }
+            .sheet(item: root.listSheet(overPage: overPage), onDismiss: root.listSheetDidDismiss) {
+                root.listSheetContent($0)
+            }
+            .sheet(isPresented: root.passwordsSheet(overPage: overPage), onDismiss: root.passwordsSheetDidDismiss) {
+                root.passwordsSheetContent
+            }
+            .modifier(root.downloadRiskConfirmation(overPage: overPage))
+    }
+}
+
+/// Supplies native scene ownership and teardown to the root's existing sheet
+/// lifecycle. It never presents or dismisses a controller.
+struct MobileBrowserRootWindowObserver: UIViewRepresentable {
+    let model: MobileBrowserRootModel
+
+    func makeUIView(context: Context) -> WindowView {
+        let view = WindowView()
+        view.model = model
+        return view
+    }
+
+    func updateUIView(_ uiView: WindowView, context: Context) {}
+
+    final class WindowView: UIView {
+        weak var model: MobileBrowserRootModel?
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            model?.rootPresentationMoved(to: window?.windowScene.map(ObjectIdentifier.init))
+        }
+    }
+}

@@ -1,0 +1,85 @@
+import SwiftUI
+
+/// The whole of a transient overlay below its lock: the scrim, and the card
+/// standing on it, which grows out of the link it came from.
+struct BrowserTransientSurface<WebContent: View, LinkMenuAnchor: View>: View {
+    let state: BrowserTransientPresentationState
+    let pageStatus: BrowserTransientPageStatus
+    let spaces: [BrowserSpaceIdentity]
+    let selectedSpaceID: UUID
+    let vocabulary: BrowserTransientOverlayVocabulary
+    let actions: BrowserTransientCardActions
+    @ViewBuilder let webContent: () -> WebContent
+    /// The shell's control a Peek's link menu opens from.
+    @ViewBuilder let linkMenuAnchor: (BrowserPeekLinkMenuPresentation) -> LinkMenuAnchor
+
+    var body: some View {
+        // The stack's insets keep the card clear of the safe area, so the
+        // surface takes the whole container; laid out inside the safe area
+        // as well, the card would keep clear of it twice.
+        GeometryReader { safeAreaProxy in
+            surface(safeAreaInsets: Self.safeAreaInsets(of: safeAreaProxy))
+                .ignoresSafeArea()
+        }
+    }
+
+    /// The container's safe area, with its top edge below the controls a
+    /// resizable iPad window keeps in a top corner. A corner the side's own
+    /// inset already clears, such as a status bar beside the page, leaves the
+    /// top edge where it is.
+    private static func safeAreaInsets(of proxy: GeometryProxy) -> EdgeInsets {
+        var insets = proxy.safeAreaInsets
+        let corners = proxy.containerCornerInsets
+        if corners.topLeading.width > insets.leading {
+            insets.top = max(insets.top, corners.topLeading.height)
+        }
+        if corners.topTrailing.width > insets.trailing {
+            insets.top = max(insets.top, corners.topTrailing.height)
+        }
+        return insets
+    }
+
+    private func surface(safeAreaInsets: EdgeInsets) -> some View {
+        GeometryReader { proxy in
+            ZStack {
+                BrowserTransientScrim(
+                    opacity: state.scrimOpacity,
+                    allowsDismissal: state.arrangement.allowsScrimDismissal,
+                    insets: state.scrimInsets,
+                    fadesIn: state.arrangement.fadesScrim,
+                    dismiss: actions.dismiss
+                )
+                BrowserTransientCardStack(
+                    state: state,
+                    pageStatus: pageStatus,
+                    spaces: spaces,
+                    selectedSpaceID: selectedSpaceID,
+                    vocabulary: vocabulary,
+                    availableSize: proxy.size,
+                    safeAreaInsets: safeAreaInsets,
+                    actions: actions,
+                    webContent: webContent,
+                    linkMenuAnchor: linkMenuAnchor
+                )
+            }
+            .coordinateSpace(name: BrowserTransientMotion.coordinateSpaceName)
+        }
+    }
+}
+
+extension BrowserTransientSurface where LinkMenuAnchor == EmptyView {
+    /// A surface whose card has no link menu.
+    init(
+        state: BrowserTransientPresentationState,
+        pageStatus: BrowserTransientPageStatus,
+        spaces: [BrowserSpaceIdentity],
+        selectedSpaceID: UUID,
+        vocabulary: BrowserTransientOverlayVocabulary,
+        actions: BrowserTransientCardActions,
+        @ViewBuilder webContent: @escaping () -> WebContent
+    ) {
+        self.init(
+            state: state, pageStatus: pageStatus, spaces: spaces, selectedSpaceID: selectedSpaceID,
+            vocabulary: vocabulary, actions: actions, webContent: webContent, linkMenuAnchor: { _ in EmptyView() })
+    }
+}

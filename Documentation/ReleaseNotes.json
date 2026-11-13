@@ -1,0 +1,966 @@
+{
+  "schemaVersion": 2,
+  "publicationBaselines": {
+    "stable": "2026-10-26-ode-baseline",
+    "development": "2026-10-26-ode-baseline",
+    "nightly": "2026-10-26-ode-baseline"
+  },
+  "entries": {
+    "2026-10-26-ode-baseline": {
+      "category": "internal",
+      "message": "Start Ode's release notes from Crest 0.8.52"
+    },
+    "2026-10-26-arc-import-archive-history": {
+      "category": "new",
+      "message": "Import from Arc brings each Space's archive and its most recent 5,000 history entries."
+    },
+    "2026-10-26-arc-import-sign-ins": {
+      "category": "new",
+      "message": "Stay signed in after moving from Arc: each new Space receives the cookies of the Arc profile it came from."
+    },
+    "2026-10-26-arc-import-passwords": {
+      "category": "new",
+      "message": "Saved Arc passwords come across after one Keychain approval, each in the Space it belongs to."
+    },
+    "2026-10-26-space-identity": {
+      "category": "improved",
+      "message": "Edit a Space as a name, a colour, and an SF Symbol or emoji."
+    },
+    "2026-10-26-sleeping-tabs": {
+      "category": "new",
+      "message": "Pages of tabs you have not looked at for a while sleep, keeping their place, and wake when you return."
+    },
+    "2026-10-26-content-blocking": {
+      "category": "new",
+      "message": "Content blocking is set up in every Space on first run."
+    },
+    "2026-10-26-agents-space": {
+      "category": "new",
+      "message": "Coding agents work in an Agents Space of their own, with an activity log and a badge on every tab they use."
+    },
+    "2026-10-26-agent-gates": {
+      "category": "new",
+      "message": "Ode asks before an agent opens a new site, refuses password, code and card fields, and holds agent downloads for your approval."
+    },
+    "2026-10-26-agent-setup": {
+      "category": "new",
+      "message": "Connect Claude Code, Codex or Pi with one click, or copy the setup for OpenClaw, Hermes and other MCP clients."
+    },
+    "2026-10-26-intelligence": {
+      "category": "new",
+      "message": "Optional intelligence, off by default, tidies tab titles and Today with Apple's on-device model, a model on your Mac, or your own ChatGPT plan."
+    },
+    "2026-10-26-assistant-providers-off": {
+      "category": "improved",
+      "message": "Assistant search providers start turned off."
+    },
+    "2026-10-26-ode": {
+      "category": "new",
+      "message": "Ode: a browser for people moving from Arc and the agents they work with."
+    },
+    "2026-11-01-filter-lists": {
+      "category": "new",
+      "message": "WebKit pages block ads and trackers with EasyList and EasyPrivacy, which Ode keeps up to date itself, and the site menu shows what a page blocked, with a switch to allow a site."
+    },
+    "2026-11-01-tab-to-search-pill": {
+      "category": "improved",
+      "message": "The Command Bar completes an address as selected text and offers to search the site it completes to with Tab; Tab then shows the site as a pill in its own color with a brief glow of that color around the bar."
+    },
+    "2026-11-01-command-bar-rows": {
+      "category": "improved",
+      "message": "Command Bar results fit on one line, with a page's title and then its domain; the bar is as tall as its results and keeps a trace of the page's color behind it."
+    },
+    "2026-11-01-command-matching": {
+      "category": "fixed",
+      "message": "The Command Bar offers a command or a settings page only when its name holds what was typed or what was typed is its initials, not for letters scattered through its name."
+    },
+    "2026-11-01-mark-curl-every-size": {
+      "category": "improved",
+      "message": "Ode's mark keeps the soft shadow under its lifted corner at every size, down to the 16-point tab icon."
+    },
+    "2026-11-01-harness-surfaces": {
+      "category": "internal",
+      "message": "The test harness reports a page's content blocking and shows Site Settings and the Command Bar in windows of their own to snapshot."
+    },
+    "2026-11-01-boosts-stored": {
+      "category": "internal",
+      "message": "Each Space keeps its Boosts, one per site, in its saved session and in Ode Browser Data.json, whose schema moves to version 6 and still reads every earlier version."
+    },
+    "2026-11-01-boosts-webkit": {
+      "category": "internal",
+      "message": "WebKit pages wear their site's Boost from the first paint: its colors, font, hidden elements and custom CSS, kept current as the Space's Boosts change."
+    },
+    "2026-11-01-boosts": {
+      "category": "new",
+      "message": "Boosts restyle a site in each Space: Zap elements away with a click, turn the site dark, tint it in a Space color, adjust its brightness and contrast, set its font or add your own CSS. Start one from the site controls or Boost This Site in the Command Bar, turn it off from the site controls, and find it in your exports."
+    },
+    "2026-11-01-harness-boosts": {
+      "category": "internal",
+      "message": "The test harness keeps or removes a Boost for the shown page, opens the Boost bar, clicks the page without the pointer, reports what the page wears and shows the Boost panels and site controls to snapshot."
+    },
+    "2026-11-01-boosts-chromium": {
+      "category": "internal",
+      "message": "Chromium pages run the same Boost script as WebKit pages, through the engine's content scripts, and ask for their site's CSS once each document is ready."
+    },
+    "2026-11-01-tab-preview-preferences": {
+      "category": "internal",
+      "message": "Ode keeps whether pinned and saved tabs show previews on hover, and the sites whose previews are off, among this Mac's app preferences, which never sync."
+    },
+    "2026-11-01-tab-previews-gmail-reader": {
+      "category": "internal",
+      "message": "A pinned or saved Gmail tab reads its unread mail from the feed Gmail serves the tab's own signed-in page, in a script world the page cannot see, every two minutes while the tab is awake and never under memory pressure. Previews stay in memory, and a signed-out feed never asks for a password."
+    },
+    "2026-11-01-tab-preview-badges": {
+      "category": "new",
+      "message": "A pinned or saved Gmail tab shows how many messages wait unread, read from the tab's own signed-in page and never sent anywhere."
+    },
+    "2026-11-01-tab-preview-cards": {
+      "category": "new",
+      "message": "Rest the pointer on a pinned or saved Gmail tab to see its newest unread mail, with each sender and subject; choose a message to open it in that tab. The preview reads only the tab's own signed-in page and stays on this Mac."
+    },
+    "2026-11-01-harness-tab-previews": {
+      "category": "internal",
+      "message": "The test harness has a page served on this Mac stand in for a site with previews, reads and reports the previews, shows a pinned tab's card without the pointer, opens one of its items and draws the card above the page in window snapshots."
+    },
+    "2026-11-01-tab-preview-calendar": {
+      "category": "new",
+      "message": "A pinned or saved Google Calendar tab counts down to an event that starts within the hour, and resting the pointer on it shows what's next, with each event's time; choose one to open it in that tab. Declined events stay out."
+    },
+    "2026-11-01-tab-preview-settings": {
+      "category": "new",
+      "message": "Turn tab previews off in Settings > Tabs, or only for Gmail or Google Calendar there or from a site's controls."
+    },
+    "2026-11-01-tab-preview-stale-counts": {
+      "category": "improved",
+      "message": "A sleeping Gmail tab's unread count leaves its badge after half an hour without a fresh look, and its preview says when it was last read."
+    },
+    "2026-11-01-harness-downloads": {
+      "category": "internal",
+      "message": "The test harness points a Space's downloads at a folder, starts a download in the shown page as following a link does, reports and cancels the Space's downloads, and shows the downloads list to snapshot."
+    },
+    "2026-11-01-download-rows": {
+      "category": "improved",
+      "message": "Downloads are named by their file for VoiceOver, a finished one shows just its size, and the time left stays on one line."
+    },
+    "2026-11-01-download-drag": {
+      "category": "new",
+      "message": "Drag a finished download from the Downloads list straight into Finder, Mail, Messages or a page's upload field. A file moved or deleted since says so, and can be removed from the list."
+    },
+    "2026-11-01-download-menu": {
+      "category": "new",
+      "message": "Right-click a download, or use its actions button, to open it, show it in Finder, copy the file, remove it from the list or move it to the Trash; a running one cancels from there too."
+    },
+    "2026-11-01-download-quick-look": {
+      "category": "new",
+      "message": "Rest the pointer on a finished download and press the Space bar to see it in Quick Look, or choose Quick Look from its menu; the Space bar closes it again."
+    },
+    "2026-11-01-clear-downloads": {
+      "category": "new",
+      "message": "Clear Downloads, in the Downloads list's filter menu, clears the finished, canceled and failed downloads of the Space at once. Their files stay where they are, and downloads still running or waiting for you stay too."
+    },
+    "2026-11-01-recent-downloads": {
+      "category": "new",
+      "message": "While a Space has downloads under way or just finished, they show at the foot of the sidebar: progress, size, time left and Cancel for each running one, and each finished file ready to drag out, preview or open. Finished files leave after an hour, once you open Downloads, or when you choose Hide."
+    },
+    "2026-11-01-download-menu-symbol": {
+      "category": "improved",
+      "message": "On the Mac, a finished download's actions button shows a menu symbol rather than Share, since its menu opens, shows, copies and trashes the file."
+    },
+    "2026-11-01-download-cancel-staging": {
+      "category": "fixed",
+      "message": "Canceling a download no longer leaves its partial file behind in Ode's own folder."
+    },
+    "2026-11-01-harness-recent-downloads": {
+      "category": "internal",
+      "message": "The test harness reports what the foot of the sidebar shows of a Space's downloads, hides the finished ones as Hide does and clears ended downloads through the sidebar's own action."
+    },
+    "2026-11-02-automatic-updates": {
+      "category": "new",
+      "message": "Ode keeps itself up to date: it downloads updates quietly and shows Restart to update in the sidebar, and quitting installs them too."
+    },
+    "2026-11-02-whats-new-after-update": {
+      "category": "new",
+      "message": "After an update, the sidebar lists what changed, with All changes for the full list."
+    },
+    "2026-11-02-go-back-version": {
+      "category": "new",
+      "message": "Settings > About > Go back to an earlier version… downloads a recent version, checks it is signed and notarized like yours, and restarts into it. Your Spaces, tabs and settings stay as they are."
+    },
+    "2026-11-02-local-update-feed": {
+      "category": "improved",
+      "message": "Settings > About shows when updates come from a test feed on this Mac, with a button to return to the published feed."
+    },
+    "2026-11-02-own-crash-reports": {
+      "category": "fixed",
+      "message": "Ode no longer lists crash reports from other copies of Ode, such as test builds, as its own."
+    },
+    "2026-11-02-dev-bundle-identifier": {
+      "category": "internal",
+      "message": "Debug, test and harness builds run as com.odebrowser.ode.dev with their own data, so they never touch the installed Ode."
+    },
+    "2026-11-02-feed-retention": {
+      "category": "internal",
+      "message": "The release feed keeps the newest 5 releases and their disk images, and Scripts/serve-updates-locally.sh tests an update on this Mac."
+    },
+    "2026-11-02-command-bar-answers": {
+      "category": "new",
+      "message": "Ask the Command Bar how to do something: a question shows a written answer with its steps, its shortcut, Do It and Read More."
+    },
+    "2026-11-02-ode-help-mode": {
+      "category": "new",
+      "message": "Type help or ode and press Tab, or ? and a space, to search Ode Help."
+    },
+    "2026-11-02-settings-pages-from-command-bar": {
+      "category": "improved",
+      "message": "Typing a settings page's name, such as Appearance, opens that page instead of searching the web, and settings opens Settings."
+    },
+    "2026-11-02-site-search-empty-return": {
+      "category": "fixed",
+      "message": "Pressing Return in a site's search with nothing typed, such as Spotify, now opens the site instead of doing nothing."
+    },
+    "2026-11-02-settings-names-in-messages": {
+      "category": "fixed",
+      "message": "Messages now name the right settings: Focus follows pointer in Settings > Tabs, Translation in Settings > General, and Files & Folders in Settings > Privacy & Permissions."
+    },
+    "2026-11-02-help-rewrite": {
+      "category": "improved",
+      "message": "Ode Help is rewritten around tasks, with new guides for Boosts, tab previews, downloads, backups and recovery, intelligence, and coming from Arc."
+    },
+    "2026-11-02-command-s-sidebar": {
+      "category": "improved",
+      "message": "Command-S hides and shows the sidebar with the same motion as the sidebar button, and docks a sidebar that is peeking out."
+    },
+    "2026-11-02-sidebar-edge": {
+      "category": "improved",
+      "message": "Drag the sidebar's edge in to switch to icons and further to hide it, double-click the edge for the standard width, and turn off showing the sidebar at the window's edge in Appearance settings."
+    },
+    "2026-11-02-shortcut-press-again": {
+      "category": "improved",
+      "message": "When a website uses one of Ode's shortcuts, press it again right away to run Ode's command."
+    },
+    "2026-11-02-quick-window-shortcut": {
+      "category": "improved",
+      "message": "Option-Command-N opens a Quick Window, as it opened Little Arc. New Blank Window moves to Option-Shift-Command-N."
+    },
+    "2026-11-02-tabs-on-top": {
+      "category": "new",
+      "message": "Choose tabs on top instead of the sidebar in Appearance settings, from the View menu, or with Shift-Command-S. The sidebar still comes out over the page for folders, History and Downloads."
+    },
+    "2026-11-02-sidebar-right": {
+      "category": "new",
+      "message": "Move the sidebar to the right from the View menu or the Command Bar."
+    },
+    "2026-11-02-compact-density": {
+      "category": "new",
+      "message": "Choose Compact density to fit more tabs in the sidebar."
+    },
+    "2026-11-02-icon-sidebar": {
+      "category": "new",
+      "message": "Show the sidebar as a narrow column of icons from Appearance settings, the View menu, or with Control-Command-S. Rest the pointer on an icon to see its title."
+    },
+    "2026-11-02-control-arrows-spaces": {
+      "category": "new",
+      "message": "Control-Left and Control-Right switch Spaces, when the Mission Control shortcuts for those keys are off."
+    },
+    "2026-11-02-clear-open-tabs": {
+      "category": "new",
+      "message": "Shift-Command-K clears the Space's open tabs at once, as in Arc, and Reopen Closed Tab right after brings them all back in their order."
+    },
+    "2026-11-02-scroll-indicator-swipe": {
+      "category": "fixed",
+      "message": "The sidebar's scroll indicator no longer flashes when you swipe between Spaces."
+    },
+    "2026-11-02-tree-tabs": {
+      "category": "new",
+      "message": "Turn on Nest tabs opened from a page in Appearance settings to keep links you open under the tab they came from. Collapse a tree to hide its tabs, and closing a tab moves the tabs under it up a level."
+    },
+    "2026-11-02-tree-tabs-menu": {
+      "category": "new",
+      "message": "Drag a tab onto another to nest it there, or use Nest Under Tab Above and Move Out a Level in its menu. Exports keep your trees."
+    },
+    "2026-11-02-favorite-drop": {
+      "category": "fixed",
+      "message": "A favorite dragged into the sidebar's lists lands in one smooth move, without a pause or a slide back toward where it came from."
+    },
+    "2026-11-02-space-color-contrast": {
+      "category": "improved",
+      "message": "Every Space color keeps its text, name, badges and accents readable at any hue, in light and dark, and stronger still with Increase Contrast."
+    },
+    "2026-11-02-secondary-text": {
+      "category": "improved",
+      "message": "Download sizes, times, sleeping tab titles and other secondary text are easier to read."
+    },
+    "2026-11-02-status-colors": {
+      "category": "improved",
+      "message": "Failed downloads show in a red, and downloads waiting on you in an orange, that read on every Space."
+    },
+    "2026-11-02-command-bar-contrast": {
+      "category": "improved",
+      "message": "The Command Bar's selected row keeps its details readable, and with Increase Contrast the selected tab and row get a clear outline."
+    },
+    "2026-11-02-folder-tints": {
+      "category": "improved",
+      "message": "Strong folder colors read clearly in light mode, as lighter tints that keep their text sharp."
+    },
+    "2026-11-02-boosts-dark": {
+      "category": "improved",
+      "message": "Boosts shows the controls in use in a color that reads in dark mode."
+    },
+    "2026-11-02-preview-panel": {
+      "category": "improved",
+      "message": "Tab previews match the Command Bar's panel, and a tab whose title already shows its unread count no longer repeats it in a badge."
+    },
+    "2026-11-02-arc-import-while-open": {
+      "category": "fixed",
+      "message": "Importing from Arc while Arc is open now works, and if passwords can't be read, the rest of the import still comes over and setup says so."
+    },
+    "2026-11-02-keychain-explainer": {
+      "category": "improved",
+      "message": "Before macOS asks for the Keychain, setup explains why, with Import Without Passwords, and macOS asks at most once per import."
+    },
+    "2026-11-02-setup-review": {
+      "category": "improved",
+      "message": "Setup chooses Arc when it's installed, offers Import on every page, shows the Spaces with the most in them first and folds empty ones away."
+    },
+    "2026-11-02-imported-folders-closed": {
+      "category": "improved",
+      "message": "Imported folders arrive closed."
+    },
+    "2026-11-02-setup-clipping": {
+      "category": "fixed",
+      "message": "Long Space names, browser names and messages in setup no longer clip, and setup follows the text size setting."
+    },
+    "2026-11-02-floating-corners": {
+      "category": "fixed",
+      "message": "Peek and other floating panels have the window's rounded corners, with the page clipped to them on both engines."
+    },
+    "2026-11-02-sidebar-player": {
+      "category": "improved",
+      "message": "The sidebar player wears the Space's colors and shows how far a song or video has played, and leaves the sidebar while its tab is on screen."
+    },
+    "2026-11-02-back-to-tab": {
+      "category": "new",
+      "message": "Click the player's artwork or title, its Back to Tab button, or Tabs > Back to Playing Tab (Option-Command-Return) to go straight to the tab that plays, in any Space or window."
+    },
+    "2026-11-02-media-keys": {
+      "category": "improved",
+      "message": "The keyboard's play-pause key plays and pauses what Ode is playing, and Control Center shows how far along it is."
+    },
+    "2026-11-02-auto-pip-muted": {
+      "category": "fixed",
+      "message": "Muted videos that play by themselves no longer float in Picture in Picture when you switch tabs."
+    },
+    "2026-11-02-player-voiceover": {
+      "category": "improved",
+      "message": "VoiceOver reads the player as one item with its title and state, and offers Play, Pause, Next, Previous and Mute."
+    },
+    "2026-11-02-import-animation": {
+      "category": "new",
+      "message": "While setup brings your Spaces over, your pinned and saved tabs fly into Ode's sidebar in the Space's color. Click or press any key to skip it."
+    },
+    "2026-11-02-getting-started-lessons": {
+      "category": "new",
+      "message": "Getting Started opens on seven everyday moves, each checked off when you make it anywhere in Ode, with Show Me where Ode can start it for you."
+    },
+    "2026-11-02-help-new-layouts": {
+      "category": "improved",
+      "message": "The Command Bar and Ode Help answer questions about tabs on top, the icon sidebar, tree tabs, density, Back to Playing Tab and the Space-switching keys."
+    },
+    "2026-11-02-password-manager-one-menu": {
+      "category": "improved",
+      "message": "With a password manager extension on in a Space, Ode's own passwords stop offering fills and saves on that Space's Chromium pages, so only one menu shows at a sign-in field."
+    },
+    "2026-11-02-password-manager-shortcuts": {
+      "category": "fixed",
+      "message": "Password manager shortcuts such as Bitwarden's Command-Shift-L now reach the extension instead of opening the translation bar."
+    },
+    "2026-11-02-password-manager-desktop-apps": {
+      "category": "improved",
+      "message": "Password manager desktop apps registered for Chrome, Chromium, Arc, Brave, Edge or Vivaldi now connect to Ode too, for Touch ID unlock."
+    },
+    "2026-11-02-video-fullscreen": {
+      "category": "fixed",
+      "message": "YouTube and other video sites fill the whole screen in fullscreen on Chromium pages, without the sidebar and toolbar coming back while the video plays."
+    },
+    "2026-11-02-leave-fullscreen": {
+      "category": "improved",
+      "message": "Opening the Command Bar, another tab or the sidebar while a video is fullscreen leaves fullscreen first and restores the window's layout."
+    },
+    "2026-11-02-downloads-kept": {
+      "category": "new",
+      "message": "Each Space's downloads list stays after Ode quits and reopens, until you clear it or it reaches the Space's retention. Private windows' downloads are never kept."
+    },
+    "2026-11-02-expired-downloads": {
+      "category": "fixed",
+      "message": "Downloads past a Space's retention no longer come back to the list on Chromium pages."
+    },
+    "2026-11-02-quick-window-new-space": {
+      "category": "improved",
+      "message": "A Quick Window's Space menu can open the page in a new Space."
+    },
+    "2026-11-02-focus-hide-feeds": {
+      "category": "new",
+      "message": "Focus hides feeds and recommendations on YouTube, Reddit, X and Instagram."
+    },
+    "2026-11-02-focus-daily-limit": {
+      "category": "new",
+      "message": "Give a site a daily limit, and Ode pauses it for the rest of the day once the time is used, with five more minutes when you need them."
+    },
+    "2026-11-02-harness-web": {
+      "category": "internal",
+      "message": "The test harness reads, captures and clicks pages on either engine, installs extensions, records fullscreen requests, opens Quick Windows and sets Focus."
+    },
+    "2026-11-02-full-color-icons": {
+      "category": "improved",
+      "message": "Favorites, pinned tabs and sidebar rows show site icons in full color, including tabs that haven't loaded yet; a tab that hasn't loaded shows a slightly softer title instead."
+    },
+    "2026-11-02-suggestion-privacy": {
+      "category": "improved",
+      "message": "The Command Bar no longer sends typed addresses, local matches, or anything that looks like a password, token, email address or long number to search suggestions."
+    },
+    "2026-11-02-icon-discovery": {
+      "category": "improved",
+      "message": "Pinned, saved and imported tabs that haven't loaded yet show their site's real icon, found the way the page declares it, including for sites like ChatGPT, Notion, Discord and Outlook."
+    },
+    "2026-11-02-agent-snapshot-fixes": {
+      "category": "fixed",
+      "message": "Agents now read pages that hid content from their outline, such as MDN articles, GitHub issue lists and every Wikipedia article, see same-site embedded frames, and can read on past a cut outline."
+    },
+    "2026-11-02-agent-frame-typing": {
+      "category": "improved",
+      "message": "Agents can't type into a frame from another site embedded in the page."
+    },
+    "2026-11-02-import-icons": {
+      "category": "improved",
+      "message": "Importing from Arc, Chrome, Brave, Edge, Firefox or Zen brings each tab's icon along, even while that browser is open."
+    },
+    "command-bar-emphasizes-completions": {
+      "category": "improved",
+      "message": "The Command Bar highlights matching words and makes search suggestions easier to scan."
+    },
+    "help-answers-wait-for-meaningful-words": {
+      "category": "fixed",
+      "message": "Unfinished questions no longer show unrelated help answers."
+    },
+    "automated-command-bar-local-fixtures": {
+      "category": "internal",
+      "message": "Keep automated search and Wikipedia checks on local fixtures."
+    },
+    "settings-search-row-targets": {
+      "category": "improved",
+      "message": "Settings search opens the matching page and brings common settings into view, marked in your Space’s color."
+    },
+    "settings-pane-hierarchy": {
+      "category": "improved",
+      "message": "Settings has colored pane icons, clearer setup actions and more readable permission status labels."
+    },
+    "about-update-status-and-credits": {
+      "category": "improved",
+      "message": "About shows the update state beside Ode’s version, with credits and license links for Crest, Chromium and WebKit."
+    },
+    "navigation-recovery-surfaces": {
+      "category": "improved",
+      "message": "Offline and error pages use Ode’s colors, show what to try next and keep technical error codes under Details."
+    },
+    "space-utility-empty-states": {
+      "category": "improved",
+      "message": "Empty History, Archive and Downloads lists explain what appears in each Space."
+    },
+    "secondary-surface-copy-and-wrapping": {
+      "category": "improved",
+      "message": "Update highlights wrap without clipping, and resetting site permissions explains which access sites will ask for again."
+    },
+    "gamut-cache-exact-inputs": {
+      "category": "fixed",
+      "message": "Nearby Space colors keep their own gamut and contrast bounds, regardless of which color was drawn first."
+    },
+    "2026-11-02-sidebar-row-edges": {
+      "category": "improved",
+      "message": "Sidebar rows follow your corner setting more closely, with crisper selection edges and a single hairline above open tabs."
+    },
+    "2026-11-02-sidebar-current-tab-position": {
+      "category": "fixed",
+      "message": "Switching to a tab brings its sidebar row into view even after other tabs have been opened above it."
+    },
+    "command-bar-fixture-redirect-isolation": {
+      "category": "internal",
+      "message": "Command Bar network fixtures cannot redirect test requests to live services."
+    },
+    "command-bar-shared-field-surfaces": {
+      "category": "improved",
+      "message": "The Command Bar's inset field uses consistent surface and border colors in light and dark appearances."
+    },
+    "agent-navigation-approval-boundaries": {
+      "category": "fixed",
+      "message": "Agent navigation approval applies from the first action and follows WebKit popups. Operations without a pre-request approval boundary are unavailable."
+    },
+    "agent-change-read-retry": {
+      "category": "fixed",
+      "message": "Cut change reports and invalid page reads no longer consume changes an agent has not received."
+    },
+    "agent-screenshot-privacy-boundary": {
+      "category": "fixed",
+      "message": "Agent screenshots are unavailable until protected fields can be safely hidden in every frame and closed component. Text page reads remain available."
+    },
+    "2026-11-02-page-paint": {
+      "category": "fixed",
+      "message": "Opening, restoring and waking a tab no longer flashes a blank white surface before its page draws."
+    },
+    "2026-11-02-blank-page-navigation": {
+      "category": "fixed",
+      "message": "Blank-page links opened from Peek or a Quick Window keep their address and Back and Forward history."
+    },
+    "2026-11-02-background-navigation-state": {
+      "category": "fixed",
+      "message": "A failed background navigation keeps the tab’s last successful address and history without changing the selected tab."
+    },
+    "frame-sampler-type-ownership": {
+      "category": "internal",
+      "message": "Keep the development frame sampler’s display ticker in its owning source file."
+    },
+    "vivid-space-window-ring": {
+      "category": "improved",
+      "message": "A vivid Space-colored frame surrounds the page while the sidebar and top tabs keep a calm, readable background."
+    },
+    "solid-space-grounds-reduce-transparency": {
+      "category": "fixed",
+      "message": "Space backgrounds stay solid when Reduce Transparency is on."
+    },
+    "color-edit-memory-stability": {
+      "category": "fixed",
+      "message": "Editing Space colors no longer keeps every intermediate color in memory."
+    },
+    "history-complete-visits": {
+      "category": "improved",
+      "message": "History keeps older addresses and individual visits beyond the recent list, including visits imported from Safari and other browsers."
+    },
+    "history-export-and-retention": {
+      "category": "fixed",
+      "message": "History exports wait for pending imports, imported visits follow each Space's retention setting, and lists no longer skip pages visited at the same time."
+    },
+    "history-page-text-storage": {
+      "category": "internal",
+      "message": "Prepare bounded local page-text search storage with Space-scoped deletion and removal of captures from deleted visit ranges."
+    },
+    "history-write-failure-retry": {
+      "category": "fixed",
+      "message": "History exports report failed pending writes instead of silently omitting them, and retries keep the affected visits."
+    },
+    "history-recovery-copies": {
+      "category": "fixed",
+      "message": "Recovering history keeps earlier damaged-file copies instead of replacing them."
+    },
+    "history-storage-failures-reported": {
+      "category": "fixed",
+      "message": "History no longer silently treats storage errors as missing visits, and quitting waits for pending history writes."
+    },
+    "history-owner-only-storage-files": {
+      "category": "internal",
+      "message": "Restrict history database files, live sidecars and recovery copies to owner-only permissions before writing."
+    },
+    "agent-refused-page-claims": {
+      "category": "fixed",
+      "message": "Agent page requests refused for an unsupported engine configuration no longer mark tabs as in use."
+    },
+    "settled-update-progress": {
+      "category": "fixed",
+      "message": "Update details stop showing download or preparation progress once an update is ready or installed."
+    },
+    "webkit-workspace-memory-cleanup": {
+      "category": "fixed",
+      "message": "Closing a workspace releases its browsing state more reliably."
+    },
+    "icon-picker-avoids-eager-artwork": {
+      "category": "improved",
+      "message": "Opening the icon picker avoids loading every symbol’s artwork into memory."
+    },
+    "mobile-readable-first-navigation": {
+      "category": "fixed",
+      "message": "Narrow pages and Quick Windows request mobile sites from their first navigation while keeping your Desktop Site choice."
+    },
+    "offscreen-native-sheet-guard": {
+      "category": "internal",
+      "message": "Keep development harness windows and native sheets outside every display before showing or moving them."
+    },
+    "native-sheet-accessibility-geometry": {
+      "category": "internal",
+      "message": "Expose every visible development window and display bounds for native accessibility sheet safety checks."
+    },
+    "history-site-groups-and-row-actions": {
+      "category": "improved",
+      "message": "Browse History by time or site, pin or save a page without opening it, and remove a page or an entire site from the current Space’s history."
+    },
+    "touch-command-palette-readable-hints": {
+      "category": "improved",
+      "message": "Command Bar results and answer actions on touch screens leave room for their labels instead of showing keyboard hints."
+    },
+    "command-bar-arithmetic-below-search": {
+      "category": "improved",
+      "message": "Arithmetic answers appear below the Command Bar search, ready to select and copy without replacing your search."
+    },
+    "command-bar-local-navigation-fixtures": {
+      "category": "internal",
+      "message": "Keep automated Command Bar and Quick Window destinations on local fixtures."
+    },
+    "help-readable-navigation-and-page-guide": {
+      "category": "fixed",
+      "message": "Help pages open correctly, with clearer navigation and search labels."
+    },
+    "keep-archived-tabs-and-links": {
+      "category": "new",
+      "message": "Pin or save archived tabs and links without opening them or leaving the page you’re reading."
+    },
+    "pending-import-history-ownership-and-omissions": {
+      "category": "fixed",
+      "message": "Import reviews keep each browser’s history independently and report history left out by limits or read problems."
+    },
+    "phone-address-draft-context-ownership": {
+      "category": "fixed",
+      "message": "Phone address drafts and keyboard focus survive turning the phone without carrying edits into another tab or Space."
+    },
+    "mozilla-visit-precision-and-omitted-profile-warnings": {
+      "category": "fixed",
+      "message": "Firefox and Zen imports keep visits a millisecond apart, and import reviews retain every reported problem for profiles left out."
+    },
+    "sidebar-deferred-reveal-yields-to-input": {
+      "category": "fixed",
+      "message": "Scrolling or dragging in the sidebar no longer jumps back to the current tab."
+    },
+    "calculator-scientific-notation-and-signed-powers": {
+      "category": "improved",
+      "message": "Calculate with scientific notation in the Command Bar; powers now take precedence over a leading minus."
+    },
+    "calculator-undefined-intermediate-results": {
+      "category": "fixed",
+      "message": "The Command Bar no longer shows an answer when a calculation contains division by zero or another undefined intermediate result."
+    },
+    "command-bar-canonical-tab-matching": {
+      "category": "fixed",
+      "message": "Find tabs in the Command Bar when accented text is typed or pasted in an equivalent Unicode spelling."
+    },
+    "command-bar-return-query-ownership": {
+      "category": "fixed",
+      "message": "Command Bar keyboard actions no longer open outdated results when typing changes or results arrive slowly."
+    },
+    "native-service-ownership-and-xcode-overlay-compatibility": {
+      "category": "internal",
+      "message": "Keep native intelligence and dictionary services behind their infrastructure boundaries and preserve Command Bar rendering on newer Xcode versions."
+    },
+    "automatic-export-chosen-folder-description": {
+      "category": "fixed",
+      "message": "Automatic export settings accurately describe saving files to your chosen folder and excluding passwords and cookies."
+    },
+    "command-bar-rejected-tab-title-isolation": {
+      "category": "fixed",
+      "message": "Unusual characters in one tab’s title no longer prevent the Command Bar from finding other tabs."
+    },
+    "command-bar-percentage-of-and-off": {
+      "category": "improved",
+      "message": "Calculate percentages and discounts in the Command Bar with phrases like “20% of 80” and “20% off 80”."
+    },
+    "native-aot-servicing-sdk-100403": {
+      "category": "internal",
+      "message": "Use the serviced .NET SDK and Native AOT runtime for core builds."
+    },
+    "agent-live-authorization-and-delivery-receipts": {
+      "category": "fixed",
+      "message": "Stopped agents cannot submit new page actions, and uncertain action delivery is reported without inviting an unsafe retry."
+    },
+    "release-preflight-evidence-scope": {
+      "category": "internal",
+      "message": "Check published engine evidence separately from local release prerequisites and packaged runtime acceptance."
+    },
+    "persistent-isolation-honors-memory-credential-vault": {
+      "category": "internal",
+      "message": "Keep credentials in memory when isolated validation explicitly requests it, independently of session persistence."
+    },
+    "draft-aware-automatic-unloading": {
+      "category": "fixed",
+      "message": "Protects text you’ve typed from automatic tab sleeping and memory cleanup, including in Quick Window and Peek."
+    },
+    "release-preflight-rejects-malformed-publication": {
+      "category": "internal",
+      "message": "Reject malformed engine publication metadata without losing the release inspection report."
+    },
+    "release-tooling-xcode-python-compatibility": {
+      "category": "internal",
+      "message": "Release and Chromium maintenance tools run with the Python bundled with Xcode."
+    },
+    "release-preflight-source-recipe-validation": {
+      "category": "internal",
+      "message": "Release checks validate both published Chromium source recipes and report malformed engine locks without crashing."
+    },
+    "2026-11-03-mac-first-run-layout-and-practice": {
+      "category": "new",
+      "message": "Choose where tabs go and optionally try finding a tab and switching Spaces during Mac setup."
+    },
+    "browser-import-receipts-and-pending-extensions": {
+      "category": "improved",
+      "message": "Review saved results for each browser import, choose passwords and sign-ins separately, and keep approved extensions pending while their Spaces are locked."
+    },
+    "command-bar-explicit-copy-answer": {
+      "category": "improved",
+      "message": "Copy calculator and conversion answers directly from the Command Bar."
+    },
+    "predictive-unit-conversion-choices": {
+      "category": "improved",
+      "message": "See useful conversions while finishing a unit question in the Command Bar, with weight and US fluid measurements kept distinct."
+    },
+    "command-bar-large-text-answers": {
+      "category": "fixed",
+      "message": "Read and copy Command Bar answers comfortably at larger text sizes."
+    },
+    "chromium-156-published-engine-adapter": {
+      "category": "internal",
+      "message": "Adopt the published Chromium 156 engine contract with Core-owned extension installation, page-security facts, and website-data operations."
+    },
+    "extension-copy-consent-space-lock": {
+      "category": "fixed",
+      "message": "Stops pending extension copies when their Space locks or disappears, so delayed prompts cannot reuse approval for another Space."
+    },
+    "agent-connect-more-commands": {
+      "category": "new",
+      "message": "Connect Hermes, Gemini CLI, GitHub Copilot CLI, OpenCode, Amp, VS Code and Qwen Code from Settings > Agents, and Pi now sees Ode’s tools directly."
+    },
+    "agent-connect-also-reaches": {
+      "category": "improved",
+      "message": "Settings > Agents says which other agents a Claude Code or GitHub Copilot CLI connection already reaches."
+    },
+    "agent-config-file-entries": {
+      "category": "new",
+      "message": "Add Ode to Cursor, Zed, Goose, Claude Desktop, Antigravity CLI and MiMo Code from Settings > Agents: copy the entry for the agent’s config file, open its folder, or install it in Cursor and Goose with one click."
+    },
+    "claude-code-user-scope": {
+      "category": "improved",
+      "message": "Connecting Claude Code from Settings registers Ode for every project, not only the folder Ode was started from."
+    },
+    "device-store-read-failure-keeps-records": {
+      "category": "fixed",
+      "message": "Keeps this device’s saved windows, site permissions, shortcuts, tab groups and download records when they can’t be read at launch, instead of replacing them with empty ones."
+    },
+    "same-name-downloads-both-land": {
+      "category": "fixed",
+      "message": "Two downloads with the same name both finish, the second under a numbered name, and a download whose file can’t be moved into place keeps the file instead of discarding it."
+    },
+    "command-bar-conversion-thousands-separators": {
+      "category": "fixed",
+      "message": "Command Bar conversions read thousands separators, so “1,000 km in miles” converts one thousand kilometers."
+    },
+    "command-bar-ranking-names-and-picks": {
+      "category": "improved",
+      "message": "Results you picked before come first in the Command Bar, and sites match by their names."
+    },
+    "sleeping-tabs-sooner-with-recent-tabs-protected": {
+      "category": "improved",
+      "message": "Tabs sleep after 15 minutes instead of 30, the five tabs you looked at most recently stay loaded, and tabs in a Space no window shows sleep after half the time."
+    },
+    "call-sites-open-in-chromium": {
+      "category": "improved",
+      "message": "Google Meet, Microsoft Teams and Slack open in Chromium by default, so a call can share a tab with its sound; the rules appear under Website rules in Settings > Engines and can be removed like any other."
+    },
+    "command-bar-questions-search-unless-an-answer-fits": {
+      "category": "fixed",
+      "message": "General questions and searches in the Command Bar, such as “how long should I boil an egg”, search the web instead of leading with a Help answer that shares only a word with them."
+    },
+    "command-bar-commands-lead-over-help": {
+      "category": "fixed",
+      "message": "Typing a command’s name in the Command Bar, such as “duplicate tab” or “close this window”, puts that command first, ahead of the Help answer about it."
+    },
+    "tidy-open-tabs-keeps-duplicates-when-model-fails": {
+      "category": "fixed",
+      "message": "When the model can’t group your tabs, Tidy Open Tabs still offers to close duplicate tabs and says why in a plain sentence instead of showing a system error."
+    },
+    "ad-blocking-settings-levels": {
+      "category": "new",
+      "message": "Ad Blocking has its own page in Settings: choose Off, Balanced or Strict, add filter lists and your own rules, hide part of a page with Block Element, and see the sites where blocking is off. Chromium and WebKit pages use the same blocker, so Ode no longer adds uBlock Origin Lite to new Spaces."
+    },
+    "sub-spaces-share-sign-ins": {
+      "category": "new",
+      "message": "Sub-Spaces let several Spaces share one set of sign-ins, history, passwords and extensions while each keeps its own tabs and look. Arc and Zen profiles import as Sub-Space groups."
+    },
+    "clear-site-cookies-and-website-data": {
+      "category": "new",
+      "message": "Clear one site's cookies or cache from Site Controls, see and remove each Space's website data, and clear browsing data by time range in Settings."
+    },
+    "chromium-private-web-store-extensions": {
+      "category": "new",
+      "message": "Install private and unlisted Chrome Web Store extensions on Chromium pages."
+    },
+    "chromium-passkeys-phone-and-touch-id": {
+      "category": "improved",
+      "message": "Chromium pages offer a phone or security key when a passkey isn't on this Mac, and offer Touch ID to sites that check for it first."
+    },
+    "quick-window-browser-controls": {
+      "category": "improved",
+      "message": "Quick Windows have Back, Forward, Site Controls and the Space's pinned extensions, and open from any app with their shortcut."
+    },
+    "recent-tabs-control-tab": {
+      "category": "new",
+      "message": "Holding Control-Tab shows your recent tabs to switch between, with a Split View counted as one tab."
+    },
+    "shortcuts-choose-who-gets-the-keys": {
+      "category": "improved",
+      "message": "Each shortcut in Settings > Shortcuts says who gets its keys when a website uses them too: Ode, the website, or both, where pressing them again right away runs Ode's command."
+    },
+    "agents-ask-before-windows-and-stop-all": {
+      "category": "new",
+      "message": "Ode asks before an agent opens a window, Stop All Agents in Settings > Agents ends every connection at once, and agents can search history, read a page's text and answer its dialogs. Activity lists every call they make."
+    },
+    "full-screen-tab-close-keeps-ode-open": {
+      "category": "fixed",
+      "message": "Closing a tab that is full screen no longer quits Ode, and pages stay full screen as they move within themselves."
+    },
+    "settings-smooth-with-many-sites": {
+      "category": "fixed",
+      "message": "Settings stays smooth with hundreds of saved sites and passwords."
+    },
+    "chromium-engine-121204cb2fda79a1": {
+      "category": "internal",
+      "message": "Adopt the published Chromium engine 121204cb2fda79a1, its content filter and the core contract they bind."
+    },
+    "saved-passwords-not-rewritten-when-unchanged": {
+      "category": "fixed",
+      "message": "Saved passwords are no longer rewritten when nothing changed."
+    },
+    "device-store-writes-by-part": {
+      "category": "internal",
+      "message": "Write the device store's parts from one table of parts, saving the same data as before."
+    },
+    "filing-tabs-in-named-steps": {
+      "category": "internal",
+      "message": "File tabs into folders through separate checks for the target, the tabs that move and where they land, with the same results."
+    },
+    "utility-list-sections-in-steps": {
+      "category": "internal",
+      "message": "Prepare History, Downloads and Archive sections in separate steps for matching, grouping by site and grouping by time, with the same sections."
+    },
+    "palette-preferences-decoded-in-parts": {
+      "category": "internal",
+      "message": "Read stored command bar preferences through separate readers for result kinds and the Space trigger, with the same results."
+    },
+    "harness-commands-by-purpose": {
+      "category": "internal",
+      "message": "Answer test harness commands from tables grouped by purpose instead of one long switch, with the same replies."
+    },
+    "import-overflow-in-one-place": {
+      "category": "internal",
+      "message": "Decide where imported pinned tabs past the limit go in one place for both import paths, with the same folders and tabs."
+    },
+    "fuzzy-alignment-in-steps": {
+      "category": "internal",
+      "message": "Score fuzzy matches through separate steps for the forward scan, one-letter queries and each matching cell, with the same scores and speed."
+    },
+    "history-writer-in-steps": {
+      "category": "internal",
+      "message": "Write browsing history through separate steps for taking queued writes and writing them, with the same retries and announcements."
+    },
+    "complexity-pass-named-steps": {
+      "category": "internal",
+      "message": "Nineteen long or branching functions across the core, the sidebar, Spaces and the release scripts are split into named steps with the same behaviour."
+    },
+    "agent-files-kept-when-unreadable": {
+      "category": "fixed",
+      "message": "An agent grants or activity file that can’t be read is kept aside under a dated name and reported, instead of being replaced by an empty one."
+    },
+    "one-site-rule-and-core-filenames": {
+      "category": "internal",
+      "message": "One rule names a page’s site for Boosts, backgrounds and blocked-load counts, the core names downloaded files, and refused background core calls are logged."
+    },
+    "settings-search-every-word": {
+      "category": "improved",
+      "message": "Settings search finds pages that hold every word you type, even when the words aren’t next to each other."
+    },
+    "structural-seams-shared-owners": {
+      "category": "internal",
+      "message": "Text folding, Command Bar emphasis, copied browser databases, launch facts, colour contrast, the device store and shared test and script helpers each have one owner."
+    },
+    "command-bar-ignores-accents": {
+      "category": "improved",
+      "message": "The Command Bar ignores accents, so typing “cafe” finds and highlights “Café”, and “resume” finds “Résumé”."
+    },
+    "new-tab-opens-a-window": {
+      "category": "fixed",
+      "message": "New Tab opens a window with the Command Bar when no browser window is open, instead of doing nothing."
+    },
+    "hangs-name-what-was-happening": {
+      "category": "internal",
+      "message": "A hang is logged with its time, its length and what was in flight, and a launch that finds a session difference says which tabs moved, appeared or went missing."
+    },
+    "sidebar-input-and-edge-recovery": {
+      "category": "fixed",
+      "message": "Sidebar controls and folder icons keep their correct behavior at the window edge and after changing Spaces."
+    },
+    "onboarding-import-review-and-practice": {
+      "category": "improved",
+      "message": "Review imported Spaces before finishing setup, keep your draft when going back, and practice browser shortcuts in a separate session."
+    },
+    "sidebar-keyboard-and-command-bar-scroll": {
+      "category": "improved",
+      "message": "Show and hide the sidebar immediately with Command-S, and scroll its tabs while the Command Bar stays open."
+    },
+    "continuous-space-window-canvas": {
+      "category": "improved",
+      "message": "The docked sidebar and window frame share one continuous Space background, with a subtly darker floating sidebar."
+    },
+    "top-address-command-bar-and-placement": {
+      "category": "improved",
+      "message": "Edit or copy the current address from the top bar, and use Command-Option-Shift with Left, Right or Up to place tabs."
+    },
+    "sidebar-library-navigation": {
+      "category": "improved",
+      "message": "Move directly between Downloads, History and Archive in the sidebar, then return to your tabs without losing your page."
+    },
+    "quiet-inline-update-controls": {
+      "category": "improved",
+      "message": "A compact Ode Update Available notice expands to show automatic updates and the action for the current update state."
+    },
+    "command-bar-native-translation": {
+      "category": "new",
+      "message": "Read and copy translations in the Command Bar using installed Apple languages, with a choice to download missing languages."
+    },
+    "ode-private-command-bar-answers": {
+      "category": "new",
+      "message": "Turn on Ode’s private on-device answers to see short explanations and rewrites as you type in the Command Bar."
+    },
+    "search-intelligence-and-website-clarity": {
+      "category": "improved",
+      "message": "Search settings distinguish Ode’s native intelligence from AI website shortcuts and show which tab organization model is available."
+    },
+    "address-bar-with-sidebar-tabs": {
+      "category": "new",
+      "message": "Keep the address above the page while using sidebar tabs, with a choice to keep it in the sidebar."
+    },
+    "mobile-search-widget-entry": {
+      "category": "new",
+      "message": "Open a fresh, focused search in Ode from a Home Screen or Lock Screen widget."
+    },
+    "command-bar-supported-actions": {
+      "category": "fixed",
+      "message": "Command Bar help offers actions available in your current browser, and opening a new search keeps its input ready."
+    },
+    "onboarding-live-appearance-and-small-lessons": {
+      "category": "improved",
+      "message": "Make Ode yours with live colors and a small, optional tab lesson, then start browsing."
+    },
+    "mobile-search-and-touch-layout": {
+      "category": "improved",
+      "message": "Search results leave more room for page titles on iPhone, with clearer touch controls and a quieter Start Page while typing."
+    },
+    "mobile-search-from-idle-passwords": {
+      "category": "fixed",
+      "message": "Opening a fresh search can close an idle password list while keeping unfinished password operations in place."
+    },
+    "native-feedback-email-and-copy": {
+      "category": "improved",
+      "message": "Write feedback in Ode, choose whether to include app details, and open an email draft or copy your report. Your draft stays available until Ode closes."
+    },
+    "2026-11-13-quiet-copy-welcome-cast": {
+      "category": "improved",
+      "message": "A warmer welcome, clearer settings, and quieter feedback on Mac and iPhone."
+    },
+    "2026-11-13-command-bar-page-surface": {
+      "category": "improved",
+      "message": "Cleaner search and a clearer Start Page frame."
+    }
+  }
+}

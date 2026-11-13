@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Frames</title>
+<style>body { margin: 0; } iframe { display: block; width: 600px; height: 240px; border: 4px solid #888; padding: 6px; margin: 30px 0 0 50px; }</style></head>
+<body>
+<h1>Checkout</h1>
+<iframe title="Sign in" srcdoc="<!doctype html><body style='margin:0'><h2>Sign in</h2><form><label>Email <input name='email' autocomplete='email'></label> <button type='button' onclick='document.body.dataset.clicked=&quot;yes&quot;'>Continue</button></form></body>"></iframe>
+<iframe title="Card" sandbox="allow-scripts" srcdoc="<!doctype html><body><label>Card number <input autocomplete='cc-number'></label></body>"></iframe>
+<iframe title="Pixel" srcdoc="<p>Tracker</p>" style="width:1px;height:1px;border:0;padding:0;margin:0"></iframe>
+<p>Total: 42 euros</p>
+</body>
+</html>

@@ -1,0 +1,32 @@
+import AppKit
+
+/// Hands a finished download to Finder: the windowed shell opens the file,
+/// shows it where it was saved, previews it in Quick Look, or copies it as
+/// Finder copies a file.
+struct BrowserWorkspaceFileOpener: BrowserFileDestinationOpener {
+    // MARK: - Actions - Opening
+
+    func openFile(_ fileURL: URL) {
+        NSWorkspace.shared.open(fileURL)
+    }
+
+    func revealFile(_ fileURL: URL) {
+        NSWorkspace.shared.activateFileViewerSelecting([
+            fileURL
+        ])
+    }
+
+    /// The windowed shell does not offer this destination.
+    func shareFile(_ fileURL: URL) {}
+
+    /// The windowed shell does not offer this destination.
+    func saveFileToFiles(_ fileURL: URL) {}
+
+    func copyFile(_ fileURL: URL) {
+        BrowserDownloadFileTransfer.copy(fileURL)
+    }
+
+    func previewFile(_ fileURL: URL) {
+        BrowserMacDownloadQuickLook.shared.toggle(fileURL)
+    }
+}

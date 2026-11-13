@@ -1,0 +1,306 @@
+import AppKit
+import Foundation
+
+/// Ode-owned actions placed around an engine's page menu: link and
+/// selection rows ahead of it, page rows after it. Engines keep their own
+/// editing and extension rows; these actions use Ode's Space and tab
+/// routing after the menu closes. Each row carries what it does to the page,
+/// given the page's navigation context and the tab it comes from.
+struct BrowserPageContextMenuAction {
+    // MARK: - Types
+
+    /// Which row this is, with what it does it to.
+    enum Kind: Equatable {
+        case search
+        case peek
+        case split
+        case keep(TabPlacement)
+        case space(UUID)
+        case quickWindow
+        case blockElement
+    }
+
+    /// Runs the row on the page, answering whether it did. A page without a
+    /// tab, as a Quick Window or Peek shows, has no navigation context.
+    typealias Perform =
+        @MainActor (BrowserPage, BrowserPageNavigationContext?, BrowserTabRuntimeAssignment?) -> Bool
+
+    // MARK: - Variables
+
+    let kind: Kind
+    let title: String
+    let symbolName: String
+    let linkURL: URL?
+    let selectionText: String?
+    /// The Space a Space destination opens the link in, whose icon its row
+    /// shows; nil for every other row.
+    var space: BrowserSpaceIdentity?
+    let perform: Perform
+
+    var isSpaceDestination: Bool {
+        if case .space = kind { return true }
+        return false
+    }
+
+    /// Whether the row acts on the page rather than on a link or selection,
+    /// and so follows the engine's rows.
+    var isTrailing: Bool { kind == .blockElement }
+
+    // MARK: - Initializers
+
+    init(
+        kind: Kind, title: String, symbolName: String, linkURL: URL?, selectionText: String?,
+        space: BrowserSpaceIdentity? = nil, perform: @escaping Perform
+    ) {
+        self.kind = kind
+        self.title = title
+        self.symbolName = symbolName
+        self.linkURL = linkURL
+        self.selectionText = selectionText
+        self.space = space
+        self.perform = perform
+    }
+
+    // MARK: - Actions - Rows
+
+    /// Opens `linkURL` in a Quick Window in the session of `space`, another
+    /// Space of the window. Keep moves it into that Space as a tab.
+    @MainActor static func space(_ space: SpaceModel, opening linkURL: URL) -> BrowserPageContextMenuAction {
+        let id = space.id
+        return BrowserPageContextMenuAction(
+            kind: .space(id), title: space.settings.name, symbolName: "square.stack.3d.up", linkURL: linkURL,
+            selectionText: nil, space: space.identity
+        ) { page, _, source in
+            guard let source,
+                let space = page.linkDestinationHost.otherSpaces(from: source).first(where: { $0.id == id })
+            else { return false }
+            return page.openInQuickWindow(linkURL, in: space)
+        }
+    }
+
+    /// Opens `linkURL` in a Quick Window of its own, in the page's Space, from
+    /// a page without a tab, whose new-tab rows have no tab to open after.
+    static func quickWindow(_ linkURL: URL) -> BrowserPageContextMenuAction {
+        BrowserPageContextMenuAction(
+            kind: .quickWindow, title: String(localized: "Open Link in New Quick Window"),
+            symbolName: "macwindow.badge.plus", linkURL: linkURL, selectionText: nil
+        ) { page, _, _ in
+            page.openInQuickWindow(linkURL)
+        }
+    }
+
+    /// Opens `linkURL` in Peek over the page.
+    static func peek(_ linkURL: URL) -> BrowserPageContextMenuAction {
+        BrowserPageContextMenuAction(
+            kind: .peek, title: String(localized: "Open Link in Peek"), symbolName: "rectangle.on.rectangle",
+            linkURL: linkURL, selectionText: nil
+        ) { page, context, _ in
+            guard let context else { return false }
+            page.openPeek(
+                BrowserPeekRequest(
+                    url: linkURL, sourceTabID: context.tabID, sourceTitle: context.title,
+                    spaceAssignment: context.assignment, trigger: .contextMenu))
+            return true
+        }
+    }
+
+    /// Opens `linkURL` in a split view beside the page's tab.
+    static func split(_ linkURL: URL) -> BrowserPageContextMenuAction {
+        BrowserPageContextMenuAction(
+            kind: .split, title: String(localized: "Open Link in Split View"), symbolName: "rectangle.split.2x1",
+            linkURL: linkURL, selectionText: nil
+        ) { page, _, _ in
+            page.openLinkInSplitView(linkURL)
+            return true
+        }
+    }
+
+    /// Keeps the link in its source Space without opening it.
+    static func keep(
+        _ linkURL: URL, placement: TabPlacement, from expectedSource: BrowserTabRuntimeAssignment
+    ) -> BrowserPageContextMenuAction {
+        BrowserPageContextMenuAction(
+            kind: .keep(placement),
+            title: placement == .pinned ? String(localized: "Pin Link") : String(localized: "Save Link"),
+            symbolName: placement.symbol, linkURL: linkURL, selectionText: nil
+        ) { page, _, source in
+            guard let source, source == expectedSource else { return false }
+            return page.linkDestinationHost.keepLink(linkURL, from: source, placement: placement)
+        }
+    }
+
+    /// Starts the element picker on what the person right-clicked, to block
+    /// it on the page's site from now on.
+    static let blockElement = BrowserPageContextMenuAction(
+        kind: .blockElement, title: String(localized: "Block Element"), symbolName: "eye.slash", linkURL: nil,
+        selectionText: nil
+    ) { page, _, _ in
+        Task { await page.pickElementToBlock(fromContextMenu: true) }
+        return true
+    }
+
+    /// Searches for `selectionText` with the engine titled `engineTitle`.
+    static func search(_ selectionText: String, with engineTitle: String) -> BrowserPageContextMenuAction {
+        BrowserPageContextMenuAction(
+            kind: .search, title: String(localized: "Search with \(engineTitle)"), symbolName: "magnifyingglass",
+            linkURL: nil, selectionText: selectionText
+        ) { page, context, source in
+            guard let context, let source,
+                let search = page.linkDestinationHost.selectionSearch(for: selectionText, from: source)
+            else { return false }
+            return page.linkDestinationHost.openLink(search.url, from: source, in: context.assignment)
+        }
+    }
+}
+
+/// A page that puts Ode's rows in an engine's context menu and runs the one
+/// the person picks.
+@MainActor
+protocol BrowserPageContextMenuHost: AnyObject {
+    func contextMenuActions(linkURL: URL?, selectionText: String?) -> [BrowserPageContextMenuAction]
+    @discardableResult func performContextMenuAction(_ action: BrowserPageContextMenuAction) -> Bool
+}
+
+/// Ode's rows in an engine's context menu for one page: the other Spaces a
+/// link opens in grouped under one row, a separator between their groups, then the page's own rows, ahead of the
+/// engine's rows. A row runs only while the page's view is still in the window
+/// the menu opened in.
+@MainActor
+struct BrowserPageContextMenu {
+    // MARK: - Types
+
+    /// One row's action, which its menu item keeps and runs.
+    @MainActor
+    private final class Row: NSObject {
+        let action: BrowserPageContextMenuAction
+        weak var host: (any BrowserPageContextMenuHost)?
+        weak var view: NSView?
+        let windowNumber: Int?
+
+        init(_ action: BrowserPageContextMenuAction, host: any BrowserPageContextMenuHost, view: NSView) {
+            self.action = action
+            self.host = host
+            self.view = view
+            windowNumber = view.window?.windowNumber
+        }
+
+        /// Runs the row on the main queue's next turn, once the engine's menu
+        /// and the engine code that showed it have returned, while the page's
+        /// view is still in the window the menu opened in.
+        ///
+        /// The Objective-C name is spelled out: a method named `perform(_:)`
+        /// makes `#selector` pick NSObject's `performSelector:`, which sends
+        /// the menu item itself as a selector and raises.
+        @objc(runContextMenuRow:) func run(_ sender: NSMenuItem) {
+            Task { @MainActor in
+                guard let view, view.window?.windowNumber == windowNumber else { return }
+                host?.performContextMenuAction(action)
+            }
+        }
+    }
+
+    // MARK: - Variables
+
+    let actions: [BrowserPageContextMenuAction]
+    let host: any BrowserPageContextMenuHost
+    /// The page's view, whose window the menu opened in.
+    let view: NSView
+
+    // MARK: - Actions - Menu
+
+    /// Puts the rows ahead of what `menu` holds, with a separator between.
+    func insert(into menu: NSMenu) {
+        guard !actions.isEmpty else { return }
+        var items: [NSMenuItem] = []
+        let spaceActions = actions.filter(\.isSpaceDestination)
+        if !spaceActions.isEmpty {
+            let group = NSMenuItem(title: String(localized: "Open Link in"), action: nil, keyEquivalent: "")
+            group.image = NSImage(systemSymbolName: "square.stack.3d.up", accessibilityDescription: nil)
+            let submenu = NSMenu()
+            for (index, action) in spaceActions.enumerated() {
+                // The Spaces of one group browse with one profile; a separator
+                // stands where the next group begins.
+                if index > 0, action.space?.profileID != spaceActions[index - 1].space?.profileID {
+                    submenu.addItem(.separator())
+                }
+                submenu.addItem(item(for: action))
+            }
+            group.submenu = submenu
+            items.append(group)
+        }
+        items.append(contentsOf: actions.filter { !$0.isSpaceDestination && !$0.isTrailing }.map(item(for:)))
+        for (index, item) in items.enumerated() { menu.insertItem(item, at: index) }
+        if !items.isEmpty, menu.items.count > items.count { menu.insertItem(.separator(), at: items.count) }
+        let trailing = actions.filter(\.isTrailing).map(item(for:))
+        if !trailing.isEmpty, menu.items.last?.isSeparatorItem == false { menu.addItem(.separator()) }
+        for item in trailing { menu.addItem(item) }
+    }
+
+    private func item(for action: BrowserPageContextMenuAction) -> NSMenuItem {
+        let row = Row(action, host: host, view: view)
+        let item = NSMenuItem(title: action.title, action: #selector(Row.run(_:)), keyEquivalent: "")
+        item.target = row
+        // The menu item keeps its row alive.
+        item.representedObject = row
+        item.image =
+            action.space.flatMap { BrowserSpaceSymbolArtworkRenderer.shared.menuImage(for: $0) }
+            ?? NSImage(systemSymbolName: action.symbolName, accessibilityDescription: nil)
+        return item
+    }
+}
+
+extension BrowserPage: BrowserPageContextMenuHost {
+    func contextMenuActions(linkURL: URL?, selectionText: String?) -> [BrowserPageContextMenuAction] {
+        guard let context = navigationContext else {
+            guard let linkURL, ExternalWebLink.accepts(linkURL) else { return [] }
+            return [.quickWindow(linkURL)]
+        }
+        let source = BrowserTabRuntimeAssignment(
+            tabID: context.tabID, spaceID: context.spaceID,
+            profileID: context.assignment.profileID)
+        var actions: [BrowserPageContextMenuAction] = []
+
+        if let linkURL, ExternalWebLink.accepts(linkURL),
+            linkDestinationHost.canOpenLink(from: source)
+        {
+            for space in linkDestinationHost.otherSpaces(from: source) {
+                actions.append(.space(space, opening: linkURL))
+            }
+            actions.append(.keep(linkURL, placement: .saved, from: source))
+            actions.append(.keep(linkURL, placement: .pinned, from: source))
+            actions.append(.peek(linkURL))
+            if splitLinkHost.canOpenLink(context.tabID, context.assignment) {
+                actions.append(.split(linkURL))
+            }
+        }
+        if let selectionText,
+            let search = linkDestinationHost.selectionSearch(for: selectionText, from: source)
+        {
+            actions.append(.search(selectionText, with: search.engineTitle))
+        }
+        if canPickElementToBlock { actions.append(.blockElement) }
+        return actions
+    }
+
+    /// Whether the page's bridge can start the element picker: Ode blocks,
+    /// its engine blocks content and it shows a site on the web.
+    private var canPickElementToBlock: Bool {
+        cosmeticFilters?.blocksContent == true && pageEngine.registration.supports(.contentBlocking)
+            && ["http", "https"].contains(live.displayURL?.scheme?.lowercased() ?? "")
+    }
+
+    /// Runs a row the menu offered, while the page still offers it for the
+    /// same link or selection.
+    @discardableResult
+    func performContextMenuAction(_ action: BrowserPageContextMenuAction) -> Bool {
+        guard
+            contextMenuActions(linkURL: action.linkURL, selectionText: action.selectionText)
+                .contains(where: { $0.kind == action.kind })
+        else { return false }
+        let context = navigationContext
+        let source = context.map {
+            BrowserTabRuntimeAssignment(tabID: $0.tabID, spaceID: $0.spaceID, profileID: $0.assignment.profileID)
+        }
+        return action.perform(self, context, source)
+    }
+}

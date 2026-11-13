@@ -1,0 +1,154 @@
+using OdeCore.Contracts;
+using OdeCore.Domain;
+
+namespace OdeCore.Application;
+
+/// The icon an engine last reported for the document a page shows: the
+/// address it was found at and the color the page's theme puts behind it.
+/// The image bytes stay with the binding.
+internal sealed record PageIcon(string Url, TabIconAccent? Accent);
+
+/// What a page's engine reported at `At` that edits the Space the page lives
+/// in, as its sidebar shows it, and the history of the Space that keeps its
+/// records. The workspace's session applies each as one revision, or, while a
+/// transaction holds the session, once it ends, in the order they arrived.
+internal abstract record PageEdit(Guid PageId, Guid SpaceId, DateTimeOffset At) {
+    #region Abstract Methods
+
+    /// The Space after the edit, stamped `now`, which is `At` as the session
+    /// stores it, and the image it has the page's tab wear, or null when the
+    /// tab it edits is gone.
+    public abstract (SpaceState Space, SessionFaviconUpdate? Favicon)? Apply(SpaceState space, DateTimeOffset now);
+
+    /// What the edit tells readers of `workspaceId` beyond the session's own
+    /// changes.
+    public abstract IEnumerable<Change> Announced(Guid workspaceId);
+
+    #endregion
+
+    #region Actions - History
+
+    /// `history`, the history of the Space that keeps the page's records, with
+    /// what the edit records in it, stamped `now`, or null when it records
+    /// nothing there.
+    public virtual IReadOnlyList<HistoryEntryState>? Recorded(IReadOnlyList<HistoryEntryState> history, DateTimeOffset now) => null;
+
+    /// Hands what the edit recorded in `space`, the Space that keeps the
+    /// page's records as the edit left it at `now`, to the history this device
+    /// keeps beside the session.
+    public virtual void Keep(HistoryStore store, SpaceState space, DateTimeOffset now) { }
+
+    #endregion
+
+    #region Actions - Tabs
+
+    /// The Space with its tab at `index` replaced by `tab`, or the same Space
+    /// when the tab did not change. Every recorded navigation copies its
+    /// Space's tabs here, once.
+    protected static SpaceState Replacing(SpaceState space, int index, BrowserTab tab) {
+        var state = tab.State;
+        if (state == space.Tabs[index]) return space;
+        return space with { Tabs = [.. space.Tabs.Select((existing, position) => position == index ? state : existing)] };
+    }
+
+    protected static int IndexOf(SpaceState space, Guid tabId) {
+        for (var index = 0; index < space.Tabs.Count; index++)
+            if (space.Tabs[index].Id == tabId) return index;
+        return -1;
+    }
+
+    #endregion
+}
+
+/// A page's document finished loading at `Url`, titled `Title`. The page's tab,
+/// when it has one, shows the address and title and wears the document's icon
+/// when its icon follows the page; the Space's history holds a visit, which
+/// takes `VisitId` when the address has no entry yet.
+internal sealed record NavigationRecord(Guid PageId, Guid SpaceId, DateTimeOffset At, Guid? TabId, string Url, string Title,
+    PageIcon? Icon, Guid VisitId) : PageEdit(PageId, SpaceId, At) {
+    #region Actions - Editing
+
+    public override (SpaceState Space, SessionFaviconUpdate? Favicon)? Apply(SpaceState space, DateTimeOffset now) {
+        SessionFaviconUpdate? favicon = null;
+        if (TabId is { } tabId) {
+            var index = IndexOf(space, tabId);
+            if (index < 0) return null;
+            var tab = BrowserTab.Restore(space.Tabs[index]);
+            tab.ObserveAppearance(Url, Title);
+            // The icon belongs to the document, which now shows this address.
+            if (Icon is { } icon && tab.WearPageIcon(Url, icon.Accent)) favicon = new(tabId, Adopts: true, PageId);
+            space = Replacing(space, index, tab);
+        }
+        return (space, favicon);
+    }
+
+    /// The history holds a visit.
+    public override IReadOnlyList<HistoryEntryState>? Recorded(IReadOnlyList<HistoryEntryState> history, DateTimeOffset now) =>
+        HistoryEntryState.Visit(history, Url, Title, now, VisitId);
+
+    public override IEnumerable<Change> Announced(Guid workspaceId) => [new NavigationRecorded(PageId, workspaceId, SpaceId, TabId, Url)];
+
+    /// The visit, once the Space's history holds it as its newest entry; an
+    /// address history does not keep records nothing.
+    public override void Keep(HistoryStore store, SpaceState space, DateTimeOffset now) {
+        if (space.History.FirstOrDefault() is { } entry && entry.LastVisitedAt == now && entry.Url == new WebAddress(Url).Normalized)
+            store.Visit(space.Id, entry, now);
+    }
+
+    #endregion
+}
+
+/// A page whose document is recorded at `Url` gave it the title `Title`
+/// since. The page's tab, while it still shows that page, takes it, and so
+/// does the address's history entry when `Visit`, without another visit.
+internal sealed record TitleRecord(Guid PageId, Guid SpaceId, DateTimeOffset At, Guid? TabId, string Url, string Title, bool Visit)
+    : PageEdit(PageId, SpaceId, At) {
+    #region Actions - Editing
+
+    public override (SpaceState Space, SessionFaviconUpdate? Favicon)? Apply(SpaceState space, DateTimeOffset now) {
+        if (TabId is { } tabId) {
+            var index = IndexOf(space, tabId);
+            if (index < 0) return null;
+            var tab = BrowserTab.Restore(space.Tabs[index]);
+            // The tab may have been sent to another address since.
+            if (tab.Url is { } shown && new WebAddress(shown).IsSamePage(new WebAddress(Url))) {
+                tab.ObserveAppearance(url: null, Title);
+                space = Replacing(space, index, tab);
+            }
+        }
+        return (space, null);
+    }
+
+    /// The address's entry takes the title when `Visit`.
+    public override IReadOnlyList<HistoryEntryState>? Recorded(IReadOnlyList<HistoryEntryState> history, DateTimeOffset now) =>
+        Visit ? HistoryEntryState.Retitle(history, Url, Title) : null;
+
+    public override IEnumerable<Change> Announced(Guid workspaceId) => [];
+
+    /// The visit's new title, while the page settles.
+    public override void Keep(HistoryStore store, SpaceState space, DateTimeOffset now) {
+        if (Visit && Title.Length > 0 && new WebAddress(Url).Normalized is { } url) store.Retitle(space.Id, url, Title);
+    }
+
+    #endregion
+}
+
+/// A page whose document is recorded reported an icon for it, which its tab
+/// wears while it shows that page and its icon follows the page.
+internal sealed record IconAdoption(Guid PageId, Guid SpaceId, DateTimeOffset At, Guid TabId, PageIcon Icon)
+    : PageEdit(PageId, SpaceId, At) {
+    #region Actions - Editing
+
+    public override (SpaceState Space, SessionFaviconUpdate? Favicon)? Apply(SpaceState space, DateTimeOffset now) {
+        var index = IndexOf(space, TabId);
+        if (index < 0) return null;
+        var tab = BrowserTab.Restore(space.Tabs[index]);
+        if (tab.Url is not { } shown || !new WebAddress(shown).IsSamePage(new WebAddress(Icon.Url))
+            || !tab.WearPageIcon(Icon.Url, Icon.Accent)) return (space, null);
+        return (Replacing(space, index, tab), new(TabId, Adopts: true, PageId));
+    }
+
+    public override IEnumerable<Change> Announced(Guid workspaceId) => [];
+
+    #endregion
+}

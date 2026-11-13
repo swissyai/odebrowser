@@ -1,0 +1,3699 @@
+{
+ "about": "Space-name concepts for icon suggestions: the words that name each concept, then the SF Symbol names and emoji it suggests, best first. Written by hand; SpaceIconSuggestionTests checks every name and emoji against the catalogs.",
+ "concepts": [
+  {
+   "id": "work",
+   "terms": [
+    "work",
+    "job",
+    "office",
+    "career",
+    "business",
+    "company",
+    "corporate",
+    "day",
+    "professional",
+    "travail",
+    "arbeit",
+    "trabajo",
+    "lavoro",
+    "trabalho",
+    "bureau",
+    "büro",
+    "oficina",
+    "ufficio",
+    "escritório"
+   ],
+   "symbols": [
+    "briefcase",
+    "laptopcomputer",
+    "building.2",
+    "desktopcomputer",
+    "person.crop.rectangle",
+    "chart.bar"
+   ],
+   "emoji": [
+    "💼",
+    "💻",
+    "🏢",
+    "🖥",
+    "📊",
+    "👔"
+   ]
+  },
+  {
+   "id": "personal",
+   "terms": [
+    "personal",
+    "me",
+    "mine",
+    "myself",
+    "private",
+    "life",
+    "everyday",
+    "perso",
+    "personnel",
+    "persönlich",
+    "privat",
+    "privé",
+    "privado"
+   ],
+   "symbols": [
+    "person",
+    "house",
+    "heart",
+    "star",
+    "sparkles",
+    "leaf"
+   ],
+   "emoji": [
+    "🙂",
+    "🏠",
+    "❤",
+    "⭐",
+    "👤",
+    "🌱",
+    "✨"
+   ]
+  },
+  {
+   "id": "home",
+   "terms": [
+    "home",
+    "house",
+    "household",
+    "apartment",
+    "flat",
+    "family",
+    "maison",
+    "zuhause",
+    "casa",
+    "hogar"
+   ],
+   "symbols": [
+    "house",
+    "house.lodge",
+    "sofa",
+    "bed.double",
+    "key"
+   ],
+   "emoji": [
+    "🏠",
+    "🏡",
+    "🛋",
+    "🔑",
+    "🪴"
+   ]
+  },
+  {
+   "id": "travel",
+   "terms": [
+    "travel",
+    "trip",
+    "trips",
+    "vacation",
+    "holiday",
+    "holidays",
+    "journey",
+    "abroad",
+    "voyage",
+    "voyages",
+    "reise",
+    "reisen",
+    "viaje",
+    "viajes",
+    "viaggio",
+    "viagem",
+    "flights"
+   ],
+   "symbols": [
+    "airplane",
+    "suitcase",
+    "globe",
+    "map",
+    "beach.umbrella",
+    "mappin",
+    "tram",
+    "sailboat",
+    "car"
+   ],
+   "emoji": [
+    "✈",
+    "🧳",
+    "🌍",
+    "🗺",
+    "🏝",
+    "🧭",
+    "🚆",
+    "🏖"
+   ]
+  },
+  {
+   "id": "vacation",
+   "terms": [
+    "vacation",
+    "vacations",
+    "holiday",
+    "holidays",
+    "getaway",
+    "beach",
+    "summer",
+    "break",
+    "vacances",
+    "urlaub",
+    "vacaciones",
+    "vacanze",
+    "férias"
+   ],
+   "symbols": [
+    "beach.umbrella",
+    "sun.max",
+    "airplane",
+    "suitcase",
+    "sailboat"
+   ],
+   "emoji": [
+    "🏖",
+    "🏝",
+    "☀",
+    "🌴",
+    "✈",
+    "🧳",
+    "🍹"
+   ]
+  },
+  {
+   "id": "side project",
+   "terms": [
+    "side",
+    "project",
+    "projects",
+    "hobby",
+    "hobbies",
+    "maker",
+    "making",
+    "tinkering",
+    "weekend",
+    "build",
+    "builds",
+    "diy"
+   ],
+   "symbols": [
+    "hammer",
+    "wrench.and.screwdriver",
+    "lightbulb",
+    "sparkles",
+    "shippingbox"
+   ],
+   "emoji": [
+    "🛠",
+    "🔨",
+    "💡",
+    "🧪",
+    "🚀",
+    "🧩"
+   ]
+  },
+  {
+   "id": "project",
+   "terms": [
+    "project",
+    "projects",
+    "initiative",
+    "plan",
+    "plans",
+    "projet",
+    "projekt",
+    "proyecto",
+    "progetto",
+    "projeto"
+   ],
+   "symbols": [
+    "folder",
+    "checklist",
+    "list.bullet.rectangle",
+    "hammer",
+    "chart.bar"
+   ],
+   "emoji": [
+    "📁",
+    "🗂",
+    "📋",
+    "🛠",
+    "🎯"
+   ]
+  },
+  {
+   "id": "startup",
+   "terms": [
+    "startup",
+    "startups",
+    "founder",
+    "founders",
+    "company",
+    "venture",
+    "launch",
+    "business",
+    "idea"
+   ],
+   "symbols": [
+    "lightbulb",
+    "chart.line.uptrend.xyaxis",
+    "briefcase",
+    "building.2",
+    "flame"
+   ],
+   "emoji": [
+    "🚀",
+    "💡",
+    "📈",
+    "🦄",
+    "💼"
+   ]
+  },
+  {
+   "id": "music",
+   "terms": [
+    "music",
+    "songs",
+    "song",
+    "playlist",
+    "playlists",
+    "audio",
+    "band",
+    "concert",
+    "musique",
+    "musik",
+    "música",
+    "musica"
+   ],
+   "symbols": [
+    "music.note",
+    "music.note.list",
+    "headphones",
+    "guitars",
+    "pianokeys",
+    "hifispeaker"
+   ],
+   "emoji": [
+    "🎵",
+    "🎶",
+    "🎧",
+    "🎸",
+    "🎹",
+    "🎤"
+   ]
+  },
+  {
+   "id": "podcasts",
+   "terms": [
+    "podcast",
+    "podcasts",
+    "episodes",
+    "listening",
+    "radio",
+    "shows",
+    "audio",
+    "show"
+   ],
+   "symbols": [
+    "microphone",
+    "waveform",
+    "headphones",
+    "radio",
+    "antenna.radiowaves.left.and.right"
+   ],
+   "emoji": [
+    "🎙",
+    "🎧",
+    "📻",
+    "🎤"
+   ]
+  },
+  {
+   "id": "shopping",
+   "terms": [
+    "shopping",
+    "shop",
+    "shops",
+    "store",
+    "stores",
+    "buy",
+    "buying",
+    "purchases",
+    "wishlist",
+    "deals",
+    "cart",
+    "achats",
+    "einkaufen",
+    "compras",
+    "acquisti"
+   ],
+   "symbols": [
+    "cart",
+    "bag",
+    "storefront",
+    "creditcard",
+    "tag"
+   ],
+   "emoji": [
+    "🛒",
+    "🛍",
+    "🏬",
+    "💳",
+    "🏷"
+   ]
+  },
+  {
+   "id": "finance",
+   "terms": [
+    "finance",
+    "finances",
+    "money",
+    "banking",
+    "bank",
+    "budget",
+    "budgets",
+    "accounting",
+    "taxes",
+    "tax",
+    "invoices",
+    "expenses",
+    "investing",
+    "investments",
+    "stocks",
+    "argent",
+    "geld",
+    "dinero",
+    "soldi",
+    "dinheiro"
+   ],
+   "symbols": [
+    "dollarsign.circle",
+    "banknote",
+    "creditcard",
+    "chart.line.uptrend.xyaxis",
+    "building.columns",
+    "chart.pie"
+   ],
+   "emoji": [
+    "💰",
+    "💵",
+    "💳",
+    "🏦",
+    "📈",
+    "🧾"
+   ]
+  },
+  {
+   "id": "money",
+   "terms": [
+    "money",
+    "cash",
+    "savings",
+    "save",
+    "spending",
+    "wallet"
+   ],
+   "symbols": [
+    "banknote",
+    "dollarsign.circle",
+    "creditcard",
+    "wallet.bifold"
+   ],
+   "emoji": [
+    "💰",
+    "💵",
+    "💸",
+    "👛",
+    "🪙"
+   ]
+  },
+  {
+   "id": "crypto",
+   "terms": [
+    "crypto",
+    "cryptocurrency",
+    "bitcoin",
+    "ethereum",
+    "blockchain",
+    "web3",
+    "defi",
+    "tokens",
+    "wallet",
+    "nft"
+   ],
+   "symbols": [
+    "bitcoinsign.circle",
+    "link",
+    "cube",
+    "chart.line.uptrend.xyaxis",
+    "wallet.bifold"
+   ],
+   "emoji": [
+    "🪙",
+    "🔗",
+    "📈",
+    "💎"
+   ]
+  },
+  {
+   "id": "research",
+   "terms": [
+    "research",
+    "studies",
+    "study",
+    "papers",
+    "science",
+    "investigation",
+    "analysis",
+    "notes",
+    "recherche",
+    "forschung",
+    "investigación",
+    "ricerca",
+    "pesquisa"
+   ],
+   "symbols": [
+    "magnifyingglass",
+    "flask",
+    "atom",
+    "books.vertical",
+    "text.page.badge.magnifyingglass"
+   ],
+   "emoji": [
+    "🔬",
+    "🔍",
+    "🧪",
+    "📚",
+    "📑"
+   ]
+  },
+  {
+   "id": "science",
+   "terms": [
+    "science",
+    "lab",
+    "laboratory",
+    "chemistry",
+    "physics",
+    "biology",
+    "experiments"
+   ],
+   "symbols": [
+    "flask",
+    "atom",
+    "testtube.2",
+    "microbe"
+   ],
+   "emoji": [
+    "🧪",
+    "🔬",
+    "⚗",
+    "🧬",
+    "🔭"
+   ]
+  },
+  {
+   "id": "school",
+   "terms": [
+    "school",
+    "class",
+    "classes",
+    "course",
+    "courses",
+    "homework",
+    "college",
+    "university",
+    "uni",
+    "campus",
+    "education",
+    "école",
+    "schule",
+    "escuela",
+    "scuola",
+    "escola"
+   ],
+   "symbols": [
+    "graduationcap",
+    "studentdesk",
+    "book",
+    "backpack",
+    "pencil"
+   ],
+   "emoji": [
+    "🎓",
+    "🏫",
+    "📚",
+    "✏",
+    "🎒",
+    "📝"
+   ]
+  },
+  {
+   "id": "learning",
+   "terms": [
+    "learning",
+    "learn",
+    "study",
+    "studying",
+    "lessons",
+    "tutorials",
+    "skills",
+    "training"
+   ],
+   "symbols": [
+    "graduationcap",
+    "book",
+    "lightbulb",
+    "brain"
+   ],
+   "emoji": [
+    "📚",
+    "🎓",
+    "🧠",
+    "💡",
+    "✏"
+   ]
+  },
+  {
+   "id": "reading",
+   "terms": [
+    "reading",
+    "read",
+    "later",
+    "read-it-later",
+    "articles",
+    "longreads"
+   ],
+   "symbols": [
+    "book",
+    "books.vertical",
+    "eyeglasses",
+    "text.book.closed"
+   ],
+   "emoji": [
+    "📖",
+    "📚",
+    "👓",
+    "🔖"
+   ]
+  },
+  {
+   "id": "books",
+   "terms": [
+    "books",
+    "book",
+    "library",
+    "novels",
+    "literature",
+    "ebooks",
+    "livres",
+    "bücher",
+    "libros",
+    "libri",
+    "livros"
+   ],
+   "symbols": [
+    "books.vertical",
+    "book",
+    "text.book.closed",
+    "bookmark"
+   ],
+   "emoji": [
+    "📚",
+    "📖",
+    "📕",
+    "🔖"
+   ]
+  },
+  {
+   "id": "writing",
+   "terms": [
+    "writing",
+    "write",
+    "writer",
+    "drafts",
+    "blog",
+    "blogging",
+    "journal",
+    "essays",
+    "notes",
+    "words"
+   ],
+   "symbols": [
+    "pencil",
+    "square.and.pencil",
+    "text.document",
+    "text.quote"
+   ],
+   "emoji": [
+    "✍",
+    "✏",
+    "📝",
+    "🖋",
+    "📓"
+   ]
+  },
+  {
+   "id": "news",
+   "terms": [
+    "news",
+    "newspaper",
+    "headlines",
+    "press",
+    "media",
+    "current",
+    "events",
+    "journalism",
+    "nachrichten",
+    "noticias",
+    "notizie",
+    "notícias"
+   ],
+   "symbols": [
+    "newspaper",
+    "globe",
+    "text.alignleft",
+    "antenna.radiowaves.left.and.right"
+   ],
+   "emoji": [
+    "📰",
+    "🗞",
+    "🌐",
+    "📣"
+   ]
+  },
+  {
+   "id": "health",
+   "terms": [
+    "health",
+    "medical",
+    "doctor",
+    "wellness",
+    "wellbeing",
+    "medicine",
+    "care",
+    "santé",
+    "gesundheit",
+    "salud",
+    "salute",
+    "saúde"
+   ],
+   "symbols": [
+    "heart.text.square",
+    "cross.case",
+    "stethoscope",
+    "heart",
+    "pills"
+   ],
+   "emoji": [
+    "❤‍🩹",
+    "🩺",
+    "💊",
+    "🏥",
+    "🫀"
+   ]
+  },
+  {
+   "id": "fitness",
+   "terms": [
+    "fitness",
+    "gym",
+    "workout",
+    "workouts",
+    "exercise",
+    "training",
+    "running",
+    "sport",
+    "sports",
+    "health",
+    "run"
+   ],
+   "symbols": [
+    "figure.run",
+    "dumbbell",
+    "heart",
+    "figure.strengthtraining.traditional",
+    "bicycle"
+   ],
+   "emoji": [
+    "🏋",
+    "🏃",
+    "💪",
+    "🚴",
+    "🧘"
+   ]
+  },
+  {
+   "id": "food",
+   "terms": [
+    "food",
+    "eating",
+    "restaurants",
+    "restaurant",
+    "meals",
+    "eat",
+    "dining",
+    "nourriture",
+    "essen",
+    "comida",
+    "cibo"
+   ],
+   "symbols": [
+    "fork.knife",
+    "cup.and.saucer",
+    "carrot",
+    "takeoutbag.and.cup.and.straw"
+   ],
+   "emoji": [
+    "🍽",
+    "🍕",
+    "🍜",
+    "🥗",
+    "🍔"
+   ]
+  },
+  {
+   "id": "cooking",
+   "terms": [
+    "cooking",
+    "cook",
+    "recipes",
+    "recipe",
+    "kitchen",
+    "baking",
+    "meal",
+    "prep",
+    "cuisine",
+    "kochen",
+    "cocina",
+    "cucina",
+    "cozinha"
+   ],
+   "symbols": [
+    "frying.pan",
+    "fork.knife",
+    "carrot",
+    "birthday.cake"
+   ],
+   "emoji": [
+    "🍳",
+    "👩‍🍳",
+    "🍲",
+    "🥘",
+    "🔪"
+   ]
+  },
+  {
+   "id": "recipes",
+   "terms": [
+    "recipes",
+    "recipe",
+    "cookbook",
+    "dishes",
+    "meals"
+   ],
+   "symbols": [
+    "fork.knife",
+    "frying.pan",
+    "book",
+    "carrot"
+   ],
+   "emoji": [
+    "🍲",
+    "🥘",
+    "📖",
+    "🍳",
+    "🥗"
+   ]
+  },
+  {
+   "id": "coffee",
+   "terms": [
+    "coffee",
+    "cafe",
+    "café",
+    "tea",
+    "espresso"
+   ],
+   "symbols": [
+    "cup.and.saucer",
+    "mug"
+   ],
+   "emoji": [
+    "☕",
+    "🍵",
+    "🥐"
+   ]
+  },
+  {
+   "id": "gaming",
+   "terms": [
+    "gaming",
+    "games",
+    "game",
+    "video",
+    "gamer",
+    "play",
+    "esports",
+    "jeux",
+    "spiele",
+    "juegos",
+    "giochi",
+    "jogos"
+   ],
+   "symbols": [
+    "gamecontroller",
+    "arcade.stick",
+    "puzzlepiece",
+    "trophy"
+   ],
+   "emoji": [
+    "🎮",
+    "🕹",
+    "👾",
+    "🎲",
+    "🏆"
+   ]
+  },
+  {
+   "id": "design",
+   "terms": [
+    "design",
+    "designs",
+    "ui",
+    "ux",
+    "graphics",
+    "figma",
+    "art",
+    "visual",
+    "branding",
+    "creative"
+   ],
+   "symbols": [
+    "paintpalette",
+    "paintbrush",
+    "pencil.and.ruler",
+    "square.on.circle",
+    "swatchpalette"
+   ],
+   "emoji": [
+    "🎨",
+    "🖌",
+    "✏",
+    "📐",
+    "🖍"
+   ]
+  },
+  {
+   "id": "art",
+   "terms": [
+    "art",
+    "arts",
+    "drawing",
+    "painting",
+    "illustration",
+    "gallery",
+    "museum",
+    "artist"
+   ],
+   "symbols": [
+    "paintpalette",
+    "paintbrush",
+    "photo.artframe",
+    "scribble"
+   ],
+   "emoji": [
+    "🎨",
+    "🖼",
+    "🖌",
+    "🖍"
+   ]
+  },
+  {
+   "id": "development",
+   "terms": [
+    "development",
+    "dev",
+    "developer",
+    "code",
+    "coding",
+    "programming",
+    "software",
+    "engineering",
+    "github",
+    "git",
+    "repos",
+    "repo",
+    "terminal",
+    "hacking"
+   ],
+   "symbols": [
+    "chevron.left.forwardslash.chevron.right",
+    "curlybraces",
+    "keyboard",
+    "hammer",
+    "laptopcomputer"
+   ],
+   "emoji": [
+    "💻",
+    "🧑‍💻",
+    "⌨",
+    "🐛",
+    "🛠"
+   ]
+  },
+  {
+   "id": "photos",
+   "terms": [
+    "photos",
+    "photo",
+    "photography",
+    "pictures",
+    "pics",
+    "camera",
+    "images",
+    "instagram"
+   ],
+   "symbols": [
+    "camera",
+    "photo",
+    "photo.on.rectangle",
+    "camera.aperture"
+   ],
+   "emoji": [
+    "📷",
+    "📸",
+    "🖼",
+    "🌅"
+   ]
+  },
+  {
+   "id": "video",
+   "terms": [
+    "video",
+    "videos",
+    "movies",
+    "youtube",
+    "streaming",
+    "film",
+    "films",
+    "watch",
+    "watching"
+   ],
+   "symbols": [
+    "play.rectangle",
+    "film",
+    "tv",
+    "video"
+   ],
+   "emoji": [
+    "🎬",
+    "📺",
+    "🎥",
+    "🍿",
+    "▶"
+   ]
+  },
+  {
+   "id": "movies",
+   "terms": [
+    "movies",
+    "movie",
+    "films",
+    "film",
+    "cinema",
+    "watchlist",
+    "tv",
+    "shows",
+    "series"
+   ],
+   "symbols": [
+    "film",
+    "popcorn",
+    "tv",
+    "theatermasks"
+   ],
+   "emoji": [
+    "🎬",
+    "🍿",
+    "🎥",
+    "📽",
+    "🎞"
+   ]
+  },
+  {
+   "id": "family",
+   "terms": [
+    "family",
+    "families",
+    "parents",
+    "relatives",
+    "home",
+    "famille",
+    "familie",
+    "familia",
+    "famiglia",
+    "família"
+   ],
+   "symbols": [
+    "person.3",
+    "house",
+    "heart",
+    "figure.2.and.child.holdinghands"
+   ],
+   "emoji": [
+    "👨‍👩‍👧",
+    "🏡",
+    "❤",
+    "👪"
+   ]
+  },
+  {
+   "id": "friends",
+   "terms": [
+    "friends",
+    "friend",
+    "buddies",
+    "crew",
+    "pals",
+    "social",
+    "group"
+   ],
+   "symbols": [
+    "person.2",
+    "person.3",
+    "bubble.left.and.bubble.right",
+    "heart"
+   ],
+   "emoji": [
+    "👯",
+    "🧑‍🤝‍🧑",
+    "🎉",
+    "💬"
+   ]
+  },
+  {
+   "id": "kids",
+   "terms": [
+    "kids",
+    "children",
+    "child",
+    "baby",
+    "babies",
+    "school",
+    "parenting",
+    "toddler",
+    "enfants",
+    "kinder",
+    "niños",
+    "bambini",
+    "crianças"
+   ],
+   "symbols": [
+    "figure.and.child.holdinghands",
+    "teddybear",
+    "stroller",
+    "balloon"
+   ],
+   "emoji": [
+    "🧸",
+    "👶",
+    "🎈",
+    "🧒",
+    "🎨"
+   ]
+  },
+  {
+   "id": "pets",
+   "terms": [
+    "pets",
+    "pet",
+    "dog",
+    "dogs",
+    "cat",
+    "cats",
+    "puppy",
+    "kitten",
+    "animals",
+    "vet"
+   ],
+   "symbols": [
+    "pawprint",
+    "dog",
+    "cat",
+    "fish",
+    "bird"
+   ],
+   "emoji": [
+    "🐶",
+    "🐱",
+    "🐾",
+    "🐠",
+    "🐦"
+   ]
+  },
+  {
+   "id": "garden",
+   "terms": [
+    "garden",
+    "gardening",
+    "plants",
+    "plant",
+    "flowers",
+    "yard",
+    "outdoors",
+    "grow"
+   ],
+   "symbols": [
+    "leaf",
+    "tree",
+    "camera.macro",
+    "sprinkler"
+   ],
+   "emoji": [
+    "🌱",
+    "🪴",
+    "🌻",
+    "🌳",
+    "🌷"
+   ]
+  },
+  {
+   "id": "nature",
+   "terms": [
+    "nature",
+    "outdoors",
+    "hiking",
+    "camping",
+    "mountains",
+    "forest",
+    "wildlife"
+   ],
+   "symbols": [
+    "mountain.2",
+    "tree",
+    "leaf",
+    "tent"
+   ],
+   "emoji": [
+    "🏔",
+    "🌲",
+    "🍃",
+    "🏕",
+    "🌄"
+   ]
+  },
+  {
+   "id": "car",
+   "terms": [
+    "car",
+    "cars",
+    "auto",
+    "automotive",
+    "vehicle",
+    "driving",
+    "garage"
+   ],
+   "symbols": [
+    "car",
+    "steeringwheel",
+    "fuelpump",
+    "wrench.adjustable"
+   ],
+   "emoji": [
+    "🚗",
+    "🏎",
+    "🚙",
+    "🔧",
+    "⛽"
+   ]
+  },
+  {
+   "id": "sports",
+   "terms": [
+    "sports",
+    "sport",
+    "football",
+    "soccer",
+    "basketball",
+    "baseball",
+    "tennis",
+    "team",
+    "league",
+    "fantasy"
+   ],
+   "symbols": [
+    "sportscourt",
+    "soccerball",
+    "basketball",
+    "tennisball",
+    "trophy",
+    "figure.run"
+   ],
+   "emoji": [
+    "⚽",
+    "🏀",
+    "🏈",
+    "🎾",
+    "🏆"
+   ]
+  },
+  {
+   "id": "wedding",
+   "terms": [
+    "wedding",
+    "weddings",
+    "marriage",
+    "engagement",
+    "bride",
+    "groom",
+    "ceremony"
+   ],
+   "symbols": [
+    "heart",
+    "sparkles",
+    "gift",
+    "camera"
+   ],
+   "emoji": [
+    "💍",
+    "💒",
+    "💐",
+    "🥂",
+    "👰"
+   ]
+  },
+  {
+   "id": "social",
+   "terms": [
+    "social",
+    "media",
+    "twitter",
+    "x",
+    "instagram",
+    "facebook",
+    "reddit",
+    "community",
+    "feeds"
+   ],
+   "symbols": [
+    "bubble.left.and.bubble.right",
+    "person.2",
+    "heart",
+    "at"
+   ],
+   "emoji": [
+    "💬",
+    "👥",
+    "📱",
+    "🌐",
+    "❤"
+   ]
+  },
+  {
+   "id": "admin",
+   "terms": [
+    "admin",
+    "administration",
+    "paperwork",
+    "bills",
+    "documents",
+    "settings",
+    "chores",
+    "errands",
+    "bureaucracy"
+   ],
+   "symbols": [
+    "gearshape",
+    "folder",
+    "checklist",
+    "text.document",
+    "tray.full"
+   ],
+   "emoji": [
+    "🗂",
+    "📋",
+    "⚙",
+    "🧾",
+    "📎"
+   ]
+  },
+  {
+   "id": "clients",
+   "terms": [
+    "clients",
+    "client",
+    "customers",
+    "customer",
+    "accounts",
+    "agency",
+    "consulting",
+    "freelance"
+   ],
+   "symbols": [
+    "person.2",
+    "briefcase",
+    "person.crop.rectangle.stack",
+    "building.2"
+   ],
+   "emoji": [
+    "🤝",
+    "💼",
+    "👥",
+    "📇"
+   ]
+  },
+  {
+   "id": "job search",
+   "terms": [
+    "job",
+    "search",
+    "jobs",
+    "hunt",
+    "hunting",
+    "applications",
+    "resume",
+    "cv",
+    "interviews",
+    "hiring",
+    "careers"
+   ],
+   "symbols": [
+    "text.document",
+    "magnifyingglass",
+    "briefcase",
+    "person.crop.rectangle"
+   ],
+   "emoji": [
+    "🔎",
+    "📄",
+    "💼",
+    "🤝",
+    "📝"
+   ]
+  },
+  {
+   "id": "email",
+   "terms": [
+    "email",
+    "mail",
+    "inbox",
+    "gmail",
+    "outlook",
+    "newsletters"
+   ],
+   "symbols": [
+    "envelope",
+    "tray",
+    "envelope.open"
+   ],
+   "emoji": [
+    "✉",
+    "📧",
+    "📨",
+    "📥"
+   ]
+  },
+  {
+   "id": "calendar",
+   "terms": [
+    "calendar",
+    "schedule",
+    "meetings",
+    "agenda",
+    "events",
+    "planning"
+   ],
+   "symbols": [
+    "calendar",
+    "clock",
+    "calendar.badge.clock"
+   ],
+   "emoji": [
+    "📅",
+    "🗓",
+    "⏰"
+   ]
+  },
+  {
+   "id": "productivity",
+   "terms": [
+    "productivity",
+    "tasks",
+    "todo",
+    "todos",
+    "to-do",
+    "getting",
+    "things",
+    "done",
+    "gtd",
+    "focus"
+   ],
+   "symbols": [
+    "checklist",
+    "checkmark.circle",
+    "list.bullet",
+    "target"
+   ],
+   "emoji": [
+    "✅",
+    "📋",
+    "🎯",
+    "⏱"
+   ]
+  },
+  {
+   "id": "focus",
+   "terms": [
+    "focus",
+    "deep",
+    "work",
+    "concentration",
+    "flow"
+   ],
+   "symbols": [
+    "target",
+    "scope",
+    "moon",
+    "brain"
+   ],
+   "emoji": [
+    "🎯",
+    "🧘",
+    "🔕",
+    "🧠"
+   ]
+  },
+  {
+   "id": "ideas",
+   "terms": [
+    "ideas",
+    "idea",
+    "brainstorm",
+    "inspiration",
+    "notes",
+    "thoughts"
+   ],
+   "symbols": [
+    "lightbulb",
+    "sparkles",
+    "brain",
+    "bubble.left"
+   ],
+   "emoji": [
+    "💡",
+    "✨",
+    "🧠",
+    "💭"
+   ]
+  },
+  {
+   "id": "notes",
+   "terms": [
+    "notes",
+    "note",
+    "notebook",
+    "notion",
+    "journal"
+   ],
+   "symbols": [
+    "text.page",
+    "square.and.pencil",
+    "book.closed",
+    "text.document"
+   ],
+   "emoji": [
+    "🗒",
+    "📝",
+    "📓",
+    "📒"
+   ]
+  },
+  {
+   "id": "ai",
+   "terms": [
+    "ai",
+    "artificial",
+    "intelligence",
+    "machine",
+    "learning",
+    "ml",
+    "llm",
+    "chatgpt",
+    "claude",
+    "models",
+    "agents"
+   ],
+   "symbols": [
+    "brain",
+    "sparkles",
+    "cpu",
+    "wand.and.sparkles"
+   ],
+   "emoji": [
+    "🤖",
+    "🧠",
+    "✨",
+    "🪄"
+   ]
+  },
+  {
+   "id": "security",
+   "terms": [
+    "security",
+    "privacy",
+    "passwords",
+    "hacking",
+    "infosec",
+    "safe"
+   ],
+   "symbols": [
+    "lock.shield",
+    "lock",
+    "key",
+    "shield"
+   ],
+   "emoji": [
+    "🔒",
+    "🛡",
+    "🔑",
+    "🕵"
+   ]
+  },
+  {
+   "id": "cloud",
+   "terms": [
+    "cloud",
+    "servers",
+    "hosting",
+    "infrastructure",
+    "devops",
+    "aws"
+   ],
+   "symbols": [
+    "cloud",
+    "server.rack",
+    "externaldrive"
+   ],
+   "emoji": [
+    "☁",
+    "🖥",
+    "🗄"
+   ]
+  },
+  {
+   "id": "data",
+   "terms": [
+    "data",
+    "analytics",
+    "dashboards",
+    "metrics",
+    "charts",
+    "stats",
+    "statistics",
+    "reporting"
+   ],
+   "symbols": [
+    "chart.bar",
+    "chart.pie",
+    "chart.line.uptrend.xyaxis",
+    "tablecells"
+   ],
+   "emoji": [
+    "📊",
+    "📈",
+    "📉",
+    "🗃"
+   ]
+  },
+  {
+   "id": "marketing",
+   "terms": [
+    "marketing",
+    "growth",
+    "ads",
+    "advertising",
+    "campaigns",
+    "seo",
+    "brand"
+   ],
+   "symbols": [
+    "megaphone",
+    "chart.line.uptrend.xyaxis",
+    "target"
+   ],
+   "emoji": [
+    "📣",
+    "📈",
+    "🎯",
+    "📢"
+   ]
+  },
+  {
+   "id": "sales",
+   "terms": [
+    "sales",
+    "selling",
+    "deals",
+    "crm",
+    "pipeline",
+    "revenue"
+   ],
+   "symbols": [
+    "chart.line.uptrend.xyaxis",
+    "person.2",
+    "dollarsign.circle"
+   ],
+   "emoji": [
+    "🤝",
+    "💰",
+    "📈",
+    "📞"
+   ]
+  },
+  {
+   "id": "support",
+   "terms": [
+    "support",
+    "help",
+    "helpdesk",
+    "customer",
+    "tickets"
+   ],
+   "symbols": [
+    "questionmark.circle",
+    "lifepreserver",
+    "headphones",
+    "bubble.left"
+   ],
+   "emoji": [
+    "🛟",
+    "🎧",
+    "💬",
+    "🙋"
+   ]
+  },
+  {
+   "id": "legal",
+   "terms": [
+    "legal",
+    "law",
+    "lawyer",
+    "contracts",
+    "compliance"
+   ],
+   "symbols": [
+    "building.columns",
+    "scalemass",
+    "text.document"
+   ],
+   "emoji": [
+    "⚖",
+    "📜",
+    "🏛"
+   ]
+  },
+  {
+   "id": "government",
+   "terms": [
+    "government",
+    "politics",
+    "civic",
+    "city",
+    "taxes",
+    "elections"
+   ],
+   "symbols": [
+    "building.columns",
+    "flag"
+   ],
+   "emoji": [
+    "🏛",
+    "🗳",
+    "🇺🇳"
+   ]
+  },
+  {
+   "id": "church",
+   "terms": [
+    "church",
+    "faith",
+    "religion",
+    "worship",
+    "bible"
+   ],
+   "symbols": [
+    "book",
+    "cross",
+    "heart"
+   ],
+   "emoji": [
+    "⛪",
+    "🙏",
+    "✝",
+    "📖"
+   ]
+  },
+  {
+   "id": "meditation",
+   "terms": [
+    "meditation",
+    "mindfulness",
+    "yoga",
+    "calm",
+    "relax",
+    "breathing",
+    "mental",
+    "health"
+   ],
+   "symbols": [
+    "figure.mind.and.body",
+    "leaf",
+    "moon.stars",
+    "wind"
+   ],
+   "emoji": [
+    "🧘",
+    "🌿",
+    "🕯",
+    "🌙"
+   ]
+  },
+  {
+   "id": "sleep",
+   "terms": [
+    "sleep",
+    "bedtime",
+    "night",
+    "rest",
+    "dreams"
+   ],
+   "symbols": [
+    "moon.zzz",
+    "bed.double",
+    "moon.stars"
+   ],
+   "emoji": [
+    "😴",
+    "🌙",
+    "🛏",
+    "💤"
+   ]
+  },
+  {
+   "id": "weather",
+   "terms": [
+    "weather",
+    "forecast",
+    "climate"
+   ],
+   "symbols": [
+    "cloud.sun",
+    "sun.max",
+    "cloud.rain",
+    "thermometer.medium"
+   ],
+   "emoji": [
+    "🌤",
+    "☀",
+    "🌧",
+    "🌡"
+   ]
+  },
+  {
+   "id": "space",
+   "terms": [
+    "space",
+    "astronomy",
+    "stars",
+    "planets",
+    "nasa",
+    "rockets",
+    "universe"
+   ],
+   "symbols": [
+    "moon.stars",
+    "sparkles",
+    "globe.americas"
+   ],
+   "emoji": [
+    "🚀",
+    "🌌",
+    "🪐",
+    "🔭",
+    "🌙"
+   ]
+  },
+  {
+   "id": "hiking",
+   "terms": [
+    "hiking",
+    "hike",
+    "trails",
+    "trekking",
+    "climbing",
+    "mountains"
+   ],
+   "symbols": [
+    "figure.hiking",
+    "mountain.2",
+    "map",
+    "signpost.right"
+   ],
+   "emoji": [
+    "🥾",
+    "🏔",
+    "⛰",
+    "🗺"
+   ]
+  },
+  {
+   "id": "cycling",
+   "terms": [
+    "cycling",
+    "bike",
+    "biking",
+    "bicycle",
+    "bikes"
+   ],
+   "symbols": [
+    "bicycle",
+    "figure.outdoor.cycle"
+   ],
+   "emoji": [
+    "🚴",
+    "🚲"
+   ]
+  },
+  {
+   "id": "running",
+   "terms": [
+    "running",
+    "run",
+    "marathon",
+    "jogging"
+   ],
+   "symbols": [
+    "figure.run",
+    "shoe",
+    "stopwatch"
+   ],
+   "emoji": [
+    "🏃",
+    "👟",
+    "⏱"
+   ]
+  },
+  {
+   "id": "swimming",
+   "terms": [
+    "swimming",
+    "swim",
+    "pool",
+    "water"
+   ],
+   "symbols": [
+    "figure.pool.swim",
+    "drop"
+   ],
+   "emoji": [
+    "🏊",
+    "🌊",
+    "💧"
+   ]
+  },
+  {
+   "id": "beach",
+   "terms": [
+    "beach",
+    "ocean",
+    "sea",
+    "surf",
+    "surfing",
+    "coast"
+   ],
+   "symbols": [
+    "beach.umbrella",
+    "water.waves",
+    "sun.max"
+   ],
+   "emoji": [
+    "🏖",
+    "🌊",
+    "🏄",
+    "🐚"
+   ]
+  },
+  {
+   "id": "events",
+   "terms": [
+    "events",
+    "event",
+    "party",
+    "parties",
+    "celebration",
+    "tickets"
+   ],
+   "symbols": [
+    "party.popper",
+    "calendar",
+    "ticket"
+   ],
+   "emoji": [
+    "🎉",
+    "🎟",
+    "🥳",
+    "🎊"
+   ]
+  },
+  {
+   "id": "gifts",
+   "terms": [
+    "gifts",
+    "gift",
+    "presents",
+    "birthday",
+    "christmas",
+    "wishlist"
+   ],
+   "symbols": [
+    "gift",
+    "birthday.cake",
+    "heart"
+   ],
+   "emoji": [
+    "🎁",
+    "🎂",
+    "🎄",
+    "🛍"
+   ]
+  },
+  {
+   "id": "holidays",
+   "terms": [
+    "christmas",
+    "xmas",
+    "holiday",
+    "season",
+    "festive"
+   ],
+   "symbols": [
+    "gift",
+    "snowflake",
+    "sparkles"
+   ],
+   "emoji": [
+    "🎄",
+    "🎅",
+    "❄",
+    "🎁"
+   ]
+  },
+  {
+   "id": "real estate",
+   "terms": [
+    "real",
+    "estate",
+    "housing",
+    "apartments",
+    "rent",
+    "renting",
+    "mortgage",
+    "property",
+    "properties",
+    "moving"
+   ],
+   "symbols": [
+    "house",
+    "building.2",
+    "key"
+   ],
+   "emoji": [
+    "🏠",
+    "🏘",
+    "🔑",
+    "📦"
+   ]
+  },
+  {
+   "id": "moving",
+   "terms": [
+    "moving",
+    "move",
+    "relocation",
+    "boxes"
+   ],
+   "symbols": [
+    "shippingbox",
+    "truck.box",
+    "house"
+   ],
+   "emoji": [
+    "📦",
+    "🚚",
+    "🏠"
+   ]
+  },
+  {
+   "id": "renovation",
+   "terms": [
+    "renovation",
+    "renovating",
+    "remodel",
+    "construction",
+    "repairs",
+    "fixing",
+    "home",
+    "improvement"
+   ],
+   "symbols": [
+    "hammer",
+    "wrench.and.screwdriver",
+    "paintbrush.pointed",
+    "house"
+   ],
+   "emoji": [
+    "🔨",
+    "🛠",
+    "🏗",
+    "🎨"
+   ]
+  },
+  {
+   "id": "cars",
+   "terms": [
+    "cars",
+    "racing",
+    "formula",
+    "1",
+    "f1",
+    "motorsport"
+   ],
+   "symbols": [
+    "car.side",
+    "flag.pattern.checkered",
+    "steeringwheel"
+   ],
+   "emoji": [
+    "🏎",
+    "🏁",
+    "🚗"
+   ]
+  },
+  {
+   "id": "bikes",
+   "terms": [
+    "motorcycle",
+    "motorcycles",
+    "motorbike"
+   ],
+   "symbols": [
+    "bicycle"
+   ],
+   "emoji": [
+    "🏍",
+    "🛵"
+   ]
+  },
+  {
+   "id": "boats",
+   "terms": [
+    "boats",
+    "boating",
+    "sailing",
+    "yacht"
+   ],
+   "symbols": [
+    "sailboat",
+    "ferry",
+    "water.waves"
+   ],
+   "emoji": [
+    "⛵",
+    "🚤",
+    "🌊"
+   ]
+  },
+  {
+   "id": "aviation",
+   "terms": [
+    "aviation",
+    "planes",
+    "pilot",
+    "flying",
+    "flights"
+   ],
+   "symbols": [
+    "airplane",
+    "airplane.departure"
+   ],
+   "emoji": [
+    "✈",
+    "🛫",
+    "🛩"
+   ]
+  },
+  {
+   "id": "trains",
+   "terms": [
+    "trains",
+    "rail",
+    "railway",
+    "commute",
+    "transit"
+   ],
+   "symbols": [
+    "tram",
+    "train.side.front.car"
+   ],
+   "emoji": [
+    "🚆",
+    "🚇",
+    "🚉"
+   ]
+  },
+  {
+   "id": "commute",
+   "terms": [
+    "commute",
+    "transit",
+    "bus",
+    "subway",
+    "metro",
+    "transport"
+   ],
+   "symbols": [
+    "bus",
+    "tram",
+    "car"
+   ],
+   "emoji": [
+    "🚌",
+    "🚇",
+    "🚗"
+   ]
+  },
+  {
+   "id": "photography",
+   "terms": [
+    "photography",
+    "photographer",
+    "lenses",
+    "cameras",
+    "editing",
+    "lightroom"
+   ],
+   "symbols": [
+    "camera",
+    "camera.aperture",
+    "photo"
+   ],
+   "emoji": [
+    "📷",
+    "📸",
+    "🎞"
+   ]
+  },
+  {
+   "id": "film",
+   "terms": [
+    "filmmaking",
+    "film",
+    "making",
+    "videography",
+    "editing",
+    "production"
+   ],
+   "symbols": [
+    "film",
+    "video",
+    "movieclapper"
+   ],
+   "emoji": [
+    "🎬",
+    "🎥",
+    "🎞"
+   ]
+  },
+  {
+   "id": "streaming",
+   "terms": [
+    "streaming",
+    "twitch",
+    "live",
+    "stream"
+   ],
+   "symbols": [
+    "dot.radiowaves.left.and.right",
+    "play.tv",
+    "video"
+   ],
+   "emoji": [
+    "📺",
+    "🎥",
+    "🔴"
+   ]
+  },
+  {
+   "id": "anime",
+   "terms": [
+    "anime",
+    "manga",
+    "comics"
+   ],
+   "symbols": [
+    "book",
+    "sparkles",
+    "tv"
+   ],
+   "emoji": [
+    "📺",
+    "📚",
+    "🎌",
+    "💥"
+   ]
+  },
+  {
+   "id": "comics",
+   "terms": [
+    "comics",
+    "comic",
+    "graphic",
+    "novels"
+   ],
+   "symbols": [
+    "book",
+    "text.bubble"
+   ],
+   "emoji": [
+    "💥",
+    "📚",
+    "🦸"
+   ]
+  },
+  {
+   "id": "collecting",
+   "terms": [
+    "collecting",
+    "collections",
+    "collectibles",
+    "cards"
+   ],
+   "symbols": [
+    "square.stack",
+    "star"
+   ],
+   "emoji": [
+    "🃏",
+    "🏆",
+    "📦"
+   ]
+  },
+  {
+   "id": "fashion",
+   "terms": [
+    "fashion",
+    "clothes",
+    "clothing",
+    "style",
+    "outfits",
+    "wardrobe"
+   ],
+   "symbols": [
+    "tshirt",
+    "bag",
+    "hanger"
+   ],
+   "emoji": [
+    "👗",
+    "👕",
+    "👠",
+    "🧥",
+    "🕶"
+   ]
+  },
+  {
+   "id": "beauty",
+   "terms": [
+    "beauty",
+    "makeup",
+    "skincare",
+    "cosmetics"
+   ],
+   "symbols": [
+    "sparkles",
+    "heart"
+   ],
+   "emoji": [
+    "💄",
+    "💅",
+    "✨",
+    "🧴"
+   ]
+  },
+  {
+   "id": "hair",
+   "terms": [
+    "hair",
+    "haircut",
+    "salon"
+   ],
+   "symbols": [
+    "scissors"
+   ],
+   "emoji": [
+    "💇",
+    "✂"
+   ]
+  },
+  {
+   "id": "dating",
+   "terms": [
+    "dating",
+    "love",
+    "relationship",
+    "romance",
+    "partner"
+   ],
+   "symbols": [
+    "heart",
+    "heart.circle"
+   ],
+   "emoji": [
+    "❤",
+    "💕",
+    "💘",
+    "🌹"
+   ]
+  },
+  {
+   "id": "baby",
+   "terms": [
+    "baby",
+    "newborn",
+    "pregnancy",
+    "parenting",
+    "nursery"
+   ],
+   "symbols": [
+    "stroller",
+    "teddybear",
+    "heart"
+   ],
+   "emoji": [
+    "👶",
+    "🍼",
+    "🧸",
+    "🍼"
+   ]
+  },
+  {
+   "id": "pets dogs",
+   "terms": [
+    "dog",
+    "dogs",
+    "puppy",
+    "puppies"
+   ],
+   "symbols": [
+    "dog",
+    "pawprint"
+   ],
+   "emoji": [
+    "🐶",
+    "🐕",
+    "🐾"
+   ]
+  },
+  {
+   "id": "pets cats",
+   "terms": [
+    "cat",
+    "cats",
+    "kitten",
+    "kittens"
+   ],
+   "symbols": [
+    "cat",
+    "pawprint"
+   ],
+   "emoji": [
+    "🐱",
+    "🐈",
+    "🐾"
+   ]
+  },
+  {
+   "id": "fish",
+   "terms": [
+    "fish",
+    "aquarium",
+    "fishing"
+   ],
+   "symbols": [
+    "fish",
+    "water.waves"
+   ],
+   "emoji": [
+    "🐠",
+    "🎣",
+    "🐟"
+   ]
+  },
+  {
+   "id": "birds",
+   "terms": [
+    "birds",
+    "birding",
+    "bird",
+    "watching"
+   ],
+   "symbols": [
+    "bird"
+   ],
+   "emoji": [
+    "🐦",
+    "🦜",
+    "🪶"
+   ]
+  },
+  {
+   "id": "horses",
+   "terms": [
+    "horses",
+    "horse",
+    "riding",
+    "equestrian"
+   ],
+   "symbols": [
+    "figure.equestrian.sports"
+   ],
+   "emoji": [
+    "🐴",
+    "🏇"
+   ]
+  },
+  {
+   "id": "farm",
+   "terms": [
+    "farm",
+    "farming",
+    "agriculture"
+   ],
+   "symbols": [
+    "leaf",
+    "tree",
+    "carrot"
+   ],
+   "emoji": [
+    "🚜",
+    "🌾",
+    "🐄"
+   ]
+  },
+  {
+   "id": "wine",
+   "terms": [
+    "wine",
+    "wines",
+    "drinks",
+    "bar",
+    "cocktails"
+   ],
+   "symbols": [
+    "wineglass"
+   ],
+   "emoji": [
+    "🍷",
+    "🍸",
+    "🥂",
+    "🍾"
+   ]
+  },
+  {
+   "id": "beer",
+   "terms": [
+    "beer",
+    "brewing",
+    "breweries"
+   ],
+   "symbols": [
+    "mug"
+   ],
+   "emoji": [
+    "🍺",
+    "🍻"
+   ]
+  },
+  {
+   "id": "baking",
+   "terms": [
+    "baking",
+    "bake",
+    "bread",
+    "cakes",
+    "pastry"
+   ],
+   "symbols": [
+    "birthday.cake",
+    "oven"
+   ],
+   "emoji": [
+    "🥐",
+    "🍰",
+    "🍞",
+    "🧁"
+   ]
+  },
+  {
+   "id": "groceries",
+   "terms": [
+    "groceries",
+    "grocery",
+    "supermarket",
+    "meal",
+    "planning"
+   ],
+   "symbols": [
+    "cart",
+    "carrot",
+    "basket"
+   ],
+   "emoji": [
+    "🛒",
+    "🥕",
+    "🥦",
+    "🧺"
+   ]
+  },
+  {
+   "id": "restaurants",
+   "terms": [
+    "restaurants",
+    "dining",
+    "out",
+    "reservations"
+   ],
+   "symbols": [
+    "fork.knife",
+    "wineglass"
+   ],
+   "emoji": [
+    "🍽",
+    "🍷",
+    "🍝"
+   ]
+  },
+  {
+   "id": "health insurance",
+   "terms": [
+    "insurance",
+    "claims",
+    "policies"
+   ],
+   "symbols": [
+    "cross.case",
+    "shield",
+    "text.document"
+   ],
+   "emoji": [
+    "🛡",
+    "📄",
+    "🩺"
+   ]
+  },
+  {
+   "id": "doctor",
+   "terms": [
+    "doctor",
+    "appointments",
+    "clinic",
+    "hospital"
+   ],
+   "symbols": [
+    "stethoscope",
+    "cross.case"
+   ],
+   "emoji": [
+    "🩺",
+    "🏥",
+    "💊"
+   ]
+  },
+  {
+   "id": "dentist",
+   "terms": [
+    "dentist",
+    "teeth",
+    "dental"
+   ],
+   "symbols": [
+    "mouth"
+   ],
+   "emoji": [
+    "🦷",
+    "😁"
+   ]
+  },
+  {
+   "id": "therapy",
+   "terms": [
+    "therapy",
+    "therapist",
+    "mental",
+    "health",
+    "counseling"
+   ],
+   "symbols": [
+    "brain.head.profile",
+    "heart",
+    "bubble.left"
+   ],
+   "emoji": [
+    "🧠",
+    "💬",
+    "🛋"
+   ]
+  },
+  {
+   "id": "diet",
+   "terms": [
+    "diet",
+    "nutrition",
+    "calories",
+    "meal",
+    "plan"
+   ],
+   "symbols": [
+    "carrot",
+    "fork.knife",
+    "chart.bar"
+   ],
+   "emoji": [
+    "🥗",
+    "🍎",
+    "🥑"
+   ]
+  },
+  {
+   "id": "habits",
+   "terms": [
+    "habits",
+    "routines",
+    "tracking",
+    "streaks"
+   ],
+   "symbols": [
+    "checkmark.circle",
+    "calendar",
+    "repeat"
+   ],
+   "emoji": [
+    "✅",
+    "📅",
+    "🔁"
+   ]
+  },
+  {
+   "id": "goals",
+   "terms": [
+    "goals",
+    "goal",
+    "objectives",
+    "okrs",
+    "targets",
+    "resolutions"
+   ],
+   "symbols": [
+    "target",
+    "flag",
+    "star"
+   ],
+   "emoji": [
+    "🎯",
+    "🏁",
+    "⭐",
+    "🏆"
+   ]
+  },
+  {
+   "id": "journal",
+   "terms": [
+    "journal",
+    "journaling",
+    "diary",
+    "daily"
+   ],
+   "symbols": [
+    "book.closed",
+    "pencil",
+    "square.and.pencil"
+   ],
+   "emoji": [
+    "📓",
+    "✍",
+    "📔"
+   ]
+  },
+  {
+   "id": "blog",
+   "terms": [
+    "blog",
+    "blogging",
+    "posts",
+    "newsletter",
+    "substack"
+   ],
+   "symbols": [
+    "text.bubble",
+    "square.and.pencil",
+    "newspaper"
+   ],
+   "emoji": [
+    "📝",
+    "📰",
+    "✍"
+   ]
+  },
+  {
+   "id": "open source",
+   "terms": [
+    "open",
+    "source",
+    "oss",
+    "contributions",
+    "github"
+   ],
+   "symbols": [
+    "chevron.left.forwardslash.chevron.right",
+    "person.3",
+    "heart"
+   ],
+   "emoji": [
+    "🧑‍💻",
+    "🌍",
+    "🤝"
+   ]
+  },
+  {
+   "id": "devops",
+   "terms": [
+    "devops",
+    "deployments",
+    "ci",
+    "cd",
+    "pipelines",
+    "kubernetes",
+    "docker",
+    "infrastructure"
+   ],
+   "symbols": [
+    "server.rack",
+    "shippingbox",
+    "gearshape"
+   ],
+   "emoji": [
+    "🚀",
+    "📦",
+    "⚙",
+    "🐳"
+   ]
+  },
+  {
+   "id": "hardware",
+   "terms": [
+    "hardware",
+    "electronics",
+    "arduino",
+    "raspberry",
+    "pi",
+    "circuits"
+   ],
+   "symbols": [
+    "cpu",
+    "memorychip",
+    "bolt"
+   ],
+   "emoji": [
+    "🔌",
+    "🔋",
+    "🧰",
+    "💾"
+   ]
+  },
+  {
+   "id": "3d printing",
+   "terms": [
+    "3d",
+    "printing",
+    "printer",
+    "models",
+    "cad"
+   ],
+   "symbols": [
+    "cube",
+    "printer"
+   ],
+   "emoji": [
+    "🧊",
+    "🖨",
+    "📐"
+   ]
+  },
+  {
+   "id": "woodworking",
+   "terms": [
+    "woodworking",
+    "wood",
+    "carpentry"
+   ],
+   "symbols": [
+    "hammer",
+    "ruler"
+   ],
+   "emoji": [
+    "🪚",
+    "🪵",
+    "🔨"
+   ]
+  },
+  {
+   "id": "crafts",
+   "terms": [
+    "crafts",
+    "craft",
+    "knitting",
+    "sewing"
+   ],
+   "symbols": [
+    "scissors",
+    "paintbrush"
+   ],
+   "emoji": [
+    "🧶",
+    "🧵",
+    "✂",
+    "🪡"
+   ]
+  },
+  {
+   "id": "languages",
+   "terms": [
+    "languages",
+    "language",
+    "learning",
+    "spanish",
+    "french",
+    "german",
+    "japanese",
+    "duolingo"
+   ],
+   "symbols": [
+    "character.bubble",
+    "globe",
+    "textformat"
+   ],
+   "emoji": [
+    "🗣",
+    "🌐",
+    "🔤",
+    "📚"
+   ]
+  },
+  {
+   "id": "japan",
+   "terms": [
+    "japan",
+    "japanese",
+    "tokyo"
+   ],
+   "symbols": [
+    "globe.asia.australia"
+   ],
+   "emoji": [
+    "🇯🇵",
+    "🗾",
+    "🍣",
+    "🗻"
+   ]
+  },
+  {
+   "id": "history",
+   "terms": [
+    "history",
+    "historical",
+    "archives"
+   ],
+   "symbols": [
+    "building.columns",
+    "clock.arrow.trianglehead.counterclockwise.rotate.90",
+    "books.vertical"
+   ],
+   "emoji": [
+    "🏛",
+    "📜",
+    "⏳"
+   ]
+  },
+  {
+   "id": "math",
+   "terms": [
+    "math",
+    "maths",
+    "mathematics",
+    "calculus",
+    "statistics"
+   ],
+   "symbols": [
+    "function",
+    "sum"
+   ],
+   "emoji": [
+    "➗",
+    "📐",
+    "🧮",
+    "➕"
+   ]
+  },
+  {
+   "id": "philosophy",
+   "terms": [
+    "philosophy",
+    "ethics",
+    "ideas",
+    "thinking"
+   ],
+   "symbols": [
+    "brain.head.profile",
+    "book"
+   ],
+   "emoji": [
+    "🤔",
+    "📚",
+    "🏛"
+   ]
+  },
+  {
+   "id": "psychology",
+   "terms": [
+    "psychology",
+    "mind",
+    "behavior"
+   ],
+   "symbols": [
+    "brain.head.profile"
+   ],
+   "emoji": [
+    "🧠",
+    "💭"
+   ]
+  },
+  {
+   "id": "economics",
+   "terms": [
+    "economics",
+    "economy",
+    "markets"
+   ],
+   "symbols": [
+    "chart.line.uptrend.xyaxis",
+    "globe"
+   ],
+   "emoji": [
+    "📈",
+    "🌍",
+    "💹"
+   ]
+  },
+  {
+   "id": "politics",
+   "terms": [
+    "politics",
+    "elections",
+    "policy"
+   ],
+   "symbols": [
+    "building.columns",
+    "megaphone"
+   ],
+   "emoji": [
+    "🗳",
+    "🏛",
+    "📣"
+   ]
+  },
+  {
+   "id": "volunteering",
+   "terms": [
+    "volunteering",
+    "volunteer",
+    "nonprofit",
+    "charity",
+    "community"
+   ],
+   "symbols": [
+    "hand.raised",
+    "heart",
+    "person.3"
+   ],
+   "emoji": [
+    "🤝",
+    "❤",
+    "🙌"
+   ]
+  },
+  {
+   "id": "church community",
+   "terms": [
+    "community",
+    "neighborhood",
+    "local"
+   ],
+   "symbols": [
+    "person.3",
+    "house"
+   ],
+   "emoji": [
+    "🏘",
+    "👥",
+    "🤝"
+   ]
+  },
+  {
+   "id": "investing",
+   "terms": [
+    "investing",
+    "investment",
+    "stocks",
+    "portfolio",
+    "trading"
+   ],
+   "symbols": [
+    "chart.line.uptrend.xyaxis",
+    "dollarsign.circle",
+    "chart.pie"
+   ],
+   "emoji": [
+    "📈",
+    "💹",
+    "💰"
+   ]
+  },
+  {
+   "id": "taxes",
+   "terms": [
+    "taxes",
+    "tax",
+    "returns",
+    "irs",
+    "accounting"
+   ],
+   "symbols": [
+    "text.document",
+    "dollarsign.circle",
+    "percent"
+   ],
+   "emoji": [
+    "🧾",
+    "💸",
+    "📄"
+   ]
+  },
+  {
+   "id": "bills",
+   "terms": [
+    "bills",
+    "utilities",
+    "payments",
+    "subscriptions"
+   ],
+   "symbols": [
+    "text.document",
+    "creditcard",
+    "calendar"
+   ],
+   "emoji": [
+    "🧾",
+    "💳",
+    "📅"
+   ]
+  },
+  {
+   "id": "subscriptions",
+   "terms": [
+    "subscriptions",
+    "memberships",
+    "services"
+   ],
+   "symbols": [
+    "repeat",
+    "creditcard"
+   ],
+   "emoji": [
+    "🔁",
+    "💳"
+   ]
+  },
+  {
+   "id": "deals",
+   "terms": [
+    "deals",
+    "coupons",
+    "discounts",
+    "sales"
+   ],
+   "symbols": [
+    "tag",
+    "percent"
+   ],
+   "emoji": [
+    "🏷",
+    "💸"
+   ]
+  },
+  {
+   "id": "wishlist",
+   "terms": [
+    "wishlist",
+    "wants",
+    "wish",
+    "list"
+   ],
+   "symbols": [
+    "heart",
+    "star",
+    "gift"
+   ],
+   "emoji": [
+    "🎁",
+    "⭐",
+    "💝"
+   ]
+  },
+  {
+   "id": "tickets",
+   "terms": [
+    "tickets",
+    "concerts",
+    "shows",
+    "theater"
+   ],
+   "symbols": [
+    "ticket",
+    "theatermasks",
+    "music.microphone"
+   ],
+   "emoji": [
+    "🎟",
+    "🎭",
+    "🎤"
+   ]
+  },
+  {
+   "id": "theater",
+   "terms": [
+    "theater",
+    "theatre",
+    "drama",
+    "plays",
+    "acting"
+   ],
+   "symbols": [
+    "theatermasks"
+   ],
+   "emoji": [
+    "🎭",
+    "🎟"
+   ]
+  },
+  {
+   "id": "dance",
+   "terms": [
+    "dance",
+    "dancing",
+    "ballet"
+   ],
+   "symbols": [
+    "figure.dance",
+    "music.note"
+   ],
+   "emoji": [
+    "💃",
+    "🕺",
+    "🩰"
+   ]
+  },
+  {
+   "id": "chess",
+   "terms": [
+    "chess",
+    "board",
+    "games",
+    "boardgames"
+   ],
+   "symbols": [
+    "puzzlepiece",
+    "crown"
+   ],
+   "emoji": [
+    "♟",
+    "🎲"
+   ]
+  },
+  {
+   "id": "puzzles",
+   "terms": [
+    "puzzles",
+    "puzzle",
+    "crosswords",
+    "wordle"
+   ],
+   "symbols": [
+    "puzzlepiece"
+   ],
+   "emoji": [
+    "🧩",
+    "🔤"
+   ]
+  },
+  {
+   "id": "weather sports",
+   "terms": [
+    "ski",
+    "skiing",
+    "snowboarding",
+    "snow",
+    "winter"
+   ],
+   "symbols": [
+    "snowflake",
+    "figure.skiing.downhill",
+    "mountain.2"
+   ],
+   "emoji": [
+    "⛷",
+    "🏂",
+    "❄"
+   ]
+  },
+  {
+   "id": "golf",
+   "terms": [
+    "golf",
+    "golfing"
+   ],
+   "symbols": [
+    "figure.golf",
+    "flag"
+   ],
+   "emoji": [
+    "⛳",
+    "🏌"
+   ]
+  },
+  {
+   "id": "tennis",
+   "terms": [
+    "tennis",
+    "padel",
+    "pickleball"
+   ],
+   "symbols": [
+    "tennisball",
+    "figure.tennis"
+   ],
+   "emoji": [
+    "🎾"
+   ]
+  },
+  {
+   "id": "soccer",
+   "terms": [
+    "soccer",
+    "football",
+    "futbol",
+    "premier",
+    "league"
+   ],
+   "symbols": [
+    "soccerball",
+    "sportscourt"
+   ],
+   "emoji": [
+    "⚽",
+    "🥅"
+   ]
+  },
+  {
+   "id": "basketball",
+   "terms": [
+    "basketball",
+    "nba"
+   ],
+   "symbols": [
+    "basketball"
+   ],
+   "emoji": [
+    "🏀"
+   ]
+  },
+  {
+   "id": "american football",
+   "terms": [
+    "american",
+    "football",
+    "nfl"
+   ],
+   "symbols": [
+    "american.football"
+   ],
+   "emoji": [
+    "🏈"
+   ]
+  },
+  {
+   "id": "baseball",
+   "terms": [
+    "baseball",
+    "mlb"
+   ],
+   "symbols": [
+    "baseball"
+   ],
+   "emoji": [
+    "⚾"
+   ]
+  },
+  {
+   "id": "climbing",
+   "terms": [
+    "climbing",
+    "bouldering"
+   ],
+   "symbols": [
+    "figure.climbing",
+    "mountain.2"
+   ],
+   "emoji": [
+    "🧗",
+    "⛰"
+   ]
+  },
+  {
+   "id": "fishing",
+   "terms": [
+    "fishing",
+    "angling"
+   ],
+   "symbols": [
+    "fish"
+   ],
+   "emoji": [
+    "🎣",
+    "🐟"
+   ]
+  },
+  {
+   "id": "camping",
+   "terms": [
+    "camping",
+    "campsite",
+    "tent"
+   ],
+   "symbols": [
+    "tent",
+    "tree",
+    "flame"
+   ],
+   "emoji": [
+    "🏕",
+    "⛺",
+    "🔥"
+   ]
+  },
+  {
+   "id": "road trip",
+   "terms": [
+    "road",
+    "trip",
+    "roadtrip",
+    "drive"
+   ],
+   "symbols": [
+    "car",
+    "map",
+    "signpost.right"
+   ],
+   "emoji": [
+    "🚗",
+    "🗺",
+    "🛣"
+   ]
+  },
+  {
+   "id": "city",
+   "terms": [
+    "city",
+    "cities",
+    "urban"
+   ],
+   "symbols": [
+    "building.2",
+    "building"
+   ],
+   "emoji": [
+    "🏙",
+    "🌆"
+   ]
+  },
+  {
+   "id": "weekend",
+   "terms": [
+    "weekend",
+    "weekends",
+    "saturday",
+    "sunday",
+    "free",
+    "time",
+    "leisure"
+   ],
+   "symbols": [
+    "sun.max",
+    "cup.and.saucer",
+    "sparkles"
+   ],
+   "emoji": [
+    "☀",
+    "🎉",
+    "🛋"
+   ]
+  },
+  {
+   "id": "random",
+   "terms": [
+    "misc",
+    "miscellaneous",
+    "random",
+    "other",
+    "stuff",
+    "inbox",
+    "everything"
+   ],
+   "symbols": [
+    "tray",
+    "square.grid.2x2",
+    "shuffle"
+   ],
+   "emoji": [
+    "🗃",
+    "📥",
+    "🎲"
+   ]
+  },
+  {
+   "id": "archive",
+   "terms": [
+    "archive",
+    "archived",
+    "old",
+    "later"
+   ],
+   "symbols": [
+    "archivebox",
+    "tray.full",
+    "clock"
+   ],
+   "emoji": [
+    "🗄",
+    "📦"
+   ]
+  },
+  {
+   "id": "temporary",
+   "terms": [
+    "temp",
+    "temporary",
+    "scratch",
+    "sandbox",
+    "test",
+    "testing"
+   ],
+   "symbols": [
+    "hourglass",
+    "flask"
+   ],
+   "emoji": [
+    "⏳",
+    "🧪"
+   ]
+  },
+  {
+   "id": "communication",
+   "terms": [
+    "communication",
+    "chat",
+    "messages",
+    "slack",
+    "teams",
+    "discord"
+   ],
+   "symbols": [
+    "bubble.left.and.bubble.right",
+    "message"
+   ],
+   "emoji": [
+    "💬",
+    "📱",
+    "📨"
+   ]
+  },
+  {
+   "id": "meetings",
+   "terms": [
+    "meetings",
+    "meeting",
+    "calls",
+    "zoom",
+    "video"
+   ],
+   "symbols": [
+    "video",
+    "person.2",
+    "calendar"
+   ],
+   "emoji": [
+    "📹",
+    "📞",
+    "🗓"
+   ]
+  },
+  {
+   "id": "phone",
+   "terms": [
+    "phone",
+    "mobile",
+    "calls",
+    "iphone",
+    "android"
+   ],
+   "symbols": [
+    "phone"
+   ],
+   "emoji": [
+    "📱",
+    "📞"
+   ]
+  },
+  {
+   "id": "internet",
+   "terms": [
+    "internet",
+    "web",
+    "browsing",
+    "websites"
+   ],
+   "symbols": [
+    "globe",
+    "network"
+   ],
+   "emoji": [
+    "🌐",
+    "🕸"
+   ]
+  },
+  {
+   "id": "apple",
+   "terms": [
+    "apple",
+    "mac",
+    "macos",
+    "ios"
+   ],
+   "symbols": [
+    "laptopcomputer",
+    "desktopcomputer"
+   ],
+   "emoji": [
+    "🍎",
+    "💻"
+   ]
+  },
+  {
+   "id": "google",
+   "terms": [
+    "google",
+    "workspace",
+    "drive",
+    "docs"
+   ],
+   "symbols": [
+    "text.document",
+    "folder"
+   ],
+   "emoji": [
+    "📄",
+    "📁"
+   ]
+  },
+  {
+   "id": "energy",
+   "terms": [
+    "energy",
+    "electricity",
+    "solar",
+    "power"
+   ],
+   "symbols": [
+    "bolt",
+    "sun.max"
+   ],
+   "emoji": [
+    "⚡",
+    "🔋",
+    "☀"
+   ]
+  },
+  {
+   "id": "environment",
+   "terms": [
+    "environment",
+    "climate",
+    "sustainability",
+    "green",
+    "eco"
+   ],
+   "symbols": [
+    "leaf",
+    "globe.americas",
+    "arrow.3.trianglepath"
+   ],
+   "emoji": [
+    "🌍",
+    "🌱",
+    "♻"
+   ]
+  }
+ ]
+}

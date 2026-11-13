@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "gates": [
+    {"moment": "tabSwitch", "tag": "slept=false", "statistic": "p95", "ceiling": 150},
+    {"moment": "tabSwitch", "counter": "blankFrames", "ceiling": 0},
+    {"moment": "commandBarOpen", "statistic": "p95", "ceiling": 100},
+    {"moment": "commandBarReturn", "statistic": "p95", "ceiling": 300},
+    {"moment": "sessionRestore", "counter": "differences", "ceiling": 0},
+    {"moment": "launchWarm", "statistic": "p95", "ceiling": 2000},
+    {"moment": "wake", "statistic": "p95", "ceiling": 2000},
+    {"moment": "wake", "counter": "typedTextSlept", "ceiling": 0},
+    {"moment": "hang", "statistic": "count", "ceiling": 0}
+  ]
+}

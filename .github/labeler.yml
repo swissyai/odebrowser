@@ -1,0 +1,108 @@
+# Path labels for pull requests, applied by .github/workflows/labeler.yml.
+# The engine inputs mirror INPUTS in Scripts/control-plane/chromium_engine.py;
+# change both together. The high-risk globs mirror the high-risk paths in
+# .github/CODEOWNERS and "High-risk paths" in CONTRIBUTING.md; change all
+# three together.
+
+"area: engine inputs":
+  - changed-files:
+      - any-glob-to-any-file:
+          - CrestEngines/Chromium/source.lock.json
+          - CrestEngines/Chromium/host-inputs.json
+          - CrestEngines/Chromium/Patches/**
+          - CrestEngines/Chromium/Overlay/**
+          - CrestEngines/Chromium/Apple/CrestChromiumHost.h
+          - CrestContracts/include/crest_core.h
+          - CrestContracts/include/crest_app.h
+          - CrestContracts/include/crest_engine.h
+          - CrestContracts/include/crest_engine_contract.h
+          - CrestCore/native/ContentFilter/include/crest_content_filter.h
+          - Scripts/control-plane/prepare-chromium.py
+          - Scripts/control-plane/apply-chromium-host.py
+          - Scripts/control-plane/configure-chromium.py
+          - Scripts/control-plane/build-chromium-baseline.py
+
+"area: high risk":
+  - changed-files:
+      - any-glob-to-any-file:
+          - OdeMac/Features/SoftwareUpdates/Models/**
+          - OdeMac/Features/SoftwareUpdates/Services/**
+          - Scripts/release-ode.sh
+          - Scripts/next-release-build-number.py
+          - Scripts/control-plane/update-feed.py
+          - Scripts/control-plane/mark-security-update.py
+          - OdeShared/Application/Credentials/**
+          - OdeShared/Domain/BrowserCredential/**
+          - OdeShared/Infrastructure/Credentials/**
+          - OdeShared/Infrastructure/WebKit/Credentials/**
+          - OdeMac/Infrastructure/BrowserPasskeyAccess/**
+          - OdeMobile/Infrastructure/BrowserPasskeyAccess/**
+          - OdeCore/src/OdeCore/Application/Credentials/**
+          - OdeCore/src/OdeCore/Contracts/Credentials/**
+          - OdeCore/src/OdeCore/Application/Storage/**
+          - OdeCore/src/OdeCore/Application/Session/StoredSessionCodec*.cs
+          - OdeMac/App/Agents/BrowserAgentApprovals.swift
+          - OdeMac/App/Agents/BrowserAgentFillRefusal.swift
+          - OdeMac/App/Agents/BrowserAgentOriginGate.swift
+          - OdeMac/App/Agents/BrowserAgentOriginGrants.swift
+          - OdeShared/Infrastructure/Downloads/DownloadPrompts.swift
+          - OdeCore/src/OdeCore/Application/Device/Intents/Agents/**
+          - OdeCore/src/OdeCore/Application/Device/Queries/AgentReach.cs
+          - "**/*.entitlements"
+          - "**/*Info.plist"
+          - CrestEngines/Chromium/source.lock.json
+          - CrestEngines/Chromium/host-inputs.json
+          - CrestEngines/Chromium/Patches/**
+          - CrestEngines/Chromium/Overlay/**
+          - CrestEngines/Chromium/Apple/CrestChromiumHost.h
+          - CrestContracts/include/crest_core.h
+          - CrestContracts/include/crest_app.h
+          - CrestContracts/include/crest_engine.h
+          - CrestContracts/include/crest_engine_contract.h
+          - CrestCore/native/ContentFilter/include/crest_content_filter.h
+          - Scripts/control-plane/prepare-chromium.py
+          - Scripts/control-plane/apply-chromium-host.py
+          - Scripts/control-plane/configure-chromium.py
+          - Scripts/control-plane/build-chromium-baseline.py
+
+"area: scripts":
+  - changed-files:
+      - any-glob-to-any-file:
+          - Scripts/**
+          - tools/**
+
+"area: help center":
+  - changed-files:
+      - any-glob-to-any-file:
+          - HelpCenter/**
+
+"area: tests":
+  - changed-files:
+      - any-glob-to-any-file:
+          - OdeTests/**
+          - OdeMobileTests/**
+          - OdeTestFixtures/**
+          - OdeCore/tests/**
+          - CrestContracts/tests/**
+          - Scripts/Tests/**
+
+"area: swift app":
+  - changed-files:
+      - any-glob-to-any-file:
+          - OdeShared/**
+          - OdeMac/**
+          - OdeMobile/**
+          - OdeShareExtension/**
+          - OdeDockTilePlugin/**
+          - OdeAgents/**
+          - OdeAgentHelper/**
+          - OdeNative/**
+          - CrestEngines/Chromium/Apple/**
+          - project.yml
+
+"area: core":
+  - changed-files:
+      - any-glob-to-any-file:
+          - OdeCore/**
+          - CrestCore/**
+          - CrestContracts/**

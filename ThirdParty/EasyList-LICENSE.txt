@@ -1,0 +1,24 @@
+EasyList and EasyPrivacy
+https://easylist.to/
+https://easylist.to/pages/licence.html
+
+Unless otherwise noted, the contents of the EasyList repository
+(https://github.com/easylist) is dual licensed under the GNU General Public
+License version 3 of the License, or (at your option) any later version, and
+Creative Commons Attribution-ShareAlike 3.0 Unported, or (at your option) any
+later version. You may use and/or modify the files as permitted by either
+licence; if required, "The EasyList authors (https://easylist.to/)" should be
+attributed as the source of the material.
+
+Attribution: The EasyList authors (https://easylist.to/).
+
+The app bundles easylist.txt and easyprivacy.txt unmodified, as published at
+https://easylist.to/easylist/easylist.txt and
+https://easylist.to/easylist/easyprivacy.txt, and downloads newer versions of
+the same files from those addresses. The lists are data the app reads; it
+converts them to WebKit content rules on the device.
+
+Full licence texts:
+GNU General Public License version 3: https://www.gnu.org/licenses/gpl-3.0.txt
+Creative Commons Attribution-ShareAlike 3.0 Unported:
+https://creativecommons.org/licenses/by-sa/3.0/legalcode

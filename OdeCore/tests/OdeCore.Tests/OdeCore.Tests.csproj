@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><IsTestProject>true</IsTestProject><IsPackable>false</IsPackable><AllowUnsafeBlocks>true</AllowUnsafeBlocks></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" PrivateAssets="all" />
+    <ProjectReference Include="../../src/OdeCore/OdeCore.csproj" />
+    <ProjectReference Include="../../src/OdeCore.Native/OdeCore.Native.csproj" />
+    <ProjectReference Include="../../tools/OdeCore.Generator/OdeCore.Generator.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Session/Fixtures/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Storage/Fixtures/*.sqlite" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Portability/Fixtures/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Palette/Fixtures/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Palette/Fixtures/*.tsv" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- Without Native AOT the content filter is loaded as a dynamic library from
+       beside the tests: linked from the prebuilt static library on a Mac, and
+       compiled from source elsewhere. -->
+  <Target Name="OdeContentFilterTestLibrary" BeforeTargets="AssignTargetPaths">
+    <PropertyGroup>
+      <OdeContentFilterPathFile>$(IntermediateOutputPath)content-filter.path</OdeContentFilterPathFile>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <Exec Command="python3 &quot;$(MSBuildThisFileDirectory)../../../Scripts/control-plane/fetch-content-filter.py&quot; --runtime host &gt; &quot;$(OdeContentFilterPathFile)&quot;"
+        IgnoreStandardErrorWarningFormat="true" />
+    <ReadLinesFromFile File="$(OdeContentFilterPathFile)">
+      <Output TaskParameter="Lines" PropertyName="OdeContentFilterLibraryPath" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <None Include="$(OdeContentFilterLibraryPath)" Link="$([System.IO.Path]::GetFileName('$(OdeContentFilterLibraryPath)'))"
+          CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+</Project>

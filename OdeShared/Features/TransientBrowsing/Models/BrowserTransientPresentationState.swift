@@ -1,0 +1,98 @@
+import SwiftUI
+
+/// Everything a transient overlay's surface needs to draw one frame of itself.
+///
+/// The shell owns the state that changes — whether the card has appeared, how
+/// far into its entrance it is, what the person's accessibility settings ask
+/// for — and hands it over as a value. The derivations below are the same on
+/// every shell; the arrangement decides which of them are live and which
+/// resolve to identity, so both shells run one chain rather than two.
+struct BrowserTransientPresentationState {
+    let arrangement: BrowserTransientCardArrangement
+    /// Width the shell's own leading chrome has already claimed. Zero wherever
+    /// the overlay owns the whole screen.
+    var reservedLeadingWidth: CGFloat = 0
+    var layoutDirection: LayoutDirection = .leftToRight
+    let isCardVisible: Bool
+    let isCardExpanded: Bool
+    let reduceMotion: Bool
+    let reduceTransparency: Bool
+    /// Staged only where a press can hold an overlay open before committing to
+    /// it. A shell without that gesture is always committed.
+    var presentationPhase: BrowserPeekPresentationPhase = .committed
+    let sourcePresentation: BrowserPeekSourcePresentation
+    var motionState: BrowserPeekMotionState? = nil
+    /// Whether the scrim dims the ground behind the card at all.
+    var dimsBackground: Bool = true
+    /// The part of the overlay the scrim covers. Zero wherever the overlay
+    /// owns the whole of its container.
+    var scrimInsets = EdgeInsets()
+    /// The share the card takes of the room its controls and insets leave
+    /// it, where the shell lets the person choose it.
+    var cardShare: CGFloat = 1
+
+    // MARK: - Growing out of the source link
+
+    /// The transform that starts the card over its source link, for a card
+    /// laid out at `cardFrame` in a container of `containerSize`.
+    func sourceTransform(cardFrame: CGRect?, in containerSize: CGSize) -> BrowserTransientSourceTransform {
+        BrowserTransientCardLayout.sourceCardTransform(
+            for: sourcePresentation, cardFrame: cardFrame, in: containerSize)
+    }
+
+    /// The entrance scale from `source`, applied to whichever layer the
+    /// arrangement grows. The other layer is handed identity, so both shells
+    /// run the same chain.
+    func scale(
+        for target: BrowserTransientEntranceTarget,
+        from source: BrowserTransientSourceTransform
+    ) -> CGSize {
+        if motionState != nil { return CGSize(width: 1, height: 1) }
+        guard arrangement.entranceTarget == target else {
+            return CGSize(width: 1, height: 1)
+        }
+        return CGSize(
+            width: cardScale(visible: source.scaleX, staged: source.scaleX * 0.82),
+            height: cardScale(visible: source.scaleY, staged: source.scaleY * 0.82)
+        )
+    }
+
+    func opacity(for target: BrowserTransientEntranceTarget) -> Double {
+        arrangement.entranceTarget == target ? cardOpacity : 1
+    }
+
+    /// The controls show once the card has grown, and on a card the person
+    /// pulls, which carries them as it grows.
+    var controlsOpacity: Double {
+        isCardExpanded || motionState != nil ? 1 : 0
+    }
+
+    // MARK: - The scrim behind it
+
+    /// The scrim rests dimmer while the overlay is only staged behind a press,
+    /// and is absent until the card itself is on screen.
+    var scrimOpacity: Double {
+        guard dimsBackground else { return 0 }
+        // Pulling the card provides the emphasis without dimming the source,
+        // and a pull that returns to its link never dimmed it. A Peek that has
+        // committed keeps its motion state until it closes, so the state alone
+        // does not mean the card is still being pulled.
+        if let motionState, presentationPhase == .staged || motionState.returnsToSource { return 0 }
+        let restingOpacity = presentationPhase == .staged ? 0.08 : 0.34
+        return (restingOpacity * (isCardVisible ? 1 : 0)).scrimOpacity(reduceTransparency: reduceTransparency)
+    }
+
+    // MARK: - Derivations behind the entrance
+
+    private var cardOpacity: Double {
+        isCardExpanded || isCardVisible ? 1 : 0
+    }
+
+    /// A card that has finished growing is at its own size. Before that it is
+    /// the size of the link it came from, or smaller again while it waits
+    /// behind a press that has not committed.
+    private func cardScale(visible: CGFloat, staged: CGFloat) -> CGFloat {
+        guard !isCardExpanded else { return 1 }
+        return (isCardVisible ? visible : staged).unlessReducingMotion(reduceMotion)
+    }
+}

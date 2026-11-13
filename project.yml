@@ -1,0 +1,632 @@
+name: Ode
+configs:
+  Debug: debug
+  Release: release
+configFiles:
+  Debug: Config/Version.xcconfig
+  Release: Config/Version.xcconfig
+options:
+  bundleIdPrefix: com.odebrowser
+  deploymentTarget:
+    iOS: "26.1"
+    macOS: "26.1"
+  xcodeVersion: "27.0"
+settings:
+  base:
+    ARCHS: arm64
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: WUMLCL8SAZ
+    DEVELOPMENT_LANGUAGE: en
+    ENABLE_HARDENED_RUNTIME: YES
+    MACOSX_DEPLOYMENT_TARGET: "26.1"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_EMIT_LOC_STRINGS: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_VERSION: "6.0"
+  # Only Release builds carry the released app's bundle identifiers. Debug,
+  # test and harness builds run under com.odebrowser.ode.dev, so their
+  # preferences, data, keychain items and crash reports stay apart from the
+  # person's installed Ode (ProductIdentity follows the bundle identifier).
+  configs:
+    Debug:
+      APS_ENVIRONMENT: development
+      ICLOUD_CONTAINER_ENVIRONMENT: Development
+      ODE_BUNDLE_IDENTIFIER_PREFIX: com.odebrowser.ode.dev
+    Release:
+      APS_ENVIRONMENT: production
+      ICLOUD_CONTAINER_ENVIRONMENT: Production
+      SWIFT_COMPILATION_MODE: singlefile
+      ODE_BUNDLE_IDENTIFIER_PREFIX: com.odebrowser.ode
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle.git
+    exactVersion: 2.9.5
+# App capabilities are declared by the entitlements files (iCloud, CloudKit,
+# push) and Info.plist UIBackgroundModes. The legacy TargetAttributes
+# SystemCapabilities blocks duplicated that, serialized in nondeterministic
+# dictionary order, and churned project.pbxproj on every generate.
+targetTemplates:
+  PortableCoreMac:
+    settings:
+      base:
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+        SWIFT_INCLUDE_PATHS: "$(inherited) $(PROJECT_DIR)/CrestContracts/include"
+        ODE_CORE_LIBRARY_DIR: "$(BUILT_PRODUCTS_DIR)/OdeCore"
+        OTHER_LDFLAGS: '$(inherited) "$(ODE_CORE_LIBRARY_DIR)/OdeCore.Native.dylib"'
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    preBuildScripts:
+      - name: Build portable core
+        script: python3 "$SRCROOT/Scripts/control-plane/build-apple-core.py"
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - "$(ODE_CORE_LIBRARY_DIR)/OdeCore.Native.dylib"
+    postBuildScripts:
+      - name: Embed portable core
+        script: |
+          set -eu
+          mkdir -p "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH"
+          cp "$ODE_CORE_LIBRARY_DIR/OdeCore.Native.dylib" "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OdeCore.Native.dylib"
+          if [ "$CODE_SIGNING_ALLOWED" != "NO" ]; then
+            codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OdeCore.Native.dylib"
+          fi
+        basedOnDependencyAnalysis: false
+        inputFiles:
+          - "$(ODE_CORE_LIBRARY_DIR)/OdeCore.Native.dylib"
+        outputFiles:
+          - "$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/OdeCore.Native.dylib"
+  PortableCoreMobile:
+    settings:
+      base:
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+        SWIFT_INCLUDE_PATHS: "$(inherited) $(PROJECT_DIR)/CrestContracts/include"
+        ODE_CORE_FRAMEWORK_DIR: "$(BUILT_PRODUCTS_DIR)/OdeCore"
+        FRAMEWORK_SEARCH_PATHS: "$(inherited) $(ODE_CORE_FRAMEWORK_DIR)"
+        OTHER_LDFLAGS: "$(inherited) -framework OdeCoreABI"
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    preBuildScripts:
+      - name: Build portable core
+        script: python3 "$SRCROOT/Scripts/control-plane/build-apple-core.py"
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - "$(ODE_CORE_FRAMEWORK_DIR)/OdeCoreABI.framework/OdeCoreABI"
+    postBuildScripts:
+      - name: Embed portable core
+        script: |
+          set -eu
+          mkdir -p "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH"
+          ditto "$ODE_CORE_FRAMEWORK_DIR/OdeCoreABI.framework" "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OdeCoreABI.framework"
+          if [ "$CODE_SIGNING_ALLOWED" != "NO" ]; then
+            codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OdeCoreABI.framework"
+          fi
+        basedOnDependencyAnalysis: false
+        inputFiles:
+          - "$(ODE_CORE_FRAMEWORK_DIR)/OdeCoreABI.framework/OdeCoreABI"
+        outputFiles:
+          - "$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/OdeCoreABI.framework/OdeCoreABI"
+  # The Chromium host framework has one composition and two identities: the
+  # isolated review framework and the normal product framework. Only the Swift
+  # compilation conditions differ, so both build from this template.
+  ChromiumHostFramework:
+    type: framework
+    platform: macOS
+    sources:
+      - path: Documentation/ReleaseNotes.json
+        buildPhase: resources
+      # The WebKit composition (its entry point and the shell's WebKit host),
+      # engine selection and engine-contributed views; the Chromium sources
+      # supply their own.
+      - path: OdeShared
+        excludes:
+          - Infrastructure/Engines/BrowserEngineRegistration+Composition.swift
+          - Features/Settings/Components/BrowserEngineExtensionSettingsPane.swift
+          - Features/Settings/Components/BrowserEngineRegistration+FeatureFlags.swift
+      - path: OdeMac
+        excludes:
+          - App/Composition
+          - Features/SiteSettings/Components/BrowserEngineSiteSections.swift
+      - path: CrestEngines/Chromium/Apple
+        excludes:
+          - CrestChromiumHost.h
+      - path: OdeAgents
+    dependencies:
+      - target: OdeDockTilePlugin
+        link: false
+        embed: false
+      # The packager copies the agent helper into Contents/Helpers.
+      - target: OdeBrowserHelper
+        link: false
+        embed: false
+      - package: Sparkle
+        product: Sparkle
+      - sdk: AuthenticationServices.framework
+      - sdk: CloudKit.framework
+      - sdk: CoreLocation.framework
+      - sdk: LocalAuthentication.framework
+      - sdk: MediaPlayer.framework
+      - sdk: UserNotifications.framework
+      - sdk: WebKit.framework
+      - sdk: Security.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_BUNDLE_IDENTIFIER_PREFIX).chromium-ui"
+        PRODUCT_MODULE_NAME: CrestChromiumUI
+        GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: Ode
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: ${hostCompilationConditions}
+        SWIFT_OBJC_BRIDGING_HEADER: "$(PROJECT_DIR)/CrestEngines/Chromium/Apple/CrestChromiumHost.h"
+        SWIFT_INCLUDE_PATHS: "$(PROJECT_DIR)/CrestContracts/include"
+        ODE_CORE_LIBRARY_DIR: "$(BUILT_PRODUCTS_DIR)/OdeCore"
+        OTHER_LDFLAGS: '$(inherited) "$(ODE_CORE_LIBRARY_DIR)/OdeCore.Native.dylib"'
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @loader_path/../../.."
+        SWIFT_EMIT_LOC_STRINGS: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    preBuildScripts:
+      - name: Build portable core
+        script: python3 "$SRCROOT/Scripts/control-plane/build-apple-core.py"
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - "$(ODE_CORE_LIBRARY_DIR)/OdeCore.Native.dylib"
+targets:
+  CrestChromiumUI:
+    templates:
+      - ChromiumHostFramework
+    templateAttributes:
+      hostCompilationConditions: "$(inherited) ODE_CHROMIUM_HOST ODE_REVIEW_BUILD"
+    scheme: {}
+  # The normal desktop composition: the same host framework without review
+  # isolation, so it uses Ode's persistent store, sync and update identity.
+  # It keeps its own product name so a rebuild can never leave one
+  # composition's resources inside the other's framework.
+  CrestChromiumUIProduct:
+    templates:
+      - ChromiumHostFramework
+    templateAttributes:
+      hostCompilationConditions: "$(inherited) ODE_CHROMIUM_HOST"
+    sources:
+      # Names this framework's composition, and becomes the packaged bundle's
+      # marker for a host that starts without launch switches.
+      - path: CrestEngines/Chromium/Composition/Crest-Native-Host
+        buildPhase: resources
+    scheme: {}
+  OdeNativeCore:
+    type: application
+    platform: macOS
+    sources:
+      - path: Documentation/ReleaseNotes.json
+        buildPhase: resources
+      - path: OdeShared
+        excludes:
+      - path: OdeMac
+      - path: OdeAgents
+    dependencies:
+      - target: OdeDockTilePlugin
+        embed: true
+        link: false
+        codeSign: true
+        copy:
+          destination: plugins
+      - target: OdeBrowserHelper
+        embed: true
+        link: false
+        codeSign: true
+        copy:
+          destination: wrapper
+          subpath: Contents/Helpers
+      - package: Sparkle
+        product: Sparkle
+      - sdk: AuthenticationServices.framework
+      - sdk: CloudKit.framework
+      - sdk: CoreLocation.framework
+      - sdk: LocalAuthentication.framework
+      - sdk: MediaPlayer.framework
+      - sdk: UserNotifications.framework
+      - sdk: WebKit.framework
+      - sdk: Security.framework
+    settings:
+      base:
+        ODE_NATIVE_CORE_ENTITLEMENTS: OdeNative/Apple/Composition/ControlPlane.entitlements
+        CODE_SIGN_ENTITLEMENTS: "$(ODE_NATIVE_CORE_ENTITLEMENTS)"
+        # Release scripts supply the app profile without provisioning bundled plug-ins.
+        PROVISIONING_PROFILE_SPECIFIER: "$(ODE_PROVISIONING_PROFILE_SPECIFIER)"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: OdeMac/Configuration/Ode-Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: Ode
+        # A review build in every configuration, so always a development identity.
+        ODE_NATIVE_CORE_BUNDLE_IDENTIFIER: com.odebrowser.ode.dev.native-core
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_NATIVE_CORE_BUNDLE_IDENTIFIER)"
+        PRODUCT_MODULE_NAME: Ode
+        PRODUCT_NAME: OdeNativeCore
+        ODE_DEFAULT_UPDATE_CHANNEL: development
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) ODE_REVIEW_BUILD"
+        SWIFT_INCLUDE_PATHS: "$(PROJECT_DIR)/CrestContracts/include"
+        ODE_CORE_LIBRARY_DIR: "$(PROJECT_DIR)/OdeCore/src/OdeCore.Native/bin/Release/net10.0/osx-arm64/publish"
+        OTHER_LDFLAGS: '$(inherited) "$(ODE_CORE_LIBRARY_DIR)/OdeCore.Native.dylib"'
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"
+        SWIFT_EMIT_LOC_STRINGS: NO
+    postBuildScripts:
+      - name: Embed portable control plane
+        script: |
+          set -eu
+          mkdir -p "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH"
+          cp "$ODE_CORE_LIBRARY_DIR/OdeCore.Native.dylib" "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OdeCore.Native.dylib"
+          codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OdeCore.Native.dylib"
+        basedOnDependencyAnalysis: false
+        inputFiles:
+          - "$(ODE_CORE_LIBRARY_DIR)/OdeCore.Native.dylib"
+        outputFiles:
+          - "$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/OdeCore.Native.dylib"
+  OdeNativeCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: OdeTests
+        includes:
+          - BrowserTabStateArchiveTests.swift
+          - BrowserDataRetentionTests.swift
+          - BrowserWebHostViewTests.swift
+          - BrowserPageNavigationMarkerTests.swift
+          - BrowserShortcutTests.swift
+          - BrowserDurableTabCloseTests.swift
+          - BrowserWebsiteDataStoreTests.swift
+          - BrowserPagePoolTests.swift
+          - BrowserCurrentTabFolderTests.swift
+          - BrowserStoreTests.swift
+          - BrowserStoreWorkspaceTests.swift
+          - BrowserCloudRecordCodecTests.swift
+          - BrowserCloudSyncStateTests.swift
+          - BrowserLaunchEnvironmentTests.swift
+          - BrowserCoreSessionAuthorityTests.swift
+          - Support/OdeCore+ProfileErasure.swift
+          - Support/BrowserPage+WebKitTestAccess.swift
+          - Support/BrowserPagePool+Presenting.swift
+          - Support/BrowserInstalledRelease.swift
+          - Support/BrowserPrivacyHTTPServer.swift
+          - Support/BrowserStoredSessionHarness.swift
+          - Support/StoredSyncJournal.swift
+      # Test support both apps' tests compile.
+      - path: OdeTestSupport
+    dependencies:
+      - target: OdeNativeCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.odebrowser.ode.dev.native-core.tests
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+        SWIFT_INCLUDE_PATHS: "$(PROJECT_DIR)/CrestContracts/include"
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/OdeNativeCore.app/Contents/MacOS/OdeNativeCore"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        SWIFT_EMIT_LOC_STRINGS: NO
+  Ode:
+    templates: [PortableCoreMac]
+    type: application
+    platform: macOS
+    # Scheme BuildableName is derived from productName, not the PRODUCT_NAME
+    # build setting. Keep both as Ode so the schemes name Ode.app.
+    productName: Ode
+    sources:
+      - path: Documentation/ReleaseNotes.json
+        buildPhase: resources
+      - path: OdeShared
+        excludes:
+      - path: OdeMac
+      - path: OdeAgents
+    dependencies:
+      - target: OdeDockTilePlugin
+        embed: true
+        link: false
+        codeSign: true
+        copy:
+          destination: plugins
+      - target: OdeBrowserHelper
+        embed: true
+        link: false
+        codeSign: true
+        copy:
+          destination: wrapper
+          subpath: Contents/Helpers
+      - package: Sparkle
+        product: Sparkle
+      - sdk: AuthenticationServices.framework
+      - sdk: CloudKit.framework
+      - sdk: CoreLocation.framework
+      - sdk: LocalAuthentication.framework
+      - sdk: MediaPlayer.framework
+      - sdk: UserNotifications.framework
+      - sdk: WebKit.framework
+      - sdk: Security.framework
+    settings:
+      base:
+        ODE_MAC_ENTITLEMENTS: OdeMac/Configuration/Ode.entitlements
+        CODE_SIGN_ENTITLEMENTS: "$(ODE_MAC_ENTITLEMENTS)"
+        # Release scripts supply the app profile without provisioning bundled plug-ins.
+        PROVISIONING_PROFILE_SPECIFIER: "$(ODE_PROVISIONING_PROFILE_SPECIFIER)"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: OdeMac/Configuration/Ode-Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: Ode
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_MAC_BUNDLE_IDENTIFIER)"
+        PRODUCT_MODULE_NAME: Ode
+        PRODUCT_NAME: Ode
+        ODE_DEFAULT_UPDATE_CHANNEL: development
+      configs:
+        Debug:
+          ODE_MAC_BUNDLE_IDENTIFIER: com.odebrowser.ode.dev
+        Release:
+          ODE_MAC_BUNDLE_IDENTIFIER: com.odebrowser.ode
+  # ode-browser, the helper agents run over stdio to reach the Ode app it
+  # ships inside (Contents/Helpers). Mac only.
+  OdeBrowserHelper:
+    type: tool
+    platform: macOS
+    sources:
+      - path: OdeAgentHelper
+      - path: OdeAgents
+      # Names the data folder of the app the helper ships inside.
+      - path: OdeShared/Application/ProductIdentity.swift
+    settings:
+      base:
+        PRODUCT_NAME: ode-browser
+        PRODUCT_MODULE_NAME: OdeBrowserHelper
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_BUNDLE_IDENTIFIER_PREFIX).browser-helper"
+        GENERATE_INFOPLIST_FILE: YES
+        CREATE_INFOPLIST_SECTION_IN_BINARY: YES
+        SKIP_INSTALL: YES
+        SWIFT_EMIT_LOC_STRINGS: NO
+  OdeDockTilePlugin:
+    type: bundle
+    platform: macOS
+    sources:
+      - path: OdeDockTilePlugin
+      - path: OdeMac/Features/AppIcon/BrowserMacAppIconAssets.swift
+      - path: OdeMac/Features/AppIcon/BrowserMacDockTileView.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_BUNDLE_IDENTIFIER_PREFIX).docktileplugin"
+        PRODUCT_NAME: OdeDockTilePlugin
+        PRODUCT_MODULE_NAME: OdeDockTilePlugin
+        WRAPPER_EXTENSION: docktileplugin
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSPrincipalClass: OdeDockTilePlugin.OdeDockTilePlugin
+        SKIP_INSTALL: YES
+  OdeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: OdeTests
+        excludes:
+          # Fixtures are read relative to #filePath. Bundling their loose files
+          # flattens directories and collides on manifest.json/background.js.
+          - Fixtures
+      - path: OdeTestSupport
+    dependencies:
+      - target: Ode
+    settings:
+      base:
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+        SWIFT_INCLUDE_PATHS: "$(inherited) $(PROJECT_DIR)/CrestContracts/include"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_BUNDLE_IDENTIFIER_PREFIX).tests"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Ode.app/Contents/MacOS/Ode"
+  OdeMobileNativeCore:
+    type: application
+    platform: iOS
+    # Scheme BuildableName is derived from productName, not the PRODUCT_NAME
+    # build setting. Keep both as Ode so `xcodegen generate` reproduces the
+    # committed schemes instead of emitting OdeMobile.app.
+    productName: OdeNativeCore
+    sources:
+      - path: Documentation/ReleaseNotes.json
+        buildPhase: resources
+      - path: OdeShared
+        excludes:
+      - path: OdeMobile
+    dependencies:
+      - sdk: AuthenticationServices.framework
+      - sdk: CloudKit.framework
+      - sdk: CoreLocation.framework
+      - sdk: LocalAuthentication.framework
+      - sdk: WebKit.framework
+      - sdk: Security.framework
+    settings:
+      base:
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]": OdeNative/Apple/Composition/MobileCloudReview.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: OdeMobile/Configuration/OdeMobile-Info.plist
+        IPHONEOS_DEPLOYMENT_TARGET: "26.1"
+        # A review build in every configuration, so always a development identity.
+        ODE_MOBILE_BUNDLE_IDENTIFIER: com.odebrowser.ode.dev.mobile-native-core
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_MOBILE_BUNDLE_IDENTIFIER)"
+        PRODUCT_MODULE_NAME: OdeMobile
+        PRODUCT_NAME: OdeNativeCore
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: Ode
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) ODE_REVIEW_BUILD"
+        SWIFT_INCLUDE_PATHS: "$(PROJECT_DIR)/CrestContracts/include"
+        ODE_CORE_FRAMEWORK_DIR: "$(PROJECT_DIR)/OdeCore/artifacts/$(PLATFORM_NAME)"
+        FRAMEWORK_SEARCH_PATHS: "$(inherited) $(ODE_CORE_FRAMEWORK_DIR)"
+        OTHER_LDFLAGS: "$(inherited) -framework OdeCoreABI"
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+        SWIFT_EMIT_LOC_STRINGS: NO
+    postBuildScripts:
+      - name: Embed portable control plane
+        script: |
+          set -eu
+          mkdir -p "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH"
+          ditto "$ODE_CORE_FRAMEWORK_DIR/OdeCoreABI.framework" "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OdeCoreABI.framework"
+          if [ "$CODE_SIGNING_ALLOWED" != "NO" ]; then
+            codesign --force --sign "${EXPANDED_CODE_SIGN_IDENTITY:--}" "$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OdeCoreABI.framework"
+          fi
+        inputFiles:
+          - "$(ODE_CORE_FRAMEWORK_DIR)/OdeCoreABI.framework/OdeCoreABI"
+        outputFiles:
+          - "$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/OdeCoreABI.framework/OdeCoreABI"
+  OdeMobile:
+    templates: [PortableCoreMobile]
+    type: application
+    platform: iOS
+    # Scheme BuildableName is derived from productName, not the PRODUCT_NAME
+    # build setting. Keep both as Ode so `xcodegen generate` reproduces the
+    # committed schemes instead of emitting OdeMobile.app.
+    productName: Ode
+    sources:
+      - path: Documentation/ReleaseNotes.json
+        buildPhase: resources
+      - path: OdeShared
+        excludes:
+      - path: OdeMobile
+    dependencies:
+      - target: OdeShareExtension
+      - target: OdeWidgets
+      - sdk: AuthenticationServices.framework
+      - sdk: CloudKit.framework
+      - sdk: CoreLocation.framework
+      - sdk: LocalAuthentication.framework
+      - sdk: WebKit.framework
+      - sdk: Security.framework
+    settings:
+      base:
+        CODE_SIGN_ENTITLEMENTS: OdeMobile/Configuration/OdeMobile.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: OdeMobile/Configuration/OdeMobile-Info.plist
+        IPHONEOS_DEPLOYMENT_TARGET: "26.1"
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_MOBILE_BUNDLE_IDENTIFIER)"
+        PRODUCT_MODULE_NAME: OdeMobile
+        PRODUCT_NAME: Ode
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: Ode
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+      configs:
+        Debug:
+          ODE_MOBILE_BUNDLE_IDENTIFIER: com.odebrowser.ode.dev
+        Release:
+          ODE_MOBILE_BUNDLE_IDENTIFIER: com.odebrowser.ode
+  # The share sheet entry hands shared links to the iOS app. It compiles the
+  # hand-off it shares with the app, never the core, which an extension's
+  # memory budget cannot hold.
+  OdeShareExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: OdeShareExtension
+      - path: OdeMobile/Infrastructure/BrowserLinkSharing
+      - path: OdeShared/Resources/Localizable.xcstrings
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: OdeShareExtension/Info.plist
+        IPHONEOS_DEPLOYMENT_TARGET: "26.1"
+        PRODUCT_BUNDLE_IDENTIFIER: $(ODE_MOBILE_BUNDLE_IDENTIFIER).share
+        PRODUCT_MODULE_NAME: OdeShareExtension
+        PRODUCT_NAME: OdeShareExtension
+        TARGETED_DEVICE_FAMILY: "1,2"
+      configs:
+        Debug:
+          ODE_MOBILE_BUNDLE_IDENTIFIER: com.odebrowser.ode.dev
+        Release:
+          ODE_MOBILE_BUNDLE_IDENTIFIER: com.odebrowser.ode
+  # A static native search entry. Only its queryless route and extension-safe
+  # palette tokens are shared; no browser/core graph or shared storage.
+  OdeWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: OdeWidgets
+      - path: OdeMobile/Infrastructure/BrowserLinkSharing/BrowserCommandLink.swift
+      - path: OdeShared/DesignSystem/Tokens/OdeColor/OdeBrandPalette.swift
+      - path: OdeShared/DesignSystem/Tokens/OdeColor/OdeColorComponents.swift
+      - path: OdeShared/DesignSystem/Tokens/OdeOpacity.swift
+    settings:
+      base:
+        APPLICATION_EXTENSION_API_ONLY: YES
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: OdeWidgets/Info.plist
+        IPHONEOS_DEPLOYMENT_TARGET: "26.1"
+        PRODUCT_BUNDLE_IDENTIFIER: $(ODE_MOBILE_BUNDLE_IDENTIFIER).widgets
+        PRODUCT_MODULE_NAME: OdeWidgets
+        PRODUCT_NAME: OdeWidgets
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+      configs:
+        Debug:
+          ODE_MOBILE_BUNDLE_IDENTIFIER: com.odebrowser.ode.dev
+        Release:
+          ODE_MOBILE_BUNDLE_IDENTIFIER: com.odebrowser.ode
+  OdeMobileTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: OdeMobileTests
+      - path: OdeTestSupport
+    dependencies:
+      - target: OdeMobile
+    settings:
+      base:
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+        SWIFT_INCLUDE_PATHS: "$(inherited) $(PROJECT_DIR)/CrestContracts/include"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_BUNDLE_IDENTIFIER_PREFIX).mobile.tests"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Ode.app/Ode"
+schemes:
+  # The app schemes source Config/Ode.lldbinit, so the debugger never
+  # stops on the core runtime's own signals.
+  Ode:
+    build:
+      targets:
+        Ode: all
+    run:
+      customLLDBInit: "$(SRCROOT)/Config/Ode.lldbinit"
+    test:
+      targets:
+        - OdeTests
+  OdeNativeCore:
+    build:
+      targets:
+        OdeNativeCore: all
+    run:
+      customLLDBInit: "$(SRCROOT)/Config/Ode.lldbinit"
+    test:
+      targets:
+        - OdeNativeCoreTests
+  OdeMobile:
+    build:
+      targets:
+        OdeMobile: all
+    run:
+      customLLDBInit: "$(SRCROOT)/Config/Ode.lldbinit"
+    test:
+      targets:
+        - OdeMobileTests
+  OdeMobileNativeCore:
+    build:
+      targets:
+        OdeMobileNativeCore: all
+    run:
+      customLLDBInit: "$(SRCROOT)/Config/Ode.lldbinit"
+  OdeMobile Production:
+    build:
+      targets:
+        OdeMobile: all
+    run:
+      config: Release
+      customLLDBInit: "$(SRCROOT)/Config/Ode.lldbinit"
+    profile:
+      config: Release
+    analyze:
+      config: Release
+    archive:
+      config: Release
+  OdeKeychainIntegration:
+    build:
+      targets:
+        Ode: all
+        OdeTests: [test]
+    test:
+      environmentVariables:
+        ODE_RUN_KEYCHAIN_INTEGRATION: "1"
+      targets:
+        - OdeTests

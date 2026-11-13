@@ -1,0 +1,86 @@
+/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+const sidebars = {
+  helpSidebar: [
+    'index',
+    {
+      type: 'category',
+      label: 'Get started',
+      collapsed: false,
+      items: [
+        'getting-started/coming-from-arc',
+        'getting-started/move-to-ode',
+        'getting-started/install-and-update-mac',
+        'getting-started/settings-reference',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Tabs and Spaces',
+      collapsed: false,
+      items: [
+        'tabs/organize-tabs-and-folders',
+        'tabs/split-view',
+        'spaces/spaces-and-isolation',
+        'spaces/sub-spaces',
+        'spaces/customize-spaces',
+        'spaces/private-spaces',
+        'tabs/sidebar-and-windows',
+        'tabs/tab-previews',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Browse',
+      collapsed: false,
+      items: [
+        'browsing/command-palette',
+        'browsing/keyboard-shortcuts',
+        'browsing/peek-and-quick-window',
+        'browsing/link-routing',
+        'browsing/page-tools',
+        'browsing/boosts',
+        'browsing/gestures-and-pointer',
+        'browsing/engines',
+        'browsing/intelligence',
+        'browsing/coding-agents',
+        'browsing/localhost-developer-tools',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Your data',
+      collapsed: false,
+      items: [
+        'privacy/backups-and-recovery',
+        'privacy/history-archive-and-downloads',
+        'privacy/downloads',
+        'spaces/ode-passwords',
+        'privacy/content-blocking-and-site-permissions',
+        'privacy/clear-website-data',
+        'spaces/sync-across-devices',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Extensions',
+      collapsed: false,
+      items: [
+        'extensions/install-chrome-web-store',
+        'extensions/manage-permissions-site-access',
+        'extensions/pin-and-use-popups',
+        'extensions/keyboard-shortcuts',
+        'extensions/onepassword',
+        'extensions/troubleshoot-partial-compatibility',
+        'extensions/api-compatibility-matrix',
+        'extensions/compatibility',
+        'extensions/status-and-technical-details',
+        'extensions/native-companion-limits',
+        'extensions/icloud-passwords',
+        'extensions/install-firefox-add-ons',
+        'extensions/scan-safari-web-extensions',
+      ],
+    },
+  ],
+};
+
+module.exports = sidebars;

@@ -1,0 +1,14 @@
+{
+  "account": "jane.doe@example.com",
+  "events": [
+    { "id": "ZXZlbnQx", "label": "9am to 9:30am, Morning check-in, Jane Doe, Accepted, No location, November 3, 2026", "day": 29027 },
+    { "id": "ZXZlbnQy", "label": "10 to 10:30am, Design review, Jane Doe, Accepted, Location: Room 4, November 3, 2026", "day": 29027 },
+    { "id": "ZXZlbnQz", "label": "11:30am to 1pm, Lunch with Sam, Jane Doe, Accepted, No location, November 3, 2026", "day": 29027 },
+    { "id": "ZXZlbnQ0", "label": "2pm to 3pm, Vendor call, Jane Doe, Declined, No location, November 3, 2026", "day": 29027 },
+    { "id": "ZXZlbnQ1", "label": "All day, Company holiday, Holidays, November 5, 2026", "day": null },
+    { "id": "ZXZlbnQ2", "label": "16:00 to 17:15, Team planning, Jane Doe, Accepted, No location, November 4, 2026", "day": 29028 },
+    { "id": "bad id/../x", "label": "11pm to 1am, Late deploy, Jane Doe, Accepted, No location, November 3, 2026", "day": 29027 },
+    { "id": "ZXZlbnQ4", "label": "10 h 00 à 11 h 00, Réunion, Jane Doe, Acceptée, 3 novembre 2026", "day": 29027 },
+    { "id": "ZXZlbnQ5", "label": "Something else entirely", "day": 29027 }
+  ]
+}

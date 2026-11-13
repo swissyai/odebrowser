@@ -1,0 +1,51 @@
+id	query	space	expected	rule	setup
+1	gov	Lumen	https://www.notely.test/lumenteam/Governance-91eec4601ec5481e8e9612481dd270d9	title-start after unread-count noise; kept boost	
+2	talk	Lumen	https://talk.lumen.example/	host-label match vs host-prefix match	
+3	hip	Lumen	https://talk.lumen.example/t/hip-30v2-change-to-2-shards-split-25-emission-for-recovery/22941/33	title-start tie broken by recency	
+4	swap	Lumen	https://swap.example/#/pools/19	title-start plus host-start beats word-start	
+5	safe swap	Lumen	https://app.safeswap.example/dashboard	multi-term exact title	
+6	safe	Lumen	https://multisig.lumen.example/apps/open?safe=lmn:0x0000000000000000000000000000000000000001&appUrl=https%3A%2F%2Fstaking.lumen.example%2F	exact-title equality beats longer title-start	
+7	qmx	Lumen	https://qmx.example/#/	title-start and host-start, single candidate	
+8	stake watch	Lumen	https://lumen.stakewatch.example/address/acct-0001	identical titles, recency tie-break	
+9	multisig	Lumen	https://multisig.lumen.example/home?safe=lmn:0x0000000000000000000000000000000000000001	title word-start plus host-label beats host-only	
+10	aero	Lumen	https://docs.workspace.example/document/d/1xko4Ie_fEDIUCwCuh1GtQSwCkodFwhdrXf_UwwnfsXg/edit	title-start on a shared-host document title	
+11	staking	Lumen	https://docs.workspace.example/document/d/1O3BLWH12_lPVUyZcTkYWdIVKHntLV2pv3qYLGxxXe0g/edit	word-start inside a title that begins with a number	
+12	technical report	Lumen	https://www.notely.test/lumenteam/Community-Feedback-On-Technical-Report-fe4fa55e950e4a58a4f71a95c19ffbd8	multi-term word-start tie broken by last active time	
+13	artforge	Lumen	https://artforge.example/	host-only page beats deeper page on the same host	
+14	grimoire	Lumen	https://chat.chatbot.example/g/g-n7Rs0IK86-grimoire/c/8444003e-8da0-435a-a430-0375dbd7c9ff	word-start in title vs host-only favourite	
+15	eliza	Lumen	https://www.videotube.example/watch?v=xmlsILjX23s	title-start on a video page	
+16	analytics	Lumen	https://analytics.workspace.example/analytics/web/#/p406329442/reports/explorer?params=_u.dateOption%3Dlast7Days&r=lifecycle-user-acquisition-v2&collectionId=life-cycle	title-start beats word-start; host match reinforces	
+17	one bot	Lumen	https://www.h.example/one-bot-upcoming-features-558b9dfa4401443bb1f4fd3a271edd44	multi-term title-start with emoji; path match as alternate	
+18	explorer	Lumen	https://explorer.lumen.example/	favourite with host-label match and title word match	
+19	patternly	Studio	https://patternly.example/changelog	host-start when the title puts the term second	
+20	sketc	Studio	https://sketchboard.example/	partial prefix of both title and host	
+21	mnt dashboard	Studio	https://dashboard.meshnet.example/circulation	both terms at word starts in one title	
+22	mtask	Studio	https://www.mtask.example/	host-only match, title carries nothing	
+23	parallax	Studio	https://blog.devcraft.example/tutorials/cards-parallax	word-start late in a long title plus path match	
+24	quickledger	Studio	https://codehub.example/avery/QuickLedger/pull/73	URL path-only match (repository name)	
+25	tidepool	Studio	https://codehub.example/morgan/tidepool/pull/1	URL path-only match, case-folded	
+26	handy	Studio	https://codehub.example/casey/Handy	word-start after a slash in a title	
+27	tmux	Studio	https://tmuxcheatsheet.example/	title-start and host-start	
+28	jordan	Studio	https://www.videotube.example/@jordanhale/videos	title-start after a count badge; deep page beats host-only favourite	
+29	imagegen	Studio	https://www.imagegen.example/imagine	host match when the title is generic	
+30	oklch	Studio	https://devblog.example/components/oklch-colors	word-start in title plus path match	
+31	sparse gallery	Studio	https://sparse.gallery.example/	title-start and host-only beat a more recent deeper page	
+32	ferrite	Studio	https://ferrite.example/?ref=darkmodedesign	title-start and host-start with a tracking query string	
+33	recall	Studio	https://codehub.example/recallai/recall?tab=readme-ov-file	mid-word then word-start in the same title	
+34	24*7	any	card	card, not navigation	
+35	lineup	Orbit	https://lineup.example/orbitlabs/welcome	favourite exact title, host-start	
+36	calendar	Studio	https://calendar.workspace.example/calendar/u/0/r?pli=1	word-start in title plus host-label match on a favourite	
+37	codehub	Studio	https://codehub.example/	host-only exact beats deeper pages used more recently	
+38	sage	Studio	https://sage.example/new	live kept tab beats history; history collapses	
+39	querywise	Studio	https://www.querywise.example/	same place in favourite and pinned collapses to one row	
+40	videotube	Studio	https://www.videotube.example/	host-only exact beats deep pages; badge noise	
+41	payhub	Studio	https://dashboard.payhub.example/	history frequency with no live tab; path variants collapse	
+42	edgecloud	Studio	https://dash.edgecloud.example/	host-label start on a history-only host	
+43	localhost:5173	Lumen	http://localhost:5173/	typed address with port; prefer the kept tab	
+44	127.0.0.1:4173	Studio	intent:http://127.0.0.1:4173/	typed address leads; history variants below	
+45	notely	Lumen	https://notely.example	host-only exact on a favourite beats same-name pages on another host	
+46	lumen	Studio	space:Lumen	Space name exact match from another Space	
+47	pull requests	Studio	folder:Pull Requests	folder exact title in the current Space	
+48	cal	Studio	https://calendar.workspace.example/calendar/u/0/r?pli=1	adaptive history: two picks make the habit lead	pick|https://calendar.workspace.example/calendar/u/0/r?pli=1|cal|2
+49	qu	Studio	https://www.querywise.example/	adaptive history prefix: picks for a longer text help its prefix	pick|https://www.querywise.example/|quer|3
+50	weather tomorrow	any	search	negative control: nothing local matches	

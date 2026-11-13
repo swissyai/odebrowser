@@ -1,0 +1,353 @@
+import AppKit
+import SwiftUI
+
+/// What one command does in the Mac shell: whether it can do it now, what the
+/// menu bar calls it and whether it checks it when that follows the window,
+/// and what it runs. Each command the core names has exactly one, which the
+/// menu bar, its keys and the command palette all run. The core says what a
+/// window's contents allow; a command here says what the page and its engine
+/// can do.
+@MainActor
+struct BrowserMacCommand {
+    // MARK: - Static Variables
+
+    static let newWindow = BrowserMacCommand(
+        .newWindow, withoutWindow: .always { $0.open(.normal(sourceWindowID: nil), activation: .key) },
+        run: { $0.openNewWindow() })
+    static let newBlankWindow = BrowserMacCommand(.newBlankWindow) { $0.openBlankWindow() }
+    static let newTab = BrowserMacCommand(
+        .newTab, withoutWindow: .opensNewTabInNewWindow, managesPalette: true, run: { $0.openNewTab() })
+    static let openLocation = BrowserMacCommand(
+        .openLocation, actsOnPage: true, withoutWindow: .opensLocationInKeyQuickWindow, managesPalette: true,
+        run: { $0.openLocation() })
+    static let openFile = BrowserMacCommand(
+        .openFile, isAvailable: { $0.supportsEngineCapability(.localFiles) },
+        run: { $0.openFile() })
+    static let newQuickWindow = BrowserMacCommand(
+        .newQuickWindow, withoutWindow: .opensQuickWindowBesideKeyQuickWindow, run: { $0.openQuickWindow() })
+    static let newPrivateWindow = BrowserMacCommand(
+        .newPrivateWindow, withoutWindow: .always { $0.openPrivateWindow() },
+        run: { $0.openPrivateWindow() })
+    static let closeTabOrWindow = BrowserMacCommand(
+        .closeTabOrWindow, withoutWindow: .closesShellWindow,
+        run: { $0.closeTabOrWindow() })
+    static let closeWindow = BrowserMacCommand(
+        .closeWindow, withoutWindow: .closesShellWindow, run: { $0.closeKeyWindow() })
+    static let back = BrowserMacCommand(
+        .back, actsOnPage: true, isAvailable: { $0.commandPage?.live.canGoBack == true },
+        run: { $0.commandPage?.goBack() })
+    static let forward = BrowserMacCommand(
+        .forward, actsOnPage: true, isAvailable: { $0.commandPage?.live.canGoForward == true },
+        run: { $0.commandPage?.goForward() })
+    static let reloadPage = BrowserMacCommand(.reloadPage, actsOnPage: true) { $0.reload(.standard) }
+    static let stopLoading = BrowserMacCommand(
+        .stopLoading, actsOnPage: true, isAvailable: { $0.commandPage?.live.isLoading == true },
+        run: { $0.commandPage?.stopLoading() })
+    static let reloadFromOrigin = BrowserMacCommand(.reloadFromOrigin, actsOnPage: true) { $0.reload(.fromOrigin) }
+    static let toggleSelectedTabPinned = BrowserMacCommand(.toggleSelectedTabPinned) { $0.toggleSelectedTabPinned() }
+    static let toggleSelectedTabSaved = BrowserMacCommand(.toggleSelectedTabSaved) { $0.toggleSelectedTabSaved() }
+    static let duplicateTab = BrowserMacCommand(.duplicateTab) { $0.duplicateSelectedTab() }
+    static let reopenClosedTab = BrowserMacCommand(.reopenClosedTab) { $0.reopenClosedTab() }
+    static let clearUnpinnedTabs = BrowserMacCommand(
+        .clearUnpinnedTabs, isAvailable: { $0.canClearUnpinnedTabs }, run: { $0.clearUnpinnedTabs() })
+    static let archiveTab = BrowserMacCommand(.archiveTab) { $0.archiveSelectedTab() }
+    static let previousTab = BrowserMacCommand(.previousTab) { $0.selectPreviousTab() }
+    static let nextTab = BrowserMacCommand(.nextTab) { $0.selectNextTab() }
+    static let mostRecentTab = BrowserMacCommand(
+        .mostRecentTab, recentTabDirection: .forward, run: { $0.selectMostRecentTab() })
+    static let mostRecentTabBackward = BrowserMacCommand(
+        .mostRecentTabBackward, recentTabDirection: .backward, run: { $0.selectLeastRecentTab() })
+    static let splitWithNextTab = BrowserMacCommand(.splitWithNextTab) { $0.splitWithNextTab() }
+    static let focusNextSplitCard = BrowserMacCommand(.focusNextSplitCard) { $0.focusAdjacentSplitCard(offset: 1) }
+    static let focusPreviousSplitCard = BrowserMacCommand(.focusPreviousSplitCard) {
+        $0.focusAdjacentSplitCard(offset: -1)
+    }
+    static let removeTabFromSplit = BrowserMacCommand(.removeTabFromSplit) { $0.removeSelectedTabFromSplit() }
+    static let separateSplitTabs = BrowserMacCommand(.separateSplitTabs) { $0.separateSplitTabs() }
+    static let moveSplitCardLeft = BrowserMacCommand(
+        .moveSplitCardLeft, isAvailable: { $0.canMoveFocusedSplitCard(.left) },
+        run: { $0.moveFocusedSplitCard(.left) })
+    static let moveSplitCardRight = BrowserMacCommand(
+        .moveSplitCardRight, isAvailable: { $0.canMoveFocusedSplitCard(.right) },
+        run: { $0.moveFocusedSplitCard(.right) })
+    static let previousSpace = BrowserMacCommand(.previousSpace) { $0.selectPreviousSpace() }
+    static let nextSpace = BrowserMacCommand(.nextSpace) { $0.selectNextSpace() }
+    static let toggleReaderMode = BrowserMacCommand(
+        .toggleReaderMode, actsOnPage: true,
+        isAvailable: { $0.supportsPageCapability(.reader) && $0.shownPage?.readerModeState.canToggle == true },
+        title: { ($0.shownPage?.readerModeState ?? .unavailable).actionTitle },
+        run: { $0.shownPage?.toggleReaderMode() })
+    static let toggleContentBlocking = BrowserMacCommand(
+        .toggleContentBlocking, actsOnPage: true,
+        isAvailable: { $0.supportsEngineCapability(.contentBlocking) && $0.siteContentBlocking != nil },
+        title: { $0.contentBlockingActionTitle }, run: { $0.toggleContentBlocking() })
+    static let blockElement = BrowserMacCommand(
+        .blockElement, actsOnPage: true,
+        isAvailable: {
+            $0.supportsEngineCapability(.contentBlocking) && $0.commandPageShowsSite
+                && $0.browser.core.state.filterLists.level.blocksContent
+        },
+        run: { $0.blockElement() })
+    static let showBlockedElements = BrowserMacCommand(
+        .showBlockedElements, actsOnPage: true,
+        isAvailable: { $0.supportsEngineCapability(.contentBlocking) && $0.commandPageBlockedElements.exist },
+        run: { $0.showBlockedElements() })
+    static let findInPage = BrowserMacCommand(
+        .findInPage, actsOnPage: true, isAvailable: { $0.canFind },
+        run: { $0.presentFind() })
+    static let findNext = BrowserMacCommand(
+        .findNext, actsOnPage: true, isAvailable: { $0.canFindAgain }, waitsInPaletteUntilAvailable: true,
+        run: { $0.commandPage?.findAgain(.forward) })
+    static let findPrevious = BrowserMacCommand(
+        .findPrevious, actsOnPage: true, isAvailable: { $0.canFindAgain }, waitsInPaletteUntilAvailable: true,
+        run: { $0.commandPage?.findAgain(.backward) })
+    static let zoomIn = BrowserMacCommand(.zoomIn, actsOnPage: true, isAvailable: { $0.canZoom }, run: { $0.zoomIn() })
+    static let zoomOut = BrowserMacCommand(
+        .zoomOut, actsOnPage: true, isAvailable: { $0.canZoom }, run: { $0.zoomOut() })
+    static let actualSize = BrowserMacCommand(
+        .actualSize, actsOnPage: true, isAvailable: { $0.canZoom }, run: { $0.resetZoom() })
+    static let copyPageLink = BrowserMacCommand(
+        .copyPageLink, actsOnPage: true, isAvailable: { $0.hasCommandPage },
+        run: { $0.copyPageLink() })
+    static let copyPageLinkAsMarkdown = BrowserMacCommand(
+        .copyPageLinkAsMarkdown, actsOnPage: true, isAvailable: { $0.hasCommandPage },
+        run: { $0.copyPageLinkAsMarkdown() })
+    static let sharePage = BrowserMacCommand(
+        .sharePage, actsOnPage: true, isAvailable: { $0.hasCommandPage },
+        run: { $0.commandPage?.sharePage() })
+    static let exportPDF = BrowserMacCommand(
+        .exportPDF, actsOnPage: true, isAvailable: { $0.commandPageSupports(.pdf) },
+        run: { $0.commandPage?.exportPDF() })
+    static let saveWebArchive = BrowserMacCommand(
+        .saveWebArchive, actsOnPage: true, isAvailable: { $0.commandPageSupports(.webArchive) },
+        run: { $0.commandPage?.exportWebArchive() })
+    static let printPage = BrowserMacCommand(
+        .printPage, actsOnPage: true, isAvailable: { $0.commandPageSupports(.print) },
+        run: { $0.commandPage?.printPage() })
+    static let capturePage = BrowserMacCommand(
+        .capturePage, actsOnPage: true, isAvailable: { $0.commandPageSupports(.viewportCapture) },
+        isOn: { $0.commandPage?.isRegionCapturePresented == true },
+        run: { $0.commandPage?.toggleRegionCapture() })
+    static let clearSiteCookies = BrowserMacCommand(
+        .clearSiteCookies, actsOnPage: true, isAvailable: { $0.commandPageShowsSite },
+        run: { $0.clearCommandPageSiteData(.siteData) })
+    static let clearSiteCache = BrowserMacCommand(
+        .clearSiteCache, actsOnPage: true, isAvailable: { $0.commandPageShowsSite },
+        run: { $0.clearCommandPageSiteData(.cache) })
+    static let toggleSidebar = BrowserMacCommand(.toggleSidebar) { $0.toggleSidebar() }
+    static let showHistory = BrowserMacCommand(.showHistory) { $0.chrome.toggleUtility(.history) }
+    static let showArchive = BrowserMacCommand(.showArchive) { $0.chrome.toggleUtility(.archive) }
+    static let showDownloads = BrowserMacCommand(
+        .showDownloads, isAvailable: { $0.supportsEngineCapability(.downloads) },
+        run: { $0.chrome.toggleUtility(.downloads) })
+    static let showWebInspector = BrowserMacCommand(
+        .showWebInspector, actsOnPage: true, isAvailable: { $0.supportsPageCapability(.inspector) },
+        run: { _ = $0.shownPage?.showWebInspector() })
+    static let toggleTranslationToolbar = BrowserMacCommand(
+        .toggleTranslationToolbar, actsOnPage: true,
+        isAvailable: { $0.supportsPageCapability(.translation) && $0.shownPage?.readerModeState.isActive != true },
+        isOn: { $0.shownPage?.translation.showsToolbar == true },
+        run: { actions in
+            guard let page = actions.shownPage, !page.readerModeState.isActive else { return }
+            page.translation.toggleToolbarVisibility()
+        })
+    static let toggleDeveloperToolbar = BrowserMacCommand(
+        .toggleDeveloperToolbar, isAvailable: { $0.pages.hasActivePage },
+        isOn: { $0.pages.activePage?.isDeveloperModeEnabled == true },
+        run: { actions in
+            guard let page = actions.pages.activePage else { return }
+            page.setDeveloperToolbarVisible(!page.isDeveloperModeEnabled)
+        })
+    static let toggleTabLayout = BrowserMacCommand(
+        .toggleTabLayout, title: { $0.tabLayout.switchTitle }, run: { $0.toggleTabLayout() })
+    static let toggleSidebarSide = BrowserMacCommand(
+        .toggleSidebarSide, isAvailable: { !$0.tabLayout.showsTopBar }, title: { $0.sidebarSideSwitchTitle },
+        run: { $0.toggleSidebarSide() })
+    static let showTabsOnLeft = BrowserMacCommand(
+        .showTabsOnLeft, run: { $0.placeTabs(layout: .sidebar, sidebarOnRight: false) })
+    static let showTabsOnRight = BrowserMacCommand(
+        .showTabsOnRight, run: { $0.placeTabs(layout: .sidebar, sidebarOnRight: true) })
+    static let showTabsOnTop = BrowserMacCommand(
+        .showTabsOnTop, run: { $0.placeTabs(layout: .top) })
+    static let toggleIconSidebar = BrowserMacCommand(
+        .toggleIconSidebar, isAvailable: { !$0.tabLayout.showsTopBar }, title: { $0.sidebarStyle.switchTitle },
+        run: { $0.toggleIconSidebar() })
+    static let toggleFocus = BrowserMacCommand(
+        .toggleFocus,
+        title: { _ in BrowserAppPreferenceStore.shared.focus.hidesFeeds ? "Turn Focus Off" : "Turn Focus On" },
+        isOn: { _ in BrowserAppPreferenceStore.shared.focus.hidesFeeds },
+        run: { _ in
+            let preferences = BrowserAppPreferenceStore.shared
+            preferences.focus.hidesFeeds.toggle()
+            BrowserNoticeCenter.shared.post(
+                BrowserNotice(
+                    message: preferences.focus.hidesFeeds
+                        ? String(localized: "Focus on: feeds hidden on YouTube, Reddit, X and Instagram")
+                        : String(localized: "Focus off"),
+                    systemImage: "moon.circle"))
+        })
+    static let boostSite = BrowserMacCommand(
+        .boostSite, actsOnPage: true, isAvailable: { $0.commandPage?.boost.isAvailable == true },
+        run: { $0.commandPage?.boost.beginEditing() })
+    /// ⌘1–⌘9 and ⌃1–⌃9: the stop or Space the core says the number leads to now.
+    static let selectNumbered = BrowserMacCommand(
+        .selectNumbered, isAvailable: { actions, command in actions.numberedSelections[command] != nil },
+        run: { actions, command in
+            guard let selection = actions.numberedSelections[command] else { return }
+            actions.select(selection)
+        })
+
+    /// Every command the Mac shell runs, one for each kind the core names.
+    static let all = [
+        newWindow, newBlankWindow, newTab, openLocation, openFile, newQuickWindow, newPrivateWindow, closeTabOrWindow,
+        closeWindow,
+        back, forward, reloadPage, stopLoading, reloadFromOrigin, toggleSelectedTabPinned, toggleSelectedTabSaved,
+        duplicateTab,
+        reopenClosedTab,
+        clearUnpinnedTabs, archiveTab, previousTab, nextTab, mostRecentTab, mostRecentTabBackward,
+        splitWithNextTab, focusNextSplitCard,
+        focusPreviousSplitCard, removeTabFromSplit, separateSplitTabs, moveSplitCardLeft, moveSplitCardRight,
+        previousSpace, nextSpace,
+        toggleReaderMode, toggleContentBlocking, blockElement, showBlockedElements,
+        findInPage, findNext, findPrevious, zoomIn, zoomOut,
+        actualSize,
+        copyPageLink,
+        copyPageLinkAsMarkdown,
+        sharePage, exportPDF, saveWebArchive, printPage, capturePage, clearSiteCookies, clearSiteCache,
+        toggleSidebar, showHistory, showArchive, showDownloads,
+        showWebInspector,
+        toggleTranslationToolbar, toggleDeveloperToolbar, selectNumbered, boostSite, toggleTabLayout,
+        toggleSidebarSide, showTabsOnLeft, showTabsOnRight, showTabsOnTop, toggleIconSidebar, toggleFocus,
+    ]
+
+    // MARK: - Variables
+
+    /// The kind of command this runs.
+    let kind: ShortcutCommand.Kinds
+
+    /// Whether the window can run the command now, as far as the page and its engine go.
+    let isAvailable: @MainActor (BrowserCommandActions, ShortcutCommand) -> Bool
+
+    /// What the menu bar calls the command now, or nil for its own title.
+    let title: @MainActor (BrowserCommandActions) -> LocalizedStringResource?
+
+    /// Whether what the command shows or hides is showing, or nil for a command
+    /// the menu bar never checks.
+    let isOn: @MainActor (BrowserCommandActions) -> Bool?
+
+    /// Runs the command in a window.
+    let run: @MainActor (BrowserCommandActions, ShortcutCommand) -> Void
+
+    /// What the command does while no browser window is key, or nil for a
+    /// command that needs one.
+    let withoutWindow: BrowserMacWindowlessCommand?
+
+    /// Whether the command acts on a page, which a Quick Window in front
+    /// shows too, so a key Quick Window runs it on its own page.
+    let actsOnPage: Bool
+
+    /// Whether the palette lists the command only while it can run, for a
+    /// command that means nothing until something else happens first, such
+    /// as finding again before any search.
+    let waitsInPaletteUntilAvailable: Bool
+
+    /// Which way the command goes through the recent tabs when a held key
+    /// begins it, or nil for a command that is not one of them. Chosen from
+    /// the menu bar or the palette it jumps at once.
+    let recentTabDirection: RecentTabSwitchDirection?
+
+    /// Whether the command opens or puts away the palette itself. Every other
+    /// command puts an open palette away before it runs, so the window shows
+    /// what the command did.
+    let managesPalette: Bool
+
+    // MARK: - Initializers
+
+    private init(
+        _ kind: ShortcutCommand.Kinds,
+        actsOnPage: Bool = false,
+        isAvailable: @escaping @MainActor (BrowserCommandActions) -> Bool = { _ in true },
+        title: @escaping @MainActor (BrowserCommandActions) -> LocalizedStringResource? = { _ in nil },
+        isOn: @escaping @MainActor (BrowserCommandActions) -> Bool? = { _ in nil },
+        withoutWindow: BrowserMacWindowlessCommand? = nil,
+        waitsInPaletteUntilAvailable: Bool = false,
+        recentTabDirection: RecentTabSwitchDirection? = nil,
+        managesPalette: Bool = false,
+        run: @escaping @MainActor (BrowserCommandActions) -> Void
+    ) {
+        self.init(
+            kind, actsOnPage: actsOnPage, isAvailable: { actions, _ in isAvailable(actions) }, title: title,
+            isOn: isOn, withoutWindow: withoutWindow, waitsInPaletteUntilAvailable: waitsInPaletteUntilAvailable,
+            recentTabDirection: recentTabDirection, managesPalette: managesPalette,
+            run: { actions, _ in run(actions) })
+    }
+
+    private init(
+        _ kind: ShortcutCommand.Kinds,
+        actsOnPage: Bool = false,
+        isAvailable: @escaping @MainActor (BrowserCommandActions, ShortcutCommand) -> Bool,
+        title: @escaping @MainActor (BrowserCommandActions) -> LocalizedStringResource? = { _ in nil },
+        isOn: @escaping @MainActor (BrowserCommandActions) -> Bool? = { _ in nil },
+        withoutWindow: BrowserMacWindowlessCommand? = nil,
+        waitsInPaletteUntilAvailable: Bool = false,
+        recentTabDirection: RecentTabSwitchDirection? = nil,
+        managesPalette: Bool = false,
+        run: @escaping @MainActor (BrowserCommandActions, ShortcutCommand) -> Void
+    ) {
+        self.kind = kind
+        self.actsOnPage = actsOnPage
+        self.isAvailable = isAvailable
+        self.title = title
+        self.isOn = isOn
+        self.withoutWindow = withoutWindow
+        self.waitsInPaletteUntilAvailable = waitsInPaletteUntilAvailable
+        self.recentTabDirection = recentTabDirection
+        self.managesPalette = managesPalette
+        self.run = run
+    }
+
+    // MARK: - Actions - Lookup
+
+    /// What `command` does in the Mac shell, or nil for a kind of command the
+    /// shell does not run, which it then never offers.
+    static func of(_ command: ShortcutCommand) -> BrowserMacCommand? {
+        all.first { $0.kind == command.kind }
+    }
+}
+
+/// What a command does while no browser window is key: a new window opens
+/// from nothing, and a window the shell opened, such as a Quick Window or
+/// setup, closes itself.
+@MainActor
+struct BrowserMacWindowlessCommand {
+    // MARK: - Static Variables
+
+    /// Closes the key window when it is one the shell opened.
+    static let closesShellWindow = BrowserMacWindowlessCommand(
+        isAvailable: { $0.isShellWindowKey }, run: { _ in NSApp.keyWindow?.performClose(nil) })
+    /// Opens an empty Quick Window beside the key one, in its Space.
+    static let opensQuickWindowBesideKeyQuickWindow = BrowserMacWindowlessCommand(
+        isAvailable: { $0.isQuickWindowKey }, run: { $0.openQuickWindowBesideKeyQuickWindow() })
+    /// Opens the key Quick Window's palette from its address field, as Open
+    /// Location does over a page, when the Quick Window has none yet.
+    static let opensLocationInKeyQuickWindow = BrowserMacWindowlessCommand(
+        isAvailable: { $0.isQuickWindowKey }, run: { $0.openLocationInKeyQuickWindow() })
+    /// With no browser window open, opens one and starts the new tab there.
+    static let opensNewTabInNewWindow = BrowserMacWindowlessCommand(
+        isAvailable: { $0.activeBrowserWindow == nil }, run: { $0.openNewTabInNewWindow() })
+
+    // MARK: - Variables
+
+    /// Whether the shell's windows can run it now.
+    let isAvailable: @MainActor (BrowserMacWindows) -> Bool
+
+    /// Runs it with the shell's windows.
+    let run: @MainActor (BrowserMacWindows) -> Void
+
+    // MARK: - Initializers
+
+    /// A command that always runs with the shell's windows.
+    static func always(_ run: @escaping @MainActor (BrowserMacWindows) -> Void) -> BrowserMacWindowlessCommand {
+        BrowserMacWindowlessCommand(isAvailable: { _ in true }, run: run)
+    }
+}

@@ -1,0 +1,41 @@
+name: Bug report
+description: Something in Ode does not work as it should.
+body:
+  - type: markdown
+    attributes:
+      value: Leave out passwords, account details, private addresses and browsing history.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: ode-version
+    attributes:
+      label: Ode version
+      description: Shown in Ode > Settings > About.
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+    validations:
+      required: true

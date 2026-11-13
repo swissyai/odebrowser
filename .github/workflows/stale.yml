@@ -1,0 +1,86 @@
+name: Waiting on author
+
+# Reminds, then closes, only issues labelled "waiting on reporter" and pull
+# requests labelled "waiting on author". An item without one of those labels
+# is never marked or closed, however long it has been quiet. The label comes
+# off when the author comments or pushes, so an item waiting on the
+# maintainer is never counted against its author.
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [synchronize]
+
+permissions: {}
+
+jobs:
+  remind-and-close:
+    name: Remind and close items waiting on their author
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
+        with:
+          any-of-issue-labels: waiting on reporter
+          any-of-pr-labels: waiting on author
+          days-before-issue-stale: 21
+          days-before-issue-close: 7
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+          exempt-draft-pr: true
+          stale-issue-label: stale
+          stale-pr-label: stale
+          close-issue-reason: not_planned
+          operations-per-run: 60
+          stale-issue-message: >-
+            This issue is still waiting on the details asked for above, which are needed
+            to reproduce the problem. If you can retest on the latest release and reply,
+            it stays open; otherwise it closes in 7 days.
+          close-issue-message: >-
+            Closed because the problem could not be reproduced without more details.
+            This is not a statement that it is fixed. If it still happens, reply with
+            current steps and it will be reopened.
+          stale-pr-message: >-
+            This pull request has been waiting on changes from you for 30 days (see the
+            last review). Push a commit or reply to keep it open; otherwise it closes in
+            14 days. The review notes stay here either way.
+          close-pr-message: >-
+            Closed after 44 days waiting on changes. Nothing about the change itself was
+            judged. When you pick it back up, comment here and it will be reopened, or
+            open a new pull request that links this one.
+
+  author-replied:
+    name: Clear the waiting label when the author replies
+    # A comment by the issue or pull request author, or a push to the pull
+    # request, by a person rather than an automation.
+    if: >-
+      ${{ !endsWith(github.actor, '[bot]') && (
+      (github.event_name == 'issue_comment'
+      && github.event.comment.user.login == github.event.issue.user.login
+      && (contains(github.event.issue.labels.*.name, 'waiting on author')
+      || contains(github.event.issue.labels.*.name, 'waiting on reporter')))
+      || (github.event_name == 'pull_request_target'
+      && contains(github.event.pull_request.labels.*.name, 'waiting on author'))) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+    steps:
+      - name: Remove "waiting on author"
+        if: contains(github.event.issue.labels.*.name, 'waiting on author') || contains(github.event.pull_request.labels.*.name, 'waiting on author')
+        run: gh api --method DELETE "repos/${GITHUB_REPOSITORY}/issues/${NUMBER}/labels/waiting%20on%20author" --silent
+
+      - name: Remove "waiting on reporter"
+        if: contains(github.event.issue.labels.*.name, 'waiting on reporter')
+        run: gh api --method DELETE "repos/${GITHUB_REPOSITORY}/issues/${NUMBER}/labels/waiting%20on%20reporter" --silent

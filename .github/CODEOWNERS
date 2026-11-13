@@ -1,0 +1,73 @@
+# The main ruleset requires a code owner's review only for the paths below:
+# the workflows and the actions they run, dependency manifests and pins, the
+# security policy, and the high-risk paths that CONTRIBUTING.md lists under
+# "High-risk paths". Any other change needs a pull request and passing
+# checks, but no code-owner review.
+
+/.github/workflows/ @swissyai
+/.github/actions/ @swissyai
+
+/.github/dependabot.yml @swissyai
+/HelpCenter/package.json @swissyai
+/HelpCenter/package-lock.json @swissyai
+/OdeCore/global.json @swissyai
+/OdeCore/**/*.csproj @swissyai
+/project.yml @swissyai
+/Ode.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved @swissyai
+/CrestEngines/Chromium/source.lock.json @swissyai
+
+/SECURITY.md @swissyai
+
+# High-risk paths. Keep this list, the "area: high risk" globs in
+# .github/labeler.yml and "High-risk paths" in CONTRIBUTING.md the same.
+
+# Updates and the update feed
+/OdeMac/Features/SoftwareUpdates/Models/ @swissyai
+/OdeMac/Features/SoftwareUpdates/Services/ @swissyai
+/Scripts/release-ode.sh @swissyai
+/Scripts/next-release-build-number.py @swissyai
+/Scripts/control-plane/update-feed.py @swissyai
+/Scripts/control-plane/mark-security-update.py @swissyai
+
+# Keychain and credentials
+/OdeShared/Application/Credentials/ @swissyai
+/OdeShared/Domain/BrowserCredential/ @swissyai
+/OdeShared/Infrastructure/Credentials/ @swissyai
+/OdeShared/Infrastructure/WebKit/Credentials/ @swissyai
+/OdeMac/Infrastructure/BrowserPasskeyAccess/ @swissyai
+/OdeMobile/Infrastructure/BrowserPasskeyAccess/ @swissyai
+/OdeCore/src/OdeCore/Application/Credentials/ @swissyai
+/OdeCore/src/OdeCore/Contracts/Credentials/ @swissyai
+
+# Session storage
+/OdeCore/src/OdeCore/Application/Storage/ @swissyai
+/OdeCore/src/OdeCore/Application/Session/StoredSessionCodec*.cs @swissyai
+
+# Agent gates and grants
+/OdeMac/App/Agents/BrowserAgentApprovals.swift @swissyai
+/OdeMac/App/Agents/BrowserAgentFillRefusal.swift @swissyai
+/OdeMac/App/Agents/BrowserAgentOriginGate.swift @swissyai
+/OdeMac/App/Agents/BrowserAgentOriginGrants.swift @swissyai
+/OdeShared/Infrastructure/Downloads/DownloadPrompts.swift @swissyai
+/OdeCore/src/OdeCore/Application/Device/Intents/Agents/ @swissyai
+/OdeCore/src/OdeCore/Application/Device/Queries/AgentReach.cs @swissyai
+
+# Entitlements and Info.plists
+*.entitlements @swissyai
+*Info.plist @swissyai
+
+# Prebuilt engine inputs: INPUTS in Scripts/control-plane/chromium_engine.py.
+# CrestEngines/Chromium/source.lock.json is listed with the pins above.
+/CrestEngines/Chromium/host-inputs.json @swissyai
+/CrestEngines/Chromium/Patches/ @swissyai
+/CrestEngines/Chromium/Overlay/ @swissyai
+/CrestEngines/Chromium/Apple/CrestChromiumHost.h @swissyai
+/CrestContracts/include/crest_core.h @swissyai
+/CrestContracts/include/crest_app.h @swissyai
+/CrestContracts/include/crest_engine.h @swissyai
+/CrestContracts/include/crest_engine_contract.h @swissyai
+/CrestCore/native/ContentFilter/include/crest_content_filter.h @swissyai
+/Scripts/control-plane/prepare-chromium.py @swissyai
+/Scripts/control-plane/apply-chromium-host.py @swissyai
+/Scripts/control-plane/configure-chromium.py @swissyai
+/Scripts/control-plane/build-chromium-baseline.py @swissyai

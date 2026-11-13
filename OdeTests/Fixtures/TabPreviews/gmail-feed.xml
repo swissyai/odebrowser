@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed version="0.3" xmlns="http://purl.org/atom/ns#">
+<title>Gmail - Inbox for jane.doe@example.com</title>
+<tagline>New messages in your Gmail Inbox</tagline>
+<fullcount>27</fullcount>
+<link rel="alternate" href="https://mail.google.com/mail" type="text/html" />
+<modified>2026-11-01T18:00:00Z</modified>
+<entry>
+<title>Quarterly plan draft</title>
+<summary>Here is the draft we talked about on Tuesday. Comments welcome.</summary>
+<link rel="alternate" href="https://mail.google.com/mail?account_id=jane.doe@example.com&amp;message_id=19a2b3c4d5e6f708&amp;view=conv&amp;extsrc=atom" type="text/html" />
+<modified>2026-11-01T17:42:00Z</modified>
+<issued>2026-11-01T17:42:00Z</issued>
+<id>tag:gmail.google.com,2004:1800000000000000001</id>
+<author>
+<name>Alex Rivera</name>
+<email>alex.rivera@example.com</email>
+</author>
+</entry>
+<entry>
+<title>Lunch on Thursday &amp; a question</title>
+<summary>Are you free at noon?</summary>
+<link rel="alternate" href="https://mail.google.com/mail?account_id=jane.doe@example.com&amp;message_id=19a2b3c4d5e6f709&amp;view=conv&amp;extsrc=atom" type="text/html" />
+<modified>2026-11-01T15:05:00Z</modified>
+<issued>2026-11-01T15:05:00Z</issued>
+<id>tag:gmail.google.com,2004:1800000000000000002</id>
+<author>
+<name></name>
+<email>sam@example.org</email>
+</author>
+</entry>
+<entry>
+<title></title>
+<summary></summary>
+<link rel="alternate" href="https://elsewhere.example.net/?message_id=not-hex" type="text/html" />
+<modified>2026-10-31T09:00:00Z</modified>
+<issued>2026-10-31T09:00:00Z</issued>
+<id>tag:gmail.google.com,2004:1800000000000000003</id>
+<author>
+<name>Example Newsletter</name>
+<email>news@example.net</email>
+</author>
+</entry>
+</feed>

@@ -1,0 +1,710 @@
+{
+ "limits": {
+  "ccn": 15,
+  "length": 80
+ },
+ "functions": [
+  {
+   "file": "OdeCore/src/OdeCore.Native/Exports/EngineExports.cs",
+   "function": "Exports::EngineRegister( ulong app , byte * fingerprint , nuint length , byte * registration , nuint registrationLength , OdeEngineBinding * binding , ulong * engine , OdeBuffer * rejection)",
+   "ccn": 18,
+   "length": 39
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/ContentBlocking/ElementRule.cs",
+   "function": "For( string pageUrl , string selector)",
+   "ccn": 17,
+   "length": 9
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/ContentBlocking/FilterLibrary.cs",
+   "function": "FilterLibrary::BuildEngine( string key , IReadOnlyList<(string Name,string Digest)> inputs , string customFilters)",
+   "ccn": 21,
+   "length": 54
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/ContentBlocking/FilterLibrary.cs",
+   "function": "FilterLibrary::RestoreState()",
+   "ccn": 28,
+   "length": 23
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Pages/PageGroup.cs",
+   "function": "PageGroup::Reconcile( Pages pages , Action<Engine,EngineCommand> issue)",
+   "ccn": 16,
+   "length": 39
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Pages/PageGroup.cs",
+   "function": "PageGroup::Show( PageGroupChanged report , Pages pages)",
+   "ccn": 27,
+   "length": 31
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Pages/PageHistory.Archive.cs",
+   "function": "PageHistory::Unarchive( byte [ ] ? archive)",
+   "ccn": 23,
+   "length": 40
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Portability/ArcSidebar.cs",
+   "function": "ArcSidebar::Append( string id , TabPlacement placement , string ? parent , int depth , IReadOnlyDictionary<string,Item> items , Draft draft , DateTimeOffset importedAt , string ? split = null)",
+   "ccn": 17,
+   "length": 24
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Portability/BrowserDataSpace.cs",
+   "function": "Materialize( IIdSource ids , DateTimeOffset now)",
+   "ccn": 19,
+   "length": 60
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Portability/BrowserDataTab.cs",
+   "function": "Materialize( Guid id , IReadOnlyDictionary<Guid,Guid> folders , IReadOnlyDictionary<Guid,Guid> splits)",
+   "ccn": 20,
+   "length": 19
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Portability/FirefoxSession.cs",
+   "function": "FirefoxSession::Tab( JsonElement tab , IReadOnlyDictionary<string,SessionFolder> groups , DateTimeOffset importedAt)",
+   "ccn": 16,
+   "length": 12
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Portability/InstalledBrowser.cs",
+   "function": "InstalledBrowser::ProfileSpace( ImportProfile profile , ImportSpaceNames names , IIdSource ids , DateTimeOffset now , List<ImportLeftOut> leftOut , out IReadOnlyList<SessionHistoryEntry> visited)",
+   "ccn": 19,
+   "length": 33
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Portability/ZenSessions.cs",
+   "function": "ZenSessions::Dictionary<string,string>( StringComparer . Ordinal)",
+   "ccn": 1,
+   "length": 89
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Portability/ZenSessions.cs",
+   "function": "ZenSessions::Tab(JsonElement tab,string?folder,IReadOnlySet<string>splits,DateTimeOffset importedAt)",
+   "ccn": 17,
+   "length": 14
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Session/NativeSessionAuthority.Intents.cs",
+   "function": "NativeSessionAuthority::Handle( SessionIntent intent , DateTimeOffset now , IIdSource ids , Pages ? pages = null)",
+   "ccn": 18,
+   "length": 49
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Session/NativeSessionAuthority.Sync.cs",
+   "function": "NativeSessionAuthority::Converging( NativeSyncAuthority sync , IncomingSyncRecords records , bool replacing , DateTimeOffset now , IIdSource ids , Lock commitGate , bool seedOnly = false)",
+   "ccn": 18,
+   "length": 59
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Session/SessionIdentities.cs",
+   "function": "SessionIdentities::Stepping( SessionState basis , SessionState next)",
+   "ccn": 26,
+   "length": 45
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Sync/NativeSyncCompatibility.cs",
+   "function": "NativeSyncCompatibility::Merge( Shape shape , JsonNode current , JsonNode ? previous)",
+   "ccn": 17,
+   "length": 19
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Sync/NativeSyncMaterializer.cs",
+   "function": "NativeSyncMaterializer::Archive( Guid space , IReadOnlyList<SyncSessionRecord> records , SyncPreferences policy , SpaceState ? local , IReadOnlyList<TabState> tabs)",
+   "ccn": 19,
+   "length": 25
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Sync/NativeSyncMaterializer.cs",
+   "function": "NativeSyncMaterializer::Tabs( Guid space , IReadOnlyList<SyncSessionRecord> records , SyncPreferences policy , SpaceState ? local , IReadOnlyList<FolderState> folders , IReadOnlyDictionary<Guid,Guid> owners , HashSet<Guid> deleted)",
+   "ccn": 17,
+   "length": 29
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Sync/NativeSyncProjection.cs",
+   "function": "NativeSyncProjection::Project( JsonObject session , JsonNode preferences , IEnumerable<JsonObject> existingRecords)",
+   "ccn": 20,
+   "length": 106
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Application/Sync/Payloads/SpacePayload.cs",
+   "function": "Read( SyncPayloadReader value)",
+   "ccn": 20,
+   "length": 32
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Contracts/Session/AppPreferences.cs",
+   "function": "Equals( AppPreferences ? other)",
+   "ccn": 18,
+   "length": 16
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Contracts/Session/Boosts/SiteBoost.cs",
+   "function": "IsContainedSelector( string selector)",
+   "ccn": 18,
+   "length": 23
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Contracts/Session/Sidebar/SidebarOutline.cs",
+   "function": "ListsAlike( IReadOnlyList<TabState> tabs , IReadOnlyList<TabState> otherTabs , IReadOnlyList<FolderState> folders , IReadOnlyList<FolderState> otherFolders)",
+   "ccn": 20,
+   "length": 25
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Contracts/Session/Sidebar/SidebarOutline.cs",
+   "function": "Nest( TabPlacement section , List<Item> items , List<TabState> listed , List<FolderNode> nodes , Dictionary<Guid,List<SidebarRow>> insides , Dictionary<Guid,TabTree.Place> places)",
+   "ccn": 24,
+   "length": 48
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Contracts/Setup/SetupImportReview.Editing.cs",
+   "function": "Analyzed( SessionState session)",
+   "ccn": 16,
+   "length": 26
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Answers/AnswerIndex.cs",
+   "function": "AnswerIndex::Rank( string text)",
+   "ccn": 16,
+   "length": 38
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Csv/CsvReader.cs",
+   "function": "CsvReader::Read( string text)",
+   "ccn": 25,
+   "length": 68
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Navigation/AddressCandidate.cs",
+   "function": "AddressCandidate::Completing( TypedAddress typed)",
+   "ccn": 17,
+   "length": 20
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Navigation/AddressCandidate.cs",
+   "function": "AddressCandidate::Of( string url , int source , DateTimeOffset date , int visits , DateTimeOffset ? firstVisited = null)",
+   "ccn": 16,
+   "length": 21
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Navigation/AddressResolution.cs",
+   "function": "ValidateUrl( string ? url , bool allowsInternalPages = false)",
+   "ccn": 19,
+   "length": 14
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Palette/Palette.cs",
+   "function": "Palette::Rank( PaletteQuery query , PaletteSuggestions question , PaletteRow ? intent)",
+   "ccn": 19,
+   "length": 26
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Palette/Palette.cs",
+   "function": "Palette::Typed( PaletteQuery query , PaletteSuggestions question)",
+   "ccn": 24,
+   "length": 34
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Palette/PaletteContext.cs",
+   "function": "PaletteContext::Evidence( PaletteQuery query , PlaceText text , DateTimeOffset ? lastUsed = null , bool isOpen = false , bool isKept = false , HistoryEntryState ? entry = null)",
+   "ccn": 31,
+   "length": 18
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Palette/PlaceText.cs",
+   "function": "PlaceText::PlaceText( string title , Uri ? uri)",
+   "ccn": 17,
+   "length": 60
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Palette/UnitConversion.Choices.cs",
+   "function": "UnitConversion::Choices( string typed)",
+   "ccn": 17,
+   "length": 25
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Palette/UnitConversion.cs",
+   "function": "UnitConversion::ReadAmount( string written)",
+   "ccn": 17,
+   "length": 23
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Search/SearchTemplate.cs",
+   "function": "Admitted( string value , bool allowsFragmentPlaceholder)",
+   "ccn": 22,
+   "length": 35
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Sync/SyncedAddress.cs",
+   "function": "Parts()",
+   "ccn": 33,
+   "length": 60
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Tabs/Batch/BrowserTabCollection.Batch.cs",
+   "function": "BrowserTabCollection::FileRoots( ResolvedSelection selection , TabPlacement placement , Guid ? folder , Guid ? before , Guid ? beforeFolder , bool leavesSplits , DateTimeOffset now)",
+   "ccn": 21,
+   "length": 35
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Tabs/BrowserTabCollection.Editing.cs",
+   "function": "BrowserTabCollection::MoveTab( Guid id , TabPlacement placement , Guid ? folder , Guid ? before , bool detachSplit , DateTimeOffset now)",
+   "ccn": 17,
+   "length": 25
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Tabs/BrowserTabCollection.Organization.cs",
+   "function": "BrowserTabCollection::MoveFolder( Guid id , TabPlacement ? location , Guid ? parent , DateTimeOffset now , Guid ? beforeFolder = null , Guid ? beforeTab = null)",
+   "ccn": 33,
+   "length": 40
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Tabs/BrowserTabCollection.Splits.cs",
+   "function": "BrowserTabCollection::JoinSplit( Guid sourceId , Guid targetId , int ? memberIndex , IIdSource ids , DateTimeOffset now)",
+   "ccn": 25,
+   "length": 52
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Tabs/BrowserTabCollection.Transfer.cs",
+   "function": "BrowserTabCollection::TransferTo( BrowserTabCollection destination , Guid id , Guid ? selected , Guid ? fallback , TabPlacement ? requestedPlacement , Guid ? requestedFolder , Guid ? before , bool afterSelection , Guid ? destinationSelection , DateTimeOffset now)",
+   "ccn": 26,
+   "length": 38
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Tabs/Organization/FolderTree.cs",
+   "function": "Materialized(Guid space,IReadOnlyList<FolderState>ordered,IReadOnlyDictionary<Guid,Guid>owners,IReadOnlyDictionary<Guid,FolderState>local,HashSet<Guid>deleted)",
+   "ccn": 18,
+   "length": 39
+  },
+  {
+   "file": "OdeCore/src/OdeCore/Domain/Translation/LanguageTag.cs",
+   "function": "new( StringComparer . Ordinal)",
+   "ccn": 1,
+   "length": 86
+  },
+  {
+   "file": "OdeMac/App/Agents/BrowserAgentPageScript.swift",
+   "function": "markdown fullPage : Bool , offset : Int , maxChars : Int",
+   "ccn": 1,
+   "length": 141
+  },
+  {
+   "file": "OdeMac/App/Agents/BrowserAgentPageScript.swift",
+   "function": "snapshot _ reading : Reading",
+   "ccn": 1,
+   "length": 359
+  },
+  {
+   "file": "OdeMac/App/BrowserMacApplication.swift",
+   "function": "init defaultEngine : any NativeEngineBinding ? = nil , siteControlAnchor : BrowserSiteControlAnchor? = nil , reviewPersistenceID : String = 'core-native-ui-review' , launch : BrowserMacLaunchContext? = nil",
+   "ccn": 10,
+   "length": 93
+  },
+  {
+   "file": "OdeMac/App/BrowserMacWindowScene.swift",
+   "function": "var body",
+   "ccn": 5,
+   "length": 93
+  },
+  {
+   "file": "OdeMac/App/Harness/BrowserMacHarness+Commands.swift",
+   "function": "setupDemo _ specs : [ [ String : Any ] ]",
+   "ccn": 18,
+   "length": 72
+  },
+  {
+   "file": "OdeMac/App/Harness/BrowserMacHarness+FrameSampling.swift",
+   "function": "sampleFrames _ arguments : [ String : Any ]",
+   "ccn": 13,
+   "length": 99
+  },
+  {
+   "file": "OdeMac/App/Shell/BrowserMacShell+Commands.swift",
+   "function": "handleShortcut _ event : NSEvent , at stage : BrowserMacKeyStage",
+   "ccn": 18,
+   "length": 55
+  },
+  {
+   "file": "OdeMac/Features/Browser/BrowserRootView/Components/BrowserRootShell.swift",
+   "function": "var body",
+   "ccn": 7,
+   "length": 135
+  },
+  {
+   "file": "OdeMac/Features/Browser/BrowserRootView/Components/Page/SpaceContentPagerView.swift",
+   "function": "prepareHosts at position : CGFloat , destination : UUID? , refresh : Bool , preparesNeighbors : Bool = true",
+   "ccn": 21,
+   "length": 67
+  },
+  {
+   "file": "OdeMac/Features/Browser/Components/BrowserWebPageSurface/BrowserWebPageSurface.swift",
+   "function": "var body",
+   "ccn": 19,
+   "length": 110
+  },
+  {
+   "file": "OdeMac/Features/Chrome/Components/BrowserPlatformCommandPaletteField.swift",
+   "function": "perform _ selector : Selector , in textView : NSTextView , modifiers : NSEvent . ModifierFlags",
+   "ccn": 20,
+   "length": 61
+  },
+  {
+   "file": "OdeMac/Features/Chrome/Components/SpacePager/SpaceBackdropBlend.swift",
+   "function": "receive _ snapshot : SpacePagerPresentation . Snapshot?",
+   "ccn": 22,
+   "length": 68
+  },
+  {
+   "file": "OdeMac/Features/Chrome/Components/SpacePager/SpacePagerGesture.swift",
+   "function": "handle _ event : NSEvent",
+   "ccn": 29,
+   "length": 64
+  },
+  {
+   "file": "OdeMac/Features/Onboarding/BrowserOnboardingWindow/Components/BrowserOnboardingReviewPage/BrowserOnboardingReviewPage.swift",
+   "function": "footerNotes _ setupReview : SetupImportReview",
+   "ccn": 10,
+   "length": 81
+  },
+  {
+   "file": "OdeMac/Features/Onboarding/BrowserOnboardingWindow/Components/BrowserOnboardingReviewPage/BrowserOnboardingReviewPage.swift",
+   "function": "var body",
+   "ccn": 7,
+   "length": 85
+  },
+  {
+   "file": "OdeMac/Features/Onboarding/BrowserOnboardingWindow/Components/BrowserSourceImportPreview/Components/BrowserSourceImportContent.swift",
+   "function": "var body",
+   "ccn": 6,
+   "length": 99
+  },
+  {
+   "file": "OdeMac/Features/Onboarding/BrowserOnboardingWindow/Models/BrowserOnboardingFlow.swift",
+   "function": "performImportCommit review : SetupImportReview , payload : BrowserDetectedImportPayload? , generation : Int , outcome : SetupImportOutcome , bringsSignIns : Bool",
+   "ccn": 15,
+   "length": 91
+  },
+  {
+   "file": "OdeMac/Features/Settings/Components/BrowserSoftwareUpdateSettingsSection.swift",
+   "function": "var body",
+   "ccn": 6,
+   "length": 106
+  },
+  {
+   "file": "OdeMac/Features/Sidebar/BrowserSidebar/Components/BrowserSidebarLoadedContent/BrowserSidebarLoadedContent.swift",
+   "function": "var body",
+   "ccn": 4,
+   "length": 84
+  },
+  {
+   "file": "OdeMac/Features/Sidebar/BrowserSidebar/Components/SpaceSidebarContent/SpaceSidebarBrowsingContent.swift",
+   "function": "content _ listContext : BrowserSidebarListContext",
+   "ccn": 7,
+   "length": 84
+  },
+  {
+   "file": "OdeMac/Features/Sidebar/Components/BrowserSpaceSwitcher/PlatformSpacePickerPresentation.swift",
+   "function": "receive _ snapshot : SpacePagerPresentation . Snapshot",
+   "ccn": 22,
+   "length": 73
+  },
+  {
+   "file": "OdeMac/Features/SplitView/Components/BrowserSplitPageSurface.swift",
+   "function": "var body",
+   "ccn": 13,
+   "length": 88
+  },
+  {
+   "file": "OdeMac/Infrastructure/Pages/BrowserPage.swift",
+   "function": "init corePage : CorePage , engine engineAdapter : any BrowserPageEngineAdapter , dialogPresenter : BrowserDialogPresenter , downloadCenter : BrowserDownloadCenter , permissionCenter : BrowserSitePermissionCenter , hostedNotificationCenter : any BrowserHostedWebNotificationCentering ? = nil , passkeyAccess : BrowserPasskeyAccessController? = nil , recoverNotificationSystemAuthorization : @ MainActor async -> Void ? = nil , serverTrustOverrides : BrowserServerTrustOverrideStore = BrowserServerTrustOverrideStore , mediaSessionStore : BrowserMediaSessionStore? = nil , spaceID : UUID , profileID : UUID , spaceName : String , allowsCredentialAccess : Bool = true , isCredentialAccessEnabled : Bool = true , defaultPageZoom : CGFloat = BrowserDefaultPageZoomStore . defaultLevel , loadHTTPAuthenticationCredential : @ escaping BrowserHTTPAuthenticationSession . LoadCredential = { _ in nil } , saveHTTPAuthenticationCredential : @ escaping BrowserHTTPAuthenticationSession . SaveCredential = { _ in } , openModifiedLink : @ escaping URLRequest , UUID , Bool -> Void = { _ , _ , _ in } , openPeek : @ escaping BrowserPeekRequest -> Void = { _ in } , handleLinkDrag : @ escaping BrowserPeekInteractionEvent -> Void = { _ in } , splitLinkHost : BrowserSplitLinkHost = . unavailable , linkDestinationHost : BrowserLinkDestinationHost = . unavailable , opensExternalURL : @ escaping URL -> Void = { NSWorkspace . shared . open $ 0 }",
+   "ccn": 4,
+   "length": 103
+  },
+  {
+   "file": "OdeMac/Infrastructure/Pages/BrowserPagePool.swift",
+   "function": "init browser : BrowserStore , runtimeStore : BrowserPageRuntimeStore? = nil , serverTrustOverrides : BrowserServerTrustOverrideStore? = nil , browsingMode : BrowserBrowsingMode = . standard , usesEphemeralWebsiteDataStores : Bool = BrowserLaunchEnvironment . current . usesEphemeralProfileStorage , pageZoomPreferences : BrowserDefaultPageZoomStore = . shared , permissionCenter : BrowserSitePermissionCenter = BrowserSitePermissionCenter , hostedNotificationCenter : any BrowserHostedWebNotificationCentering ? = nil , mediaSessionStore : BrowserMediaSessionStore? = nil , downloadCenter : BrowserDownloadCenter? = nil , passkeyAccess : BrowserPasskeyAccessController? = nil , loadHTTPAuthenticationCredential : @ escaping HTTPAuthenticationCredentialLoader = { _ , _ in nil } , saveHTTPAuthenticationCredential : @ escaping HTTPAuthenticationCredentialSaver = { _ , _ in } , tabStateArchive : any BrowserTabStateArchiving ? = nil , openModifiedLink : @ escaping ModifiedLinkOpener = { _ , _ , _ , _ in nil } , openPeek : @ escaping BrowserPeekRequest -> Void = { _ in } , handleLinkDrag : @ escaping BrowserPeekInteractionEvent -> Void = { _ in } , splitLinkHost : BrowserSplitLinkHost = . unavailable , linkDestinationHost : BrowserLinkDestinationHost = . unavailable , activateHostedNotificationSource : @ escaping UUID , UUID -> Void = { _ , _ in }",
+   "ccn": 11,
+   "length": 92
+  },
+  {
+   "file": "OdeMobile/App/OdeMobileApp.swift",
+   "function": "init",
+   "ccn": 5,
+   "length": 126
+  },
+  {
+   "file": "OdeMobile/Features/Browser/MobileBrowserRootView/Components/MobileBrowserDetailView.swift",
+   "function": "var body",
+   "ccn": 29,
+   "length": 190
+  },
+  {
+   "file": "OdeMobile/Features/Browser/MobileBrowserRootView/Components/MobileBrowserRootContent/MobileBrowserRootContent.swift",
+   "function": "var body",
+   "ccn": 13,
+   "length": 393
+  },
+  {
+   "file": "OdeMobile/Features/Browser/MobileBrowserRootView/Components/MobileBrowserRootLifecycleModifier.swift",
+   "function": "body content : Content",
+   "ccn": 3,
+   "length": 86
+  },
+  {
+   "file": "OdeMobile/Features/Browser/MobileBrowserRootView/Models/MobileBrowserRootModel+Commands.swift",
+   "function": "commandContext transientBrowsing : BrowserTransientBrowsingCoordinator , layoutDirection : LayoutDirection , usesPageToolbars : Bool , togglePrivateBrowsing : @ escaping -> Void , openNewTab : @ escaping -> Void , openLocation : @ escaping -> Void , prepareForSelectionSynchronization : @ escaping -> Void , toggleSidebar : @ escaping -> Void , presentHistory : @ escaping -> Void , presentArchive : @ escaping -> Void , presentDownloads : @ escaping -> Void",
+   "ccn": 12,
+   "length": 204
+  },
+  {
+   "file": "OdeMobile/Features/Chrome/Components/MobileCompactAddressBar/MobileCompactAddressBar.swift",
+   "function": "var body",
+   "ccn": 18,
+   "length": 103
+  },
+  {
+   "file": "OdeMobile/Features/Chrome/Components/MobilePageActions/Components/MobilePageActionsContent.swift",
+   "function": "var body",
+   "ccn": 16,
+   "length": 211
+  },
+  {
+   "file": "OdeMobile/Features/Commands/Services/MobileBrowserCommands.swift",
+   "function": "var body",
+   "ccn": 5,
+   "length": 164
+  },
+  {
+   "file": "OdeMobile/Features/Onboarding/MobileBrowserOnboardingView/Components/Pages/MobileOnboardingWelcomePage.swift",
+   "function": "var body",
+   "ccn": 9,
+   "length": 94
+  },
+  {
+   "file": "OdeMobile/Features/Settings/BrowserPlatformLinkRouteEditor/Components/BrowserPlatformLinkRouteEditorContent.swift",
+   "function": "var body",
+   "ccn": 1,
+   "length": 104
+  },
+  {
+   "file": "OdeMobile/Infrastructure/WebKit/MobileBrowserPage.swift",
+   "function": "init corePage : CorePage , webKitPage : WebKitEnginePage , tab : BrowserPageTab , space : SpaceModel , downloadCenter : BrowserDownloadCenter = BrowserDownloadCenter , permissionCenter : BrowserSitePermissionCenter = BrowserSitePermissionCenter , geolocationService : any BrowserGeolocationServicing = BrowserGeolocationSystemService , recoverGeolocationSystemAuthorization : BrowserGeolocationCoordinator . RecoverSystemAuthorization? = nil , serverTrustOverrides : BrowserServerTrustOverrideStore = BrowserServerTrustOverrideStore , mediaSessionStore : BrowserMediaSessionStore? = nil , contentRuleList : WKContentRuleList? = nil , allowsCredentialAccess : Bool = true , isCredentialAccessEnabled : Bool = true , defaultPageZoom : CGFloat = BrowserDefaultPageZoomStore . defaultLevel , loadsInitialURL : Bool = true , loadHTTPAuthenticationCredential : @ escaping BrowserHTTPAuthenticationSession . LoadCredential = { _ in nil } , saveHTTPAuthenticationCredential : @ escaping BrowserHTTPAuthenticationSession . SaveCredential = { _ in } , linkDestinationHost : BrowserLinkDestinationHost = . unavailable , openModifiedLink : @ escaping MobileBrowserPageStore . ModifiedLinkOpener = { _ , _ , _ in nil } , openPeek : @ escaping BrowserPeekRequest -> Void = { _ in } , stagePeek : BrowserPeekRequest -> Void ? = nil , commitPeek : BrowserPeekRequest -> Void ? = nil , cancelStagedPeek : UUID -> Void ? = nil , opensExternalURL : @ escaping URL -> Void = { UIApplication . shared . open $ 0 }",
+   "ccn": 18,
+   "length": 237
+  },
+  {
+   "file": "OdeMobile/Infrastructure/WebKit/MobileBrowserPage.swift",
+   "function": "tearDownWebView",
+   "ccn": 11,
+   "length": 101
+  },
+  {
+   "file": "OdeMobile/PreviewSupport/MobileBrowserPreviewFixture.swift",
+   "function": "init",
+   "ccn": 2,
+   "length": 86
+  },
+  {
+   "file": "OdeShared/Application/BrowserCloudSync/CloudSyncStepKind+Performer.swift",
+   "function": "take _ step : CloudSyncStep , on performer : some CloudSyncStepPerformer",
+   "ccn": 16,
+   "length": 19
+  },
+  {
+   "file": "OdeShared/DesignSystem/Tokens/OdeColor/SpaceColorRoles.swift",
+   "function": "init solving inputs : SpaceColorInputs , colorScheme : ColorScheme , increasedContrast : Bool , isActive : Bool",
+   "ccn": 22,
+   "length": 87
+  },
+  {
+   "file": "OdeShared/Features/Onboarding/BrowserManualSetupView/Components/BrowserSpaceSidebarPreview.swift",
+   "function": "var body",
+   "ccn": 2,
+   "length": 102
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserGeneralSettingsPane.swift",
+   "function": "var body",
+   "ccn": 4,
+   "length": 88
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserLookAndFeelSettingsPane.swift",
+   "function": "var body",
+   "ccn": 4,
+   "length": 83
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserPasswordSettingsPane/BrowserPasswordSettingsPane.swift",
+   "function": "var body",
+   "ccn": 6,
+   "length": 106
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserPasswordSettingsPane/BrowserPasswordSettingsPane.swift",
+   "function": "var settingsSections",
+   "ccn": 16,
+   "length": 103
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserPasswordSettingsPane/Components/BrowserCredentialImportReview/BrowserCredentialImportReviewView.swift",
+   "function": "var body",
+   "ccn": 9,
+   "length": 109
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserPasswordSettingsPane/Components/BrowserCredentialImportReview/Components/BrowserCredentialImportAccountRow.swift",
+   "function": "var body",
+   "ccn": 6,
+   "length": 86
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserPasswordSettingsPane/Components/BrowserPasswordDescriptorRow.swift",
+   "function": "var body",
+   "ccn": 8,
+   "length": 87
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserSpaceAccessView.swift",
+   "function": "var accessContent",
+   "ccn": 6,
+   "length": 86
+  },
+  {
+   "file": "OdeShared/Features/Settings/BrowserSyncSettingsView.swift",
+   "function": "var body",
+   "ccn": 6,
+   "length": 133
+  },
+  {
+   "file": "OdeShared/Features/Settings/Components/BrowserSettingsDestinationRouter.swift",
+   "function": "var body",
+   "ccn": 18,
+   "length": 85
+  },
+  {
+   "file": "OdeShared/Features/Sidebar/Components/BrowserFolderGroup/Components/BrowserFolderGroupSurface.swift",
+   "function": "var body",
+   "ccn": 8,
+   "length": 101
+  },
+  {
+   "file": "OdeShared/Features/Sidebar/Components/BrowserSidebarSplitGroupRow/Components/BrowserSidebarSplitGroupHeader.swift",
+   "function": "var body",
+   "ccn": 8,
+   "length": 102
+  },
+  {
+   "file": "OdeShared/Features/Sidebar/Components/BrowserSidebarTabRow/Components/BrowserSidebarTabRowSurface.swift",
+   "function": "body content : Content",
+   "ccn": 10,
+   "length": 86
+  },
+  {
+   "file": "OdeShared/Features/Spaces/Components/BrowserInlineSpaceName.swift",
+   "function": "var body",
+   "ccn": 22,
+   "length": 89
+  },
+  {
+   "file": "OdeShared/Features/Tabs/Components/BrowserTabAppearanceSurface.swift",
+   "function": "body content : Content",
+   "ccn": 18,
+   "length": 36
+  },
+  {
+   "file": "OdeShared/Features/Tabs/Components/PinnedTabGrid/Components/PinnedTabTile.swift",
+   "function": "var body",
+   "ccn": 12,
+   "length": 115
+  },
+  {
+   "file": "OdeShared/Infrastructure/Core/OdeCore.swift",
+   "function": "apply _ changes : [ Change ]",
+   "ccn": 23,
+   "length": 34
+  },
+  {
+   "file": "OdeShared/Infrastructure/PageActions/Translation/BrowserPageTranslation.swift",
+   "function": "detect",
+   "ccn": 18,
+   "length": 53
+  },
+  {
+   "file": "OdeShared/Infrastructure/PageActions/Translation/BrowserPageTranslation.swift",
+   "function": "run using session : TranslationSession , configuration expected : TranslationSession . Configuration?",
+   "ccn": 17,
+   "length": 82
+  },
+  {
+   "file": "OdeShared/Infrastructure/Search/OdeFuzzyMatcher.swift",
+   "function": "align _ token : [ UInt8 ] , in text : UnsafeBufferPointer < UInt8 > , bonuses : UnsafeBufferPointer < Int8 > , from start : Int , to end : Int , scratch : inout OdeFuzzyScratch",
+   "ccn": 17,
+   "length": 82
+  },
+  {
+   "file": "OdeShared/Infrastructure/Sync/CloudKit/CloudSyncEngine.swift",
+   "function": "handleSentRecordZoneChanges _ event : CKSyncEngine . Event . SentRecordZoneChanges , syncEngine : CKSyncEngine",
+   "ccn": 16,
+   "length": 79
+  },
+  {
+   "file": "OdeShared/Infrastructure/WebKit/Commands/EngineCommand+WebKitEngineBinding.swift",
+   "function": "perform on binding : WebKitEngineBinding",
+   "ccn": 27,
+   "length": 38
+  },
+  {
+   "file": "OdeShared/Infrastructure/WebKit/Favicons/FaviconCapture.swift",
+   "function": "capture from webView : WKWebView",
+   "ccn": 16,
+   "length": 74
+  },
+  {
+   "file": "Scripts/check-architecture.py",
+   "function": "_xcode27_violations( relative_path : str , source : str , configuration : GuardrailConfiguration , )",
+   "ccn": 26,
+   "length": 114
+  },
+  {
+   "file": "Scripts/control-plane/apply-chromium-host.py",
+   "function": "main( )",
+   "ccn": 35,
+   "length": 71
+  },
+  {
+   "file": "Scripts/control-plane/chromium-fork.py",
+   "function": "main( )",
+   "ccn": 16,
+   "length": 60
+  },
+  {
+   "file": "Scripts/control-plane/chromium_fork.py",
+   "function": "candidate_lock( repo , root , version )",
+   "ccn": 23,
+   "length": 48
+  },
+  {
+   "file": "Scripts/control-plane/configure-chromium.py",
+   "function": "main( )",
+   "ccn": 26,
+   "length": 72
+  },
+  {
+   "file": "Scripts/control-plane/content_filter.py",
+   "function": "main( )",
+   "ccn": 16,
+   "length": 47
+  },
+  {
+   "file": "Scripts/control-plane/prepare-chromium.py",
+   "function": "main( )",
+   "ccn": 24,
+   "length": 87
+  }
+ ]
+}

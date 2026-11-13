@@ -1,0 +1,79 @@
+name: Close with reason
+
+# When the maintainer applies one of the close labels CONTRIBUTING.md lists
+# under "Closed without review", posts that label's written reason and closes
+# the pull request. pull_request_target runs this file from the base branch;
+# it never checks out or runs the pull request's code.
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions: {}
+
+jobs:
+  close:
+    name: Post the reason and close
+    if: >-
+      startsWith(github.event.label.name, 'close: ')
+      && github.event.pull_request.state == 'open'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post the written reason and close the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+          SENDER_TYPE: ${{ github.event.sender.type }}
+          LABEL: ${{ github.event.label.name }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          FORMATTING_OR_RENAMES: >-
+            Thanks for the work here. This pull request reformats or renames code across
+            files it does not otherwise need to change. Ode takes those passes only as one
+            planned change by the maintainer, because they conflict with every open branch
+            and bury real changes in review (see "Closed without review" in CONTRIBUTING.md).
+            It is closed without review, which says nothing about the quality of the change.
+            If the formatting or a name causes a real problem, open an issue that describes
+            it and link this pull request; it can come back from there.
+          ENGINE_INPUTS: >-
+            Thanks for the work here. This pull request changes inputs of the prebuilt
+            Chromium engine, the files `INPUTS` lists in `Scripts/control-plane/chromium_engine.py`,
+            without a linked issue. Each such change needs the maintainer to build and publish
+            a new engine, so it is planned in an accepted issue first (see "Closed without
+            review" in CONTRIBUTING.md). It is closed without review. To come back, open an
+            issue that describes the problem; once it is labelled `accepted`, link it from the
+            description and comment here to have this reopened.
+          NO_ISSUE: >-
+            Thanks for the work here. This pull request is larger than a small fix and links
+            no issue, so it cannot enter review (see "Issue first" in CONTRIBUTING.md). It is
+            closed without review, which says nothing about the code. To come back, open or
+            find an issue, add `Closes #<number>` to the description, and comment here to have
+            it reopened.
+          NO_EVIDENCE: >-
+            Thanks for the work here. This pull request does not show how the change was
+            verified: it names no evidence level and shows no before-and-after on the same
+            steps (see "Showing a change works" in CONTRIBUTING.md). Without that, a review
+            has nothing to check. To come back, add the evidence under "How verified" and
+            comment here to have it reopened.
+        run: |
+          # Only a person closes a pull request; a label that another
+          # automation applies leaves it open.
+          if [[ "$SENDER_TYPE" == "Bot" || "$ACTOR" == *"[bot]" ]]; then
+            echo "Label applied by ${ACTOR}; nothing to do."
+            exit 0
+          fi
+
+          case "$LABEL" in
+            "close: formatting or renames") reason="$FORMATTING_OR_RENAMES" ;;
+            "close: engine inputs") reason="$ENGINE_INPUTS" ;;
+            "close: no issue") reason="$NO_ISSUE" ;;
+            "close: no evidence") reason="$NO_EVIDENCE" ;;
+            *)
+              echo "::error::The label ${LABEL} has no written reason, so the pull request stays open."
+              exit 1
+              ;;
+          esac
+
+          gh api "repos/${GITHUB_REPOSITORY}/issues/${NUMBER}/comments" -f body="$reason" --silent
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${NUMBER}" -f state=closed --silent
