@@ -57,6 +57,14 @@ Ode reads Chrome-style, Safari, Firefox and Bitwarden CSV files.
 
 Ode for Mac can't use the passkeys saved on your Mac yet. It's waiting for Apple's approval. Sign in with a password for now. Check the status in Settings > Privacy & Permissions > Passkeys.
 
+### Moving from another browser
+
+Browser imports and password CSV files do not transfer passkeys. Importing an active sign-in also does not copy the passkey used to create it.
+
+If you want to change password managers, use their supported passkey transfer flow. For example, [1Password supports direct imports from Apple Passwords on iOS and iPadOS 26 or later](https://support.1password.com/import/). Support differs by provider and platform; this is separate from Ode’s browser import.
+
+If a passkey cannot be transferred, keep the original browser or device available. Use the website’s account settings to add another sign-in method, and test it before removing the old one.
+
 ## Fill in addresses and credit cards {#autofill-cards-addresses}
 
 Ode doesn't fill in addresses or payment cards, and doesn't offer Apple Pay on websites yet. A password manager extension that fills cards works on Chromium pages.

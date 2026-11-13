@@ -9,7 +9,7 @@ keywords: [import, migrate, Arc, Zen, Chrome, Safari, Firefox, Brave, Edge, Viva
 
 Ode shows you everything it will bring before it changes anything, so you choose what comes over and which Space it goes to.
 
-## Move everything over from Arc {#import-from-arc}
+## Move from Arc {#import-from-arc}
 
 1. Choose Ode > Settings, click Advanced, then click Import from Another Browser… and pick Arc. New users see this during setup.
 2. Review each Space. Click anything to leave it out, and choose where it goes.
@@ -18,6 +18,8 @@ Ode shows you everything it will bring before it changes anything, so you choose
 Spaces that share one Arc or Zen profile arrive as one [Sub-Space](../sub-spaces/) group, so they keep sharing sign-ins. The review outlines each group and can bring a Space in on its own. If one Space of a group goes into a Space you already have, the rest of the group become Sub-Spaces of that Space's group. Imported passwords are saved once for each group.
 
 macOS asks once to let Ode read Arc's saved passwords.
+
+Passkeys are not included in browser imports or password CSV files. They stay with the password manager, browser or device that created them. See [passkey options](../ode-passwords-per-space/#passkeys) before removing your old browser.
 
 ## Where my Arc favorites, pinned tabs and Today tabs went {#arc-import-mapping}
 

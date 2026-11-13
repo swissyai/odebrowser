@@ -23,11 +23,11 @@ Apple protects its helper with a launch constraint on the browser. The browser m
 com.apple.developer.web-browser.public-key-credential
 ```
 
-The signed Ode release carries this entitlement. Development and review builds do not, so iCloud Passwords cannot pair in them. Adding the entitlement to a build yourself does not authorize it; Apple checks it against the app's provisioning.
+Direct Mac builds do not carry this capability yet. Apple approval is still pending, so installing a signed Ode build does not enable iCloud Passwords pairing. Adding the entitlement yourself does not authorize it; Apple checks the app's provisioning.
 
 ## If it does not pair
 
-- Confirm that you are running the signed Ode release from `/Applications`.
+- Check Ode’s [current passkey support](../ode-passwords-per-space/#passkeys). Pairing requires Apple approval for the browser.
 - Reinstalling the extension does not change the browser's signature or entitlements.
 - Until it pairs, use Ode's built-in passwords for the Space or another password manager.
 
