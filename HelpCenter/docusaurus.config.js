@@ -58,7 +58,7 @@ const config = {
         {type: 'docSidebar', sidebarId: 'helpSidebar', position: 'left', label: 'Articles'},
         {to: '/keyboard-shortcuts/', label: 'Shortcuts', position: 'left'},
         {to: '/extension-api-compatibility/', label: 'Compatibility', position: 'left'},
-        {href: 'https://odebrowser.com/', label: 'Download for Mac', position: 'right'},
+        {href: 'https://odebrowser.com/download', label: 'Download for Mac', position: 'right'},
         {href: 'mailto:feedback@odebrowser.com', label: 'Feedback', position: 'right'},
         {href: 'https://odebrowser.com/', label: 'Product site', position: 'right'},
       ],
@@ -76,8 +76,8 @@ const config = {
           title: 'Ode',
           items: [
             {label: 'Product site', href: 'https://odebrowser.com/'},
-            {label: 'Download for Mac', href: 'https://odebrowser.com/'},
-            {label: 'Privacy', href: 'https://odebrowser.com/privacy/'},
+            {label: 'Download for Mac', href: 'https://odebrowser.com/download'},
+            {label: 'Privacy controls', href: 'https://odebrowser.com/guides/clear-website-data/'},
           ],
         },
         {
