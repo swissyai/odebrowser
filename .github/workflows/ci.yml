@@ -31,6 +31,23 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/crest-build-derived-data" \
             CODE_SIGNING_ALLOWED=NO
 
+      - name: Verify widget stream delivery in 20 required iterations
+        env:
+          ODE_ISOLATED_SESSION: '1'
+          # Fixtures need separate in-memory stores, not one named persistent profile.
+          TEST_RUNNER_ODE_ISOLATED_SESSION: '1'
+        run: |
+          xcodebuild test-without-building \
+            -project Ode.xcodeproj \
+            -scheme Ode \
+            -destination 'platform=macOS,arch=arm64' \
+            -derivedDataPath "$RUNNER_TEMP/crest-build-derived-data" \
+            -resultBundlePath "$RUNNER_TEMP/ode-widget-stream-tests.xcresult" \
+            -only-testing:OdeTests/BrowserSidebarWidgetRuntimeTests \
+            -test-iterations 20 \
+            -test-repetition-relaunch-enabled NO \
+            CODE_SIGNING_ALLOWED=NO
+
       - name: Test native contracts in an isolated session
         env:
           ODE_ISOLATED_SESSION: '1'
@@ -52,7 +69,9 @@ jobs:
           name: ode-final-native-${{ github.run_id }}
           retention-days: 7
           if-no-files-found: warn
-          path: ${{ runner.temp }}/ode-native-tests.xcresult
+          path: |
+            ${{ runner.temp }}/ode-native-tests.xcresult
+            ${{ runner.temp }}/ode-widget-stream-tests.xcresult
 
       - name: Remove generated build data
         if: always()

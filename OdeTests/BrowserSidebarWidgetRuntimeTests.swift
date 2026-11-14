@@ -81,7 +81,7 @@ final class BrowserSidebarWidgetRuntimeTests: XCTestCase {
         )
     }
 
-    func testRuntimePublishesEveryProfilesWidgetsToOneGlobalDeck() async {
+    func testRuntimePublishesEveryProfilesWidgetsToOneGlobalDeck() async throws {
         let source = FakeSidebarWidgetSource(kindID: .nowPlaying)
         let runtime = BrowserSidebarWidgetRuntime(
             registrations: [.nowPlaying],
@@ -101,9 +101,8 @@ final class BrowserSidebarWidgetRuntimeTests: XCTestCase {
         )
 
         runtime.activateHost(id: UUID(), capabilities: [.mediaSessions])
-        await settle()
         source.send([home, work])
-        await settle()
+        try await waitForVisibleInstanceIDs([home.id, work.id], in: runtime)
 
         XCTAssertEqual(
             runtime.instances(capabilities: [.mediaSessions]).map(\.id),
@@ -112,7 +111,7 @@ final class BrowserSidebarWidgetRuntimeTests: XCTestCase {
         )
     }
 
-    func testCarouselSelectsNewestInstanceThenPreservesManualChoiceAcrossSpaces() async {
+    func testCarouselSelectsNewestInstanceThenPreservesManualChoiceAcrossSpaces() async throws {
         let source = FakeSidebarWidgetSource(kindID: .nowPlaying)
         let runtime = BrowserSidebarWidgetRuntime(
             registrations: [.nowPlaying],
@@ -133,15 +132,14 @@ final class BrowserSidebarWidgetRuntimeTests: XCTestCase {
         )
 
         runtime.activateHost(id: UUID(), capabilities: [.mediaSessions])
-        await settle()
         source.send([first])
-        await settle()
+        try await waitForVisibleInstanceIDs([first.id], in: runtime)
         var visible = runtime.instances(capabilities: [.mediaSessions])
         runtime.reconcileCarouselSelection(visibleInstances: visible)
         XCTAssertEqual(runtime.carouselSelection, first.id)
 
         source.send([first, newest])
-        await settle()
+        try await waitForVisibleInstanceIDs([first.id, newest.id], in: runtime)
         visible = runtime.instances(capabilities: [.mediaSessions])
         runtime.reconcileCarouselSelection(visibleInstances: visible)
         XCTAssertEqual(
@@ -162,7 +160,7 @@ final class BrowserSidebarWidgetRuntimeTests: XCTestCase {
         )
     }
 
-    func testCarouselSelectionPrunesRemovedWidgetsAndFallsBackToARemainingCard() async {
+    func testCarouselSelectionPrunesRemovedWidgetsAndFallsBackToARemainingCard() async throws {
         let source = FakeSidebarWidgetSource(kindID: .nowPlaying)
         let runtime = BrowserSidebarWidgetRuntime(
             registrations: [.nowPlaying],
@@ -183,9 +181,8 @@ final class BrowserSidebarWidgetRuntimeTests: XCTestCase {
         )
 
         runtime.activateHost(id: UUID(), capabilities: [.mediaSessions])
-        await settle()
         source.send([first, second])
-        await settle()
+        try await waitForVisibleInstanceIDs([first.id, second.id], in: runtime)
         var visible = runtime.instances(capabilities: [.mediaSessions])
         runtime.reconcileCarouselSelection(visibleInstances: visible)
         runtime.selectCarouselInstance(
@@ -195,7 +192,7 @@ final class BrowserSidebarWidgetRuntimeTests: XCTestCase {
         XCTAssertEqual(runtime.carouselSelection, first.id)
 
         source.send([second])
-        await settle()
+        try await waitForVisibleInstanceIDs([second.id], in: runtime)
         XCTAssertNil(
             runtime.carouselSelection,
             "Navigation or tab cleanup removes carousel state for the stale widget identity."
@@ -281,8 +278,24 @@ final class BrowserSidebarWidgetRuntimeTests: XCTestCase {
         )
     }
 
-    private func settle() async {
-        for _ in 0..<4 { await Task.yield() }
+    private func waitForVisibleInstanceIDs(
+        _ expectedIDs: [BrowserSidebarWidgetID],
+        in runtime: BrowserSidebarWidgetRuntime,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws {
+        let deadline = ContinuousClock.now + .seconds(2)
+        while runtime.instances(capabilities: [.mediaSessions]).map(\.id) != expectedIDs {
+            guard ContinuousClock.now < deadline else {
+                XCTFail(
+                    "Timed out waiting for the widget stream to publish the expected visible IDs.",
+                    file: file,
+                    line: line
+                )
+                return
+            }
+            try await Task.sleep(for: .milliseconds(5))
+        }
     }
 }
 
