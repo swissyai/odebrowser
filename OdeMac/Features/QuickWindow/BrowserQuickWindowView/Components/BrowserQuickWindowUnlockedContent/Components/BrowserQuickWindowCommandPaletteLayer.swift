@@ -63,7 +63,8 @@ struct BrowserQuickWindowCommandPaletteLayer: View {
             perform: { _ in },
             switchSpace: moveToSpace,
             reopenArchivedTab: reopenArchivedTab,
-            copy: copy
+            copy: copy,
+            copyInline: copyInline
         )
     }
 
@@ -89,8 +90,11 @@ struct BrowserQuickWindowCommandPaletteLayer: View {
     }
 
     private func copy(_ text: String) {
+        if copyInline(text) { chrome.showNotice(.copied) }
+    }
+
+    private func copyInline(_ text: String) -> Bool {
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
-        chrome.showNotice(.copied)
+        return NSPasteboard.general.setString(text, forType: .string)
     }
 }

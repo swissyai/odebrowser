@@ -23,20 +23,30 @@ public sealed partial class Palette {
                 Address: null, Term: null, Clock: null, Image: null, Credit: null, CreditAddress: null, License: null,
                 LicenseAddress: null))];
         if (local.Conversion is { } conversion) return [ConversionRow(conversion)];
+        if (local.NeedsIngredient) {
+            var enriched = generative is null ? null : GenerativeAnswerLookup.Card(generative, question.Generative, Preferences, query.Text);
+            return [Row(enriched ?? UnitConversion.IngredientClarification(query.Text))];
+        }
         if (local.Choices.Count > 0) return [.. local.Choices.Select(ConversionRow)];
         if (local.Clock is { } clock)
             return [Row(new(PaletteCardKind.Time, clock.Place, clock.Difference, Body: null, Value: null, Address: null, Term: null,
                 new(clock.Instant, clock.Zone, clock.Place, clock.FromZone, clock.FromPlace, clock.Difference), Image: null,
                 Credit: null, CreditAddress: null, License: null, LicenseAddress: null))];
-        if (question.Definition is { } definition && DefinitionTerm(query, intent, lead) == definition.Term
-            && DictionaryLookup.Card(definition, DictionaryLookup.AsksOutright(query.Text)) is { } defined)
-            return [Row(defined)];
-        if (generative is not null) return [Row(GenerativeAnswerLookup.Card(generative, question.Generative))];
-        if (question.WebSummary is { } summary && WebLookup(query, intent, lead) is { } lookup
-            && WebAnswer.Card(summary, lookup.Topic) is { } summarized)
-            return [Row(summarized)];
+        if (DefinitionCard(query, question, intent, lead) is { } defined) return [Row(defined)];
+        if (generative is not null)
+            return GenerativeAnswerLookup.Card(generative, question.Generative, Preferences, query.Text) is { } generated
+                ? [Row(generated)] : [];
+        if (WebCard(query, question, intent, lead) is { } summarized) return [Row(summarized)];
         return [];
     }
+
+    private PaletteCard? DefinitionCard(PaletteQuery query, PaletteSuggestions question, PaletteRow? intent, PaletteCandidate? lead) =>
+        question.Definition is { } definition && DefinitionTerm(query, intent, lead) == definition.Term
+            ? DictionaryLookup.Card(definition, DictionaryLookup.AsksOutright(query.Text)) : null;
+
+    private PaletteCard? WebCard(PaletteQuery query, PaletteSuggestions question, PaletteRow? intent, PaletteCandidate? lead) =>
+        question.WebSummary is { } summary && WebLookup(query, intent, lead) is { } lookup
+            ? WebAnswer.Card(summary, lookup.Topic) : null;
 
     /// An optional translation never replaces the person's Return search,
     /// even when an existing how-to answer also matches its words.
@@ -58,7 +68,8 @@ public sealed partial class Palette {
         LocalAnswer local, PaletteTranslationLookup? translation) {
         if (!Preferences.Offers(PaletteSource.AskOde) || context.Space is null || lead is not null || translation is not null
             || TranslationLookup.IsExplicit(query.Text)
-            || local.AnswersOutright || local.Choices.Count > 0 || intent?.Kind == PaletteRowKind.OpenAddress
+            || local.AnswersOutright && !local.NeedsIngredient || local.Choices.Count > 0 || UnitConversion.IsBareMeasurement(query.Text)
+            || intent?.Kind == PaletteRowKind.OpenAddress
             || context.Catalog.NamedBy(query.Text) is not null
             || DefinitionTerm(query, intent, lead) is not null
             || AnswerCatalog.Shipped.Index.Lead(GenerativeAnswerLookup.Input(query.Text)) is not null) return null;

@@ -67,7 +67,11 @@ public sealed class PaletteCardKind {
     public static readonly PaletteCardKind GenerativeAnswer = new(name: "generativeAnswer", label: "Ode", symbol: "sparkles",
         copiesValue: true, looksUpTerm: false);
 
-    public static IReadOnlyList<PaletteCardKind> All { get; } = [Conversion, Time, Definition, Encyclopedia, Calculation, Translation, GenerativeAnswer];
+    /// A local question with no copy, dictionary or navigation action.
+    public static readonly PaletteCardKind Clarification = new(name: "clarification", label: "Conversion", symbol: "questionmark.circle",
+        copiesValue: false, looksUpTerm: false);
+
+    public static IReadOnlyList<PaletteCardKind> All { get; } = [Conversion, Time, Definition, Encyclopedia, Calculation, Translation, GenerativeAnswer, Clarification];
 
     #endregion
 

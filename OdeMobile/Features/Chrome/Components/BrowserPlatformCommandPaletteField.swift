@@ -149,11 +149,13 @@ struct BrowserPlatformCommandPaletteField: UIViewRepresentable {
 
         func textFieldDidChangeSelection(_ textField: UITextField) { editingChanged() }
         func textFieldDidBeginEditing(_ textField: UITextField) {
+            model.isFieldFocused = true
             editingChanged()
             model.focusChanged?(true)
         }
 
         func textFieldDidEndEditing(_ textField: UITextField) {
+            model.isFieldFocused = false
             model.rejectURLCompletion()
             field?.refreshSuffix()
             DispatchQueue.main.async { [weak self, weak textField] in

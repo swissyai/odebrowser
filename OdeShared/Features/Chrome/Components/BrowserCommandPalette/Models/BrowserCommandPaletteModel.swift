@@ -60,6 +60,12 @@ final class BrowserCommandPaletteModel {
     private(set) var items: [BrowserCommandPaletteItem] = []
     private(set) var selectedResultIndex = 0
     private(set) var keyboardSelectionRevision = 0
+    var isFieldFocused = false
+    private(set) var copiedCardID: BrowserCommandPaletteRowID?
+    @ObservationIgnored private var copiedFeedbackTask: Task<Void, Never>?
+    /// A fresh request's first result set may reveal selection. Enrichment
+    /// of that same request must not pull a manually scrolled list back.
+    private(set) var resultSetRevision = 0
     private(set) var completionEditing = BrowserURLCompletionEditingState()
     /// The search provider the person narrowed the palette to, or nil.
     private(set) var activeProvider: SearchProvider?
@@ -75,6 +81,9 @@ final class BrowserCommandPaletteModel {
     /// The button of an answer Return runs, kept for the row it was chosen
     /// on; any other answer starts on its first button.
     private var answerChoice: (row: BrowserCommandPaletteRowID, control: BrowserCommandPaletteAnswerControl)?
+    /// Hover may select Return's target, but must not resize answers under
+    /// a pointer that is manually scrolling the list.
+    private var expandedAnswerID: BrowserCommandPaletteRowID?
     @ObservationIgnored var applyCompletion: ((String, NSRange) -> Void)?
     /// Replaces the field's text, as entering or leaving a scope does.
     @ObservationIgnored var replaceText: ((String) -> Void)?
@@ -85,8 +94,10 @@ final class BrowserCommandPaletteModel {
     /// answer to the latest is shown.
     @ObservationIgnored private var sequence = 0
     @ObservationIgnored private var isActive = true
+    private var isCopySessionActive = true
     private var translationResult: PaletteTranslationResult?
     private var generativeResult: PaletteGenerativeResult?
+    private var shownAnswerRequiresAskOde = false
     @ObservationIgnored private var generationTask: Task<Void, Never>?
     @ObservationIgnored private var pendingGeneration: BrowserPalettePendingGeneration?
     @ObservationIgnored private var keepsQueryPrivate = false
@@ -166,6 +177,19 @@ final class BrowserCommandPaletteModel {
     var translationStatus: PaletteTranslationStatus { translationResult?.status ?? .waiting }
     var canRetryTranslation: Bool { translationResult != nil && translationPreparation == nil }
     var canDownloadTranslationLanguages: Bool { translationResult?.status == .notInstalled }
+
+    /// The ready card Tab copies, also used by the card's keycap. Completion
+    /// offers win, and an intentional selection of another result stays intact.
+    var tabCopyCandidate: BrowserCommandPaletteItem? {
+        guard isFieldFocused, providerOffer == nil, wordScopeOffer == nil, urlCompletion == nil,
+            scopeOffer == nil, items.indices.contains(selectedResultIndex)
+        else { return nil }
+        let selected = items[selectedResultIndex]
+        if canCopyQuickAnswer(selected) { return selected }
+        guard selectedResultIndex == 0, selected.row.kind == .search else { return nil }
+        let candidates = items.filter { canCopyQuickAnswer($0) }
+        return candidates.count == 1 ? candidates.first : nil
+    }
 
     /// The written answer the selected row shows, or nil.
     var selectedAnswer: AnswerCard? {
@@ -259,6 +283,7 @@ final class BrowserCommandPaletteModel {
         let wasComposing = completionEditing.isComposing
         completionEditing.update(text: text, selection: selection, isComposing: isComposing)
         if isComposing {
+            resetCopiedFeedback()
             waitingKey = nil
             keyWaitTask?.cancel()
             sequence &+= 1
@@ -305,26 +330,32 @@ final class BrowserCommandPaletteModel {
     /// Tab: enters the search provider whose shortcut the text is or whose
     /// site the completion opens, or the scope the text names by a plain
     /// word, else accepts the completion the field shows, else enters the
-    /// provider or scope the text names, else moves to the next button of
-    /// the answer the selected row shows, else to the next row. It never
+    /// provider or scope the text names, else copies a ready quick answer,
+    /// else moves to the next button or row. A waiting Tab never copies a
+    /// result that was not ready when pressed. It never
     /// moves focus out of the field.
     func pressTab() {
-        waitForAnswer { [weak self] in
-            guard let self else { return }
-            if let provider = providerOffer {
-                enter(provider)
-                return
-            }
-            if let scope = wordScopeOffer {
-                enter(scope)
-                return
-            }
-            if acceptURLCompletion() { return }
-            if let scope = scopeOffer {
-                enter(scope)
-            } else if !moveAnswerControl(by: 1) {
-                moveSelection(by: 1)
-            }
+        if let item = tabCopyCandidate {
+            copyCard(item)
+            return
+        }
+        waitForAnswer { [weak self] in self?.completeOrMoveWithTab() }
+    }
+
+    private func completeOrMoveWithTab() {
+        if let provider = providerOffer {
+            enter(provider)
+            return
+        }
+        if let scope = wordScopeOffer {
+            enter(scope)
+            return
+        }
+        if acceptURLCompletion() { return }
+        if let scope = scopeOffer {
+            enter(scope)
+        } else if !moveAnswerControl(by: 1) {
+            moveSelection(by: 1)
         }
     }
 
@@ -427,6 +458,50 @@ final class BrowserCommandPaletteModel {
 
     // MARK: - Actions - Answers
 
+    /// Copy is presentation-local: unlike Return it neither records a pick
+    /// nor dismisses the palette. Revalidate the exact live row at action time.
+    func canCopyCard(_ item: BrowserCommandPaletteItem) -> Bool {
+        guard isActive, isCopySessionActive, shownSequence == sequence, !completionEditing.isComposing,
+            isCompletionSourceAvailable, commands?.canCopy == true, items.contains(item),
+            let card = item.row.card, card.kind.copiesValue,
+            let value = BrowserCommandPaletteCardText.copied(card), !value.isEmpty
+        else { return false }
+        let sources = browser.workspaceModel?.appPreferences.palette ?? preferences
+        if shownAnswerRequiresAskOde, !sources.offers(.askOde) { return false }
+        if card.kind == .calculation { return sources.offers(.calculator) }
+        if card.kind == .conversion || card.kind == .time { return sources.offers(.conversions) }
+        if card.kind == .generativeAnswer { return sources.offers(.askOde) }
+        return card.kind == .translation
+    }
+
+    private func canCopyQuickAnswer(_ item: BrowserCommandPaletteItem) -> Bool {
+        canCopyCard(item) && item.row.card?.value != nil && item.row.card?.kind != .time
+    }
+
+    func isCopied(_ item: BrowserCommandPaletteItem) -> Bool {
+        copiedCardID == item.id && canCopyCard(item)
+    }
+
+    func copyCard(_ item: BrowserCommandPaletteItem) {
+        guard canCopyCard(item), let card = item.row.card,
+            let value = BrowserCommandPaletteCardText.copied(card), let commands
+        else { return }
+        guard commands.copyInPlace(value) else { return }
+        resetCopiedFeedback()
+        copiedCardID = item.id
+        copiedFeedbackTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(1500))
+            guard !Task.isCancelled else { return }
+            self?.resetCopiedFeedback()
+        }
+    }
+
+    private func resetCopiedFeedback() {
+        copiedFeedbackTask?.cancel()
+        copiedFeedbackTask = nil
+        copiedCardID = nil
+    }
+
     /// The button of `item`'s answer that Return runs.
     func answerControl(for item: BrowserCommandPaletteItem) -> BrowserCommandPaletteAnswerControl {
         guard let card = item.row.answer else { return .readMore }
@@ -436,12 +511,14 @@ final class BrowserCommandPaletteModel {
         return BrowserCommandPaletteAnswerControl.offered(for: card, in: self).first ?? .readMore
     }
 
-    /// Whether `item` shows its whole answer: the selected answer does, and
-    /// the first answer while the selection is on a row that is not one.
+    /// Keyboard or explicit selection expands an answer; otherwise the first
+    /// answer stays expanded while hover changes Return's target.
     func expandsAnswer(_ item: BrowserCommandPaletteItem) -> Bool {
         guard item.row.answer != nil else { return false }
-        if item.index == selectedResultIndex { return true }
-        return selectedAnswer == nil && items.first(where: { $0.row.answer != nil })?.index == item.index
+        let expanded =
+            items.first { $0.id == expandedAnswerID && $0.row.answer != nil }
+            ?? items.first { $0.row.answer != nil }
+        return expanded?.id == item.id
     }
 
     /// Runs `control` of the answer `item` shows, as clicking it does.
@@ -529,7 +606,7 @@ final class BrowserCommandPaletteModel {
     func moveSelection(by offset: Int) {
         rejectURLCompletion()
         guard shownSequence == sequence, !items.isEmpty else { return }
-        selectedResultIndex = (selectedResultIndex + offset + items.count) % items.count
+        selectResult(at: (selectedResultIndex + offset + items.count) % items.count)
         keyboardSelectionRevision &+= 1
     }
 
@@ -540,14 +617,15 @@ final class BrowserCommandPaletteModel {
             let current = groups.firstIndex(where: { $0.items.contains { $0.index == selectedResultIndex } }),
             let first = groups[(current + offset + groups.count) % groups.count].items.first
         else { return }
-        selectedResultIndex = first.index
+        selectResult(at: first.index)
         keyboardSelectionRevision &+= 1
     }
 
-    func selectResult(at index: Int) {
+    func selectResult(at index: Int, expandsAnswer: Bool = true) {
         rejectURLCompletion()
         guard shownSequence == sequence, items.indices.contains(index) else { return }
         selectedResultIndex = index
+        if expandsAnswer { expandedAnswerID = items[index].row.answer != nil ? items[index].id : nil }
     }
 
     /// Forgets the row the person moved to: a row whose kind forgets from
@@ -602,6 +680,7 @@ final class BrowserCommandPaletteModel {
     }
 
     func dismiss() {
+        isCopySessionActive = false
         cancelPendingWork()
         // Embedded palettes may keep their current results after copying.
         // Native presentation changes instead revoke those results above.
@@ -610,6 +689,7 @@ final class BrowserCommandPaletteModel {
     }
 
     private func cancelPendingWork() {
+        resetCopiedFeedback()
         sequence &+= 1
         waitingKey = nil
         keyWaitTask?.cancel()
@@ -621,6 +701,7 @@ final class BrowserCommandPaletteModel {
     /// A temporary source loss revokes work but does not tear down a mounted
     /// editor. If its assignment becomes usable again, answer its current text.
     func sourceAvailabilityChanged(_ available: Bool) {
+        resetCopiedFeedback()
         invalidateURLCompletion()
         sequence &+= 1
         waitingKey = nil
@@ -637,6 +718,8 @@ final class BrowserCommandPaletteModel {
     /// Ends this presentation, including work a provider might not cancel
     /// cooperatively. No query-bearing answer survives closing the palette.
     func stop() {
+        resetCopiedFeedback()
+        isFieldFocused = false
         isActive = false
         sequence &+= 1
         waitingKey = nil
@@ -781,6 +864,8 @@ final class BrowserCommandPaletteModel {
     /// selected.
     private func requestAnswer() {
         guard isActive else { return }
+        isCopySessionActive = true
+        resetCopiedFeedback()
         cancelGenerativeAnswer()
         translationResult = nil
         translationPreparation = nil
@@ -847,10 +932,19 @@ final class BrowserCommandPaletteModel {
 
     private func show(_ answer: PaletteAnswer, for asked: Int) {
         guard canApply(asked) else { return }
+        if shownSequence != asked {
+            resultSetRevision &+= 1
+            expandedAnswerID = nil
+        }
         shownSequence = asked
         keepsQueryPrivate = keepsQueryPrivate || answer.keepsQueryPrivate
+        let copiedCard = items.first { $0.id == copiedCardID }?.row.card
         groups = BrowserCommandPaletteGroup.groups(of: answer)
         items = groups.flatMap(\.items)
+        // The core never offers a generative lookup alongside a deterministic numeric card.
+        // This provenance belongs to this exact result set; canCopyCard also checks exact item membership.
+        shownAnswerRequiresAskOde = answer.generativeLookup != nil
+        if copiedCard != items.first(where: { $0.id == copiedCardID })?.row.card { resetCopiedFeedback() }
         completionProposal = answer.completion
         offeredSearch = answer.offeredSearch
         matchingProviders = answer.matchingProviders

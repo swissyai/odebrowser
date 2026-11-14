@@ -25,7 +25,8 @@ final class BrowserFaviconSVGRasterizer: NSObject {
         const canvas = document.createElement('canvas');
         canvas.width = Math.max(1, Math.round(sourceWidth * scale));
         canvas.height = Math.max(1, Math.round(sourceHeight * scale));
-        const context = canvas.getContext('2d');
+        // This canvas is immediately read back as PNG rather than displayed.
+        const context = canvas.getContext('2d', { willReadFrequently: true });
         if (!context) throw new Error('Canvas 2D context is unavailable');
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
         if (tint) {

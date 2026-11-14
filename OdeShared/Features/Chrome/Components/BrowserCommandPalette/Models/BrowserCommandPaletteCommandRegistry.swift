@@ -49,7 +49,9 @@ struct BrowserCommandPaletteCommandRegistry {
     private let applicationActions: [String]
     private let spaceSwitcher: (UUID) -> Void
     private let archiveReopener: (UUID) -> Void
-    private let copier: (String) -> Void
+    private let copier: ((String) -> Void)?
+    private let inlineCopier: ((String) -> Bool)?
+    var canCopy: Bool { inlineCopier != nil || copier != nil }
     /// What a command is called now, where that follows what the window
     /// shows, such as Show Tabs on Top; nil for its own title.
     private let currentTitle: (ShortcutCommand) -> LocalizedStringResource?
@@ -71,7 +73,8 @@ struct BrowserCommandPaletteCommandRegistry {
         runApplicationAction: ((String) -> Bool)? = nil,
         switchSpace: @escaping (UUID) -> Void = { _ in },
         reopenArchivedTab: @escaping (UUID) -> Void = { _ in },
-        copy: @escaping (String) -> Void = { _ in },
+        copy: ((String) -> Void)? = nil,
+        copyInline: ((String) -> Bool)? = nil,
         currentTitle: @escaping (ShortcutCommand) -> LocalizedStringResource? = { _ in nil }
     ) {
         self.commands = commands
@@ -97,6 +100,7 @@ struct BrowserCommandPaletteCommandRegistry {
         spaceSwitcher = switchSpace
         archiveReopener = reopenArchivedTab
         copier = copy
+        inlineCopier = copyInline
         self.currentTitle = currentTitle
     }
 
@@ -185,8 +189,16 @@ struct BrowserCommandPaletteCommandRegistry {
         archiveReopener(id)
     }
 
-    /// Copies `text` and says so in the window's notice.
+    /// Existing Return activations may report through the window's notice.
     func copy(_ text: String) {
+        copier?(text)
+    }
+
+    /// An inline confirmation belongs to its card, not the window's notice.
+    func copyInPlace(_ text: String) -> Bool {
+        if let inlineCopier { return inlineCopier(text) }
+        guard let copier else { return false }
         copier(text)
+        return true
     }
 }

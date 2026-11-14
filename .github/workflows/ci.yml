@@ -61,6 +61,9 @@ jobs:
         with:
           global-json-file: OdeCore/global.json
 
+      - name: Check exact generated contracts
+        run: Scripts/control-plane/generate-contracts.sh --check
+
       - name: Test core contracts
         working-directory: OdeCore
         # Measure optimized code while retaining incremental-versus-full state checks.
@@ -186,6 +189,15 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/crest-build-derived-data" \
             -resultBundlePath "$RUNNER_TEMP/ode-native-tests.xcresult" \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Retain native test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ode-final-native-${{ github.run_id }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: ${{ runner.temp }}/ode-native-tests.xcresult
 
       - name: Remove generated build data
         if: always()
