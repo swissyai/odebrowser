@@ -238,14 +238,25 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         defer { model.stop() }
         model.query = "why is the sky blue?"
         await fulfillment(of: [started], timeout: 2)
+        let resultSetRevision = model.resultSetRevision
+        let keyboardRevision = model.keyboardSelectionRevision
+        model.selectResult(at: 0, expandsAnswer: false)
+        XCTAssertEqual(model.keyboardSelectionRevision, keyboardRevision)
+        XCTAssertEqual(model.resultSetRevision, resultSetRevision)
         model.moveSelection(by: 1)
+        XCTAssertEqual(model.keyboardSelectionRevision, keyboardRevision + 1)
         let selected = model.items[model.selectedResultIndex].id
         let revision = model.keyboardSelectionRevision
         await gate.finish()
         await model.waitForPendingResults()
         XCTAssertEqual(model.items[model.selectedResultIndex].id, selected)
         XCTAssertEqual(model.keyboardSelectionRevision, revision)
+        XCTAssertEqual(model.resultSetRevision, resultSetRevision)
         XCTAssertEqual(model.items.first?.row.kind, .search)
+
+        model.query = "2 + 2"
+        await model.waitForPendingResults()
+        XCTAssertGreaterThan(model.resultSetRevision, resultSetRevision)
     }
 
     // MARK: - Actions - Fixtures

@@ -21,6 +21,7 @@ struct BrowserCommandPaletteFactCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var isSelected: Bool { model.selectedResultIndex == item.index }
+    private var isActionable: Bool { card.kind.copiesValue || card.kind.looksUpTerm || card.address != nil }
     private var canCopy: Bool {
         card.kind.copiesValue && ((card.kind != .translation && card.kind != .generativeAnswer) || card.value != nil)
     }
@@ -46,8 +47,8 @@ struct BrowserCommandPaletteFactCard: View {
             .onTapGesture { model.selectResult(at: item.index) }
             .accessibilityElement(children: card.kind.copiesValue ? .contain : .combine)
             .accessibilityLabel(Text(verbatim: spoken))
-            .accessibilityHint(Text(hint))
-            .accessibilityAddTraits(card.kind.copiesValue ? [] : .isButton)
+            .accessibilityHint(isActionable ? Text(hint) : Text(verbatim: ""))
+            .accessibilityAddTraits(isActionable && !card.kind.copiesValue ? .isButton : [])
             .accessibilityIdentifier("command-palette-card-\(card.kind.name)")
             .browserCommandPaletteHoverSelection(model: model, index: item.index)
     }
@@ -73,7 +74,7 @@ struct BrowserCommandPaletteFactCard: View {
                 answer
                 if canCopy {
                     controls
-                } else if !card.kind.copiesValue {
+                } else if isActionable, !card.kind.copiesValue {
                     BrowserCommandPaletteRowTrailing(model: model, row: item.row, isSelected: isSelected)
                         .opacity(isSelected ? 1 : 0)
                 }
@@ -137,7 +138,7 @@ struct BrowserCommandPaletteFactCard: View {
             Label("Copy", systemImage: "doc.on.doc")
                 .fixedSize(horizontal: true, vertical: false)
         }
-        .buttonStyle(.odeTertiary(tint: .primary))
+        .buttonStyle(OdeButtonStyle(role: .secondary, tint: .primary))
         .controlSize(.small)
         .focusEffectDisabled()
         .accessibilityLabel("Copy answer")
@@ -154,10 +155,17 @@ struct BrowserCommandPaletteFactCard: View {
                 .frame(width: Self.pictureSide, height: Self.pictureSide)
                 .clipShape(.rect(cornerRadius: chromeAppearance.cornerScale.inset, style: .continuous))
                 .accessibilityHidden(true)
+        } else if card.kind.copiesValue || card.kind == .clarification {
+            OdeMark(style: .mono)
+                .frame(
+                    width: BrowserCommandPaletteMetrics.rowFaviconSize,
+                    height: BrowserCommandPaletteMetrics.rowFaviconSize
+                )
+                .frame(width: BrowserCommandPaletteMetrics.rowIconContainerSize)
         } else {
             Image(systemName: card.kind.symbol)
                 .font(.body.weight(.semibold))
-                .foregroundStyle(BrowserCommandPaletteMetrics.answerAccent)
+                .foregroundStyle(.paletteDetail)
                 .frame(minWidth: BrowserCommandPaletteMetrics.rowIconContainerSize)
                 .accessibilityHidden(true)
         }

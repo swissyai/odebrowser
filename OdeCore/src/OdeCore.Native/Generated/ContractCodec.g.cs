@@ -14,7 +14,7 @@ namespace OdeCore.Native;
 public static class ContractCodec {
     /// <summary>SHA-256 of the canonical contract schema.</summary>
     public static ReadOnlySpan<byte> Fingerprint => [
-        0x58, 0xea, 0xdb, 0x13, 0xac, 0x65, 0x27, 0xfa, 0x27, 0x8b, 0x09, 0x95, 0x8c, 0x92, 0x40, 0x70, 0x60, 0x83, 0x3e, 0x7b, 0x6e, 0xea, 0x24, 0xb0, 0xdb, 0xca, 0xbc, 0xbd, 0x3f, 0x2c, 0x28, 0x06
+        0x4a, 0x9e, 0xbc, 0x2b, 0x01, 0xc3, 0x70, 0x0e, 0x52, 0xdb, 0x02, 0xf4, 0xee, 0xcc, 0x0a, 0x01, 0x53, 0xd4, 0x0a, 0x20, 0xb8, 0x2f, 0x11, 0x53, 0xe4, 0xe7, 0x89, 0xac, 0xc9, 0x7f, 0x51, 0xb8
     ];
 
     /// <summary>SHA-256 of the engine contract alone, which an engine binding registers with.</summary>
@@ -15175,7 +15175,8 @@ public static class ContractCodec {
         return new PaletteGenerativeResult(
             ReadPaletteGenerativeLookup(reader),
             reader.ReadPresence() ? (string?)reader.ReadString() : null,
-            ReadPaletteGenerativeStatus(reader));
+            ReadPaletteGenerativeStatus(reader),
+            reader.ReadPresence() ? (PaletteInterpretation?)ReadPaletteInterpretation(reader) : null);
     }
 
     public static void WritePaletteGenerativeResult(WireWriter writer, PaletteGenerativeResult value) {
@@ -15189,6 +15190,12 @@ public static class ContractCodec {
             writer.WritePresence(false);
         }
         WritePaletteGenerativeStatus(writer, value.Status);
+        if (value.Interpretation is { } presentInterpretation) {
+            writer.WritePresence(true);
+            WritePaletteInterpretation(writer, presentInterpretation);
+        } else {
+            writer.WritePresence(false);
+        }
     }
 
     public static PaletteGroup ReadPaletteGroup(WireReader reader) {
@@ -15205,6 +15212,53 @@ public static class ContractCodec {
         writer.WriteCount(value.Rows.Count);
         foreach (var itemRows in value.Rows) {
             WritePaletteRow(writer, itemRows);
+        }
+    }
+
+    public static PaletteInterpretation ReadPaletteInterpretation(WireReader reader) {
+        ArgumentNullException.ThrowIfNull(reader);
+        return new PaletteInterpretation(
+            ReadPaletteInterpretationKind(reader),
+            reader.ReadPresence() ? (string?)reader.ReadString() : null,
+            reader.ReadPresence() ? (string?)reader.ReadString() : null,
+            reader.ReadPresence() ? (string?)reader.ReadString() : null,
+            reader.ReadPresence() ? (string?)reader.ReadString() : null,
+            reader.ReadPresence() ? (string?)reader.ReadString() : null);
+    }
+
+    public static void WritePaletteInterpretation(WireWriter writer, PaletteInterpretation value) {
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(value);
+        WritePaletteInterpretationKind(writer, value.Kind);
+        if (value.Expression is { } presentExpression) {
+            writer.WritePresence(true);
+            writer.WriteString(presentExpression);
+        } else {
+            writer.WritePresence(false);
+        }
+        if (value.Amount is { } presentAmount) {
+            writer.WritePresence(true);
+            writer.WriteString(presentAmount);
+        } else {
+            writer.WritePresence(false);
+        }
+        if (value.FromUnit is { } presentFromUnit) {
+            writer.WritePresence(true);
+            writer.WriteString(presentFromUnit);
+        } else {
+            writer.WritePresence(false);
+        }
+        if (value.ToUnit is { } presentToUnit) {
+            writer.WritePresence(true);
+            writer.WriteString(presentToUnit);
+        } else {
+            writer.WritePresence(false);
+        }
+        if (value.Ingredient is { } presentIngredient) {
+            writer.WritePresence(true);
+            writer.WriteString(presentIngredient);
+        } else {
+            writer.WritePresence(false);
         }
     }
 
@@ -23870,6 +23924,17 @@ public static class ContractCodec {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         writer.WriteEnum(TagOf(PaletteGenerativeStatus.All, value));
+    }
+
+    public static PaletteInterpretationKind ReadPaletteInterpretationKind(WireReader reader) {
+        ArgumentNullException.ThrowIfNull(reader);
+        return PaletteInterpretationKind.All[reader.ReadEnum(PaletteInterpretationKind.All.Count)];
+    }
+
+    public static void WritePaletteInterpretationKind(WireWriter writer, PaletteInterpretationKind value) {
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(value);
+        writer.WriteEnum(TagOf(PaletteInterpretationKind.All, value));
     }
 
     public static PaletteLayout ReadPaletteLayout(WireReader reader) {

@@ -21,6 +21,10 @@ struct BrowserRootSidebarSurfaceLayer<Content: View>: View {
     @Environment(\.layoutDirection) private var layoutDirection
     @Environment(\.browserChromeAppearance) private var chromeAppearance
 
+    /// Hiding moves the last visible surface, without changing the content's
+    /// height, safe-area mask or width halfway through its slide.
+    @State private var lastVisiblePresentation: BrowserSidebarPresentation = .docked
+
     // MARK: - Initializers
 
     init(
@@ -88,6 +92,9 @@ struct BrowserRootSidebarSurfaceLayer<Content: View>: View {
                 .onHover(perform: hoverChanged)
             #endif
             .offset(x: hiddenOffset)
+            .onChange(of: presentation, initial: true) { _, current in
+                if current.showsSidebar { lastVisiblePresentation = current }
+            }
             .allowsHitTesting(presentation.showsSidebar)
             .accessibilityHidden(!presentation.showsSidebar)
             .zIndex(
@@ -154,7 +161,7 @@ struct BrowserRootSidebarSurfaceLayer<Content: View>: View {
     }
 
     private var usesFloatingCardAppearance: Bool {
-        presentation != .docked
+        (presentation.showsSidebar ? presentation : lastVisiblePresentation) == .floating
     }
 
     private var surfaceInset: CGFloat {

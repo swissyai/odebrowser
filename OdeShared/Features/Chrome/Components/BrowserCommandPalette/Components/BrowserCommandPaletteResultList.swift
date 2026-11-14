@@ -4,6 +4,8 @@ import SwiftUI
 /// which they scroll. Until the rows are measured, the height is reckoned
 /// from the row metrics, so the first frame already has its rows.
 struct BrowserCommandPaletteResultList: View {
+    // MARK: - Variables
+
     let model: BrowserCommandPaletteModel
     let maximumResultAreaHeight: CGFloat
     /// The results run upward from the field below them: the last group on
@@ -24,6 +26,8 @@ struct BrowserCommandPaletteResultList: View {
         )
         return min(contentHeight ?? estimate, max(0, maximumResultAreaHeight))
     }
+
+    // MARK: - Actions - Presentation
 
     var body: some View {
         ScrollViewReader { reader in
@@ -56,7 +60,7 @@ struct BrowserCommandPaletteResultList: View {
             .onChange(of: model.keyboardSelectionRevision) { _, _ in
                 revealSelection(using: reader)
             }
-            .onChange(of: model.items) { _, _ in
+            .onChange(of: model.resultSetRevision) { _, _ in
                 revealSelection(using: reader)
             }
         }

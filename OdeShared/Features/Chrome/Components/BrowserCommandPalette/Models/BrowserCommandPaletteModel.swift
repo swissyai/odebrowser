@@ -60,6 +60,9 @@ final class BrowserCommandPaletteModel {
     private(set) var items: [BrowserCommandPaletteItem] = []
     private(set) var selectedResultIndex = 0
     private(set) var keyboardSelectionRevision = 0
+    /// A fresh request's first result set may reveal selection. Enrichment
+    /// of that same request must not pull a manually scrolled list back.
+    private(set) var resultSetRevision = 0
     private(set) var completionEditing = BrowserURLCompletionEditingState()
     /// The search provider the person narrowed the palette to, or nil.
     private(set) var activeProvider: SearchProvider?
@@ -75,6 +78,9 @@ final class BrowserCommandPaletteModel {
     /// The button of an answer Return runs, kept for the row it was chosen
     /// on; any other answer starts on its first button.
     private var answerChoice: (row: BrowserCommandPaletteRowID, control: BrowserCommandPaletteAnswerControl)?
+    /// Hover may select Return's target, but must not resize answers under
+    /// a pointer that is manually scrolling the list.
+    private var expandedAnswerID: BrowserCommandPaletteRowID?
     @ObservationIgnored var applyCompletion: ((String, NSRange) -> Void)?
     /// Replaces the field's text, as entering or leaving a scope does.
     @ObservationIgnored var replaceText: ((String) -> Void)?
@@ -436,12 +442,14 @@ final class BrowserCommandPaletteModel {
         return BrowserCommandPaletteAnswerControl.offered(for: card, in: self).first ?? .readMore
     }
 
-    /// Whether `item` shows its whole answer: the selected answer does, and
-    /// the first answer while the selection is on a row that is not one.
+    /// Keyboard or explicit selection expands an answer; otherwise the first
+    /// answer stays expanded while hover changes Return's target.
     func expandsAnswer(_ item: BrowserCommandPaletteItem) -> Bool {
         guard item.row.answer != nil else { return false }
-        if item.index == selectedResultIndex { return true }
-        return selectedAnswer == nil && items.first(where: { $0.row.answer != nil })?.index == item.index
+        let expanded =
+            items.first { $0.id == expandedAnswerID && $0.row.answer != nil }
+            ?? items.first { $0.row.answer != nil }
+        return expanded?.id == item.id
     }
 
     /// Runs `control` of the answer `item` shows, as clicking it does.
@@ -529,7 +537,7 @@ final class BrowserCommandPaletteModel {
     func moveSelection(by offset: Int) {
         rejectURLCompletion()
         guard shownSequence == sequence, !items.isEmpty else { return }
-        selectedResultIndex = (selectedResultIndex + offset + items.count) % items.count
+        selectResult(at: (selectedResultIndex + offset + items.count) % items.count)
         keyboardSelectionRevision &+= 1
     }
 
@@ -540,14 +548,15 @@ final class BrowserCommandPaletteModel {
             let current = groups.firstIndex(where: { $0.items.contains { $0.index == selectedResultIndex } }),
             let first = groups[(current + offset + groups.count) % groups.count].items.first
         else { return }
-        selectedResultIndex = first.index
+        selectResult(at: first.index)
         keyboardSelectionRevision &+= 1
     }
 
-    func selectResult(at index: Int) {
+    func selectResult(at index: Int, expandsAnswer: Bool = true) {
         rejectURLCompletion()
         guard shownSequence == sequence, items.indices.contains(index) else { return }
         selectedResultIndex = index
+        if expandsAnswer { expandedAnswerID = items[index].row.answer != nil ? items[index].id : nil }
     }
 
     /// Forgets the row the person moved to: a row whose kind forgets from
@@ -847,6 +856,10 @@ final class BrowserCommandPaletteModel {
 
     private func show(_ answer: PaletteAnswer, for asked: Int) {
         guard canApply(asked) else { return }
+        if shownSequence != asked {
+            resultSetRevision &+= 1
+            expandedAnswerID = nil
+        }
         shownSequence = asked
         keepsQueryPrivate = keepsQueryPrivate || answer.keepsQueryPrivate
         groups = BrowserCommandPaletteGroup.groups(of: answer)

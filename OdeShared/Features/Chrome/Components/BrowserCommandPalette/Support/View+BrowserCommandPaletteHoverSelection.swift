@@ -8,7 +8,7 @@ extension View {
     ) -> some View {
         onHover { isHovering in
             guard isHovering else { return }
-            model.selectResult(at: index)
+            model.selectResult(at: index, expandsAnswer: false)
         }
     }
 }
