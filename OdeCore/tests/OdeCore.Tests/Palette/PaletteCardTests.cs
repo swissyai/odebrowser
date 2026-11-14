@@ -154,11 +154,14 @@ public sealed partial class BrowserContractsTests {
     [InlineData("5 tsp to grams")]
     [InlineData("how many oz in a cup")]
     [InlineData("how many oz in a US cup")]
-    public void MassAndVolumeAskForDensityWithoutInventingACopyableAnswerOrRequestingServices(string text) {
+    public void MassAndVolumeAllowPrivateEnrichmentWithoutInventingValuesOrRequestingExternalServices(string text) {
         var (device, window) = SuggestingPalette([]);
         using (device) {
+            Assert.False(PalettePreferences.Default.Offers(PaletteSource.AskOde));
+            Assert.Null(device.Query(Asking(window, text)).GenerativeLookup);
             EnablePrivateAnswers(device);
-            var answer = device.Query(Asking(window, text));
+            var question = Asking(window, text) with { Remote = ["unwanted external suggestion"] };
+            var answer = device.Query(question);
             var card = CardOf(answer);
 
             Assert.Equal(PaletteRowKind.Search, answer.Groups[0].Rows[0].Kind);
@@ -168,11 +171,32 @@ public sealed partial class BrowserContractsTests {
             Assert.Null(card.Value);
             Assert.Null(card.Address);
             Assert.Null(card.Term);
-            Assert.Null(answer.GenerativeLookup);
+            var lookup = Assert.IsType<PaletteGenerativeLookup>(answer.GenerativeLookup);
+            Assert.Equal(GenerativeAnswerLookup.IsExplicit(text), lookup.IsExplicitRequest);
+            Assert.True(answer.KeepsQueryPrivate);
             Assert.Null(answer.SuggestionAddress);
             Assert.Null(answer.WebLookup);
             Assert.Null(answer.DefinitionTerm);
+            Assert.DoesNotContain(answer.Groups, group => group.Section == PaletteSection.SearchSuggestions);
             Assert.Null(UnitConversion.Of(text));
+
+            string from = text.Contains("oz", StringComparison.Ordinal) ? "cup"
+                : text.Contains("5 tsp", StringComparison.Ordinal) ? "tsp" : "grams";
+            string to = from == "cup" ? "oz" : from == "tsp" ? "grams" : "tsp";
+            var interpretation = new PaletteInterpretation(PaletteInterpretationKind.Conversion, null, null, from, to, null);
+            foreach (var result in new[] {
+                new PaletteGenerativeResult(lookup, "999", PaletteGenerativeStatus.Answered),
+                new PaletteGenerativeResult(lookup, null, PaletteGenerativeStatus.Answered, interpretation)
+            }) {
+                var enriched = device.Query(question with { Generative = result });
+                Assert.Equal(PaletteCardKind.Clarification, CardOf(enriched).Kind);
+                Assert.Null(CardOf(enriched).Value);
+                Assert.True(enriched.KeepsQueryPrivate);
+                Assert.Null(enriched.SuggestionAddress);
+                Assert.Null(enriched.WebLookup);
+                Assert.Null(enriched.DefinitionTerm);
+                Assert.DoesNotContain(enriched.Groups, group => group.Section == PaletteSection.SearchSuggestions);
+            }
 
             var preferences = device.Authority.Current.AppPreferences!;
             device.Send(new SetAppPreferences(device.Workspace, preferences with {

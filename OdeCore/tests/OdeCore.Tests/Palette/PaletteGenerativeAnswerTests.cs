@@ -167,7 +167,8 @@ public sealed partial class BrowserContractsTests {
             ShowingTabs: [], RestoresTabs: true));
         var destination = app.Query(Asking(persistentWindow, "Destination")).Groups.SelectMany(group => group.Rows)
             .First(row => row.Kind == PaletteRowKind.History);
-        foreach (var prompt in new[] { "why is the sky blue?", "ask ode explain my password hunter2", "rewrite", "rewrite hi", "rewrite:" }) {
+        foreach (var prompt in new[] { "why is the sky blue?", "ask ode explain my password hunter2", "rewrite", "rewrite hi", "rewrite:",
+            "grams to tsp", "5 grams to tsp", "ask ode 5 grams to tsp", "5 tsp to grams", "how many oz in a cup", "how many oz in a US cup" }) {
             app.Send(new RecordPaletteChoice(window, prompt, destination));
             app.Send(new RecordPaletteChoice(window, prompt, destination));
         }
@@ -180,6 +181,25 @@ public sealed partial class BrowserContractsTests {
     }
 
     [Theory]
+    [InlineData("What remains after taking 12.5 percent off 80?", "80-12.5", null)]
+    [InlineData("What remains after taking 12.5 percent off 80?", "12.5% off 80", "70")]
+    [InlineData("Take 15 percent off 60", "60-15", null)]
+    [InlineData("Take 15 percent off 60", "60+15", null)]
+    [InlineData("Take 15 percent off 60", "15*60", null)]
+    [InlineData("Take 15 percent off 60", "15%60", null)]
+    [InlineData("Take 15 percent off 60", "15% of 60", null)]
+    [InlineData("Take 15 percent off 60", "15% off 60", "51")]
+    [InlineData("Find 15 percent of 60", "15*60", null)]
+    [InlineData("Find 15 percent of 60", "15% off 60", null)]
+    [InlineData("Find 15 percent of 60", "15% of 60", "9")]
+    [InlineData("Take 15% off 60", "60-15", null)]
+    [InlineData("Find the remainder of 60 divided by 15", "60%15", "0")]
+    [InlineData("Multiply negative six by eight", "-6*8", "-48")]
+    [InlineData("Multiply positive six by eight", "6*8", "48")]
+    [InlineData("Multiply minus six by eight", "-6*8", "-48")]
+    [InlineData("Multiply -twenty by four please", "-20*4", "-80")]
+    [InlineData("Multiply negative-six by eight", "-6*8", "-48")]
+    [InlineData("Multiply negative one hundred by eight", "-1*8", null)]
     [InlineData("Work out the product of twelve and four", "12 * 4", "48")]
     [InlineData("Work out the product of 17 and 19", "17 * 19", "323")]
     [InlineData("Work out the product of 17 and 19", "17 * 29", null)]
@@ -191,6 +211,18 @@ public sealed partial class BrowserContractsTests {
     [InlineData("Subtract 4 from 3 please", "3 - 4", "-1")]
     [InlineData("what is 5 minus 2", "5 - 2", "3")]
     [InlineData("what is 2 plus 3", "2 + 3", "5")]
+    [InlineData("Please calculate 3 + 4", "3+4", "7")]
+    [InlineData("Please calculate 3 - 4", "3-4", "-1")]
+    [InlineData("Please calculate 3 +4", "3+4", "7")]
+    [InlineData("Please calculate 3 -4", "3-4", "-1")]
+    [InlineData("Please calculate 3 - -4", "3- -4", "7")]
+    [InlineData("Please calculate 3 - - 4", "3- -4", "7")]
+    [InlineData("Multiply +4 by 3 please", "4*3", "12")]
+    [InlineData("Multiply -4 by 3 please", "-4*3", "-12")]
+    [InlineData("Multiply - 4 by 3 please", "-4*3", "-12")]
+    [InlineData("Multiply - 4 by 3 please", "4*3", null)]
+    [InlineData("Please calculate 3 + 4", "3+3", null)]
+    [InlineData("Please calculate 3 - 4", "3-5", null)]
     [InlineData("Multiply .5 by 4 please", "5 * 4", null)]
     [InlineData("Multiply 1e-3 by 4 please", "3 * 4", null)]
     [InlineData("Multiply 1 000 by 4 please", "1 * 4", null)]
@@ -222,6 +254,10 @@ public sealed partial class BrowserContractsTests {
     }
 
     [Theory]
+    [InlineData("Express 6 metres in metres please", "6 metres", "metres", "metres", null, "6")]
+    [InlineData("Express 6 metres in metres please", null, "metres", "metres", null, null)]
+    [InlineData("Express 6 kilometres in metres please", "6000", "kilometres", "metres", null, null)]
+    [InlineData("Express negative six metres in feet please", "negative six", "metres", "feet", null, "-19.69")]
     [InlineData("Express my 7.25 kilometre route in metres please", "7.25", "kilometre", "metres", null, "7250")]
     [InlineData("Please express twelve pounds as ounces", "twelve", "pounds", "ounces", null, "192")]
     [InlineData("Please express twelve pounds as ounces", "twelve pounds", "pound", "ounce", null, "192")]
@@ -233,6 +269,12 @@ public sealed partial class BrowserContractsTests {
     [InlineData("Tell me how many teaspoons 25 grams of water would fill", "25", "grams", "teaspoons", "water", null)]
     [InlineData("How much is 8 oz in cups?", "8", "oz", "cups", null, null)]
     [InlineData("Please express 8 fluid ounces as pounds", "8", "ounces", "pounds", null, null)]
+    [InlineData("Please express 8 fl. oz as pounds", "8", "oz", "pounds", null, null)]
+    [InlineData("Please express 8 fl. oz. as pounds", "8", "oz", "pounds", null, null)]
+    [InlineData("Please express 8 US fl. oz as pounds", "8", "oz", "pounds", null, null)]
+    [InlineData("Please express 8 fl. oz as pounds", "8", "fl. oz", "pounds", null, null)]
+    [InlineData("Please express 8 fl. oz as ml", "8", "fl. oz", "ml", null, "236.6")]
+    [InlineData("Please express 8 oz as pounds", "8", "oz", "pounds", null, "0.5")]
     [InlineData("Please express 8 nautical miles as meters", "8", "miles", "meters", null, null)]
     [InlineData("Please express -3 pounds as ounces", "3", "pounds", "ounces", null, null)]
     [InlineData("Please express -3 pounds as ounces", "3 pounds", "pounds", "ounces", null, null)]
@@ -311,7 +353,7 @@ public sealed partial class BrowserContractsTests {
     [InlineData("Multiply -twenty by four please", "20 * 4")]
     [InlineData("Multiply - three by four please", "3 * 4")]
     [InlineData("Multiply minus three by four please", "3 * 4")]
-    public void UnsupportedSignedWordsCannotAuthorizePositiveOperands(string text, string expression) {
+    public void SignedWordsCannotAuthorizePositiveOperands(string text, string expression) {
         var lookup = new PaletteGenerativeLookup(text);
         var result = new PaletteGenerativeResult(lookup, null, PaletteGenerativeStatus.Answered,
             new(PaletteInterpretationKind.Calculation, expression, null, null, null, null));

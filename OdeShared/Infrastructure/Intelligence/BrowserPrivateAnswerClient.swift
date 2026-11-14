@@ -5,7 +5,7 @@ import FoundationModels
 
 @Generable
 private enum PrivateAnswerSelection {
-    case conversion, add, subtract, multiply, divide, percentOf, percentOff
+    case conversion, calculation
     case text, incomplete, noAnswer
 }
 
@@ -14,15 +14,27 @@ private enum PrivateAnswerSelection {
 @Generable
 private struct PrivateAnswerInterpretation {
     var selection: PrivateAnswerSelection
-    @Guide(description: "Conversion amount copied exactly from input. Absent for implicit ratio or non-conversion.")
+    @Guide(
+        description: """
+            Original quantity ONLY, copied from input, without units. Keep number words. NEVER the converted result.
+            Absent for implicit ratio or non-conversion.
+            """)
     var amount: String?
     @Guide(description: "FROM unit copied exactly, preserving spelling and plural. Absent except for conversion.")
     var sourceUnit: String?
     @Guide(description: "TO unit copied exactly, preserving spelling and plural. Absent except for conversion.")
     var targetUnit: String?
-    @Guide(description: "Unevaluated arithmetic expression with input operands only. Number words may become digits.")
+    @Guide(
+        description: """
+            UNEVALUATED expression: digits and + - * / ^ ( ) only, or X% of Y / X% off Y. Convert input number words
+            to digits; never output word operators or a result. Absent except for calculation.
+            """)
     var expression: String?
-    @Guide(description: "Ingredient copied exactly from input, if supplied for a conversion. Never infer density.")
+    @Guide(
+        description: """
+            For conversion, copy the ingredient or material named in input. Omit ONLY when none is supplied.
+            Never infer density.
+            """)
     var ingredient: String?
     @Guide(description: "Only a general question answer or rewritten text, never a calculation or conversion answer.")
     var text: String?
@@ -38,7 +50,7 @@ private struct PrivateAnswerInterpretation {
             }
             return PaletteGenerativeResult(lookup: lookup, text: text, status: .answered)
         case .conversion: kind = .conversion
-        case .add, .subtract, .multiply, .divide, .percentOf, .percentOff: kind = .calculation
+        case .calculation: kind = .calculation
         case .incomplete: kind = .clarification
         case .noAnswer: kind = .noAnswer
         }
@@ -59,9 +71,11 @@ actor BrowserPrivateAnswerClient {
     static let shared = BrowserPrivateAnswerClient()
     static let instructions = """
         Interpret only the user's typed text. No browser, page, tab, history, personal context, tools or network exists.
-        Never calculate an answer, conversion factor or density. Select arithmetic and give an UNEVALUATED expression,
-        using only input operands. For X percent of Y use X% of Y; for a discount use X% off Y. Do not add constants.
-        For conversions copy amount and both units EXACTLY, including plural and regional qualifiers. Never normalize
+        Never calculate an answer, conversion factor or density. Select calculation and give an UNEVALUATED expression
+        with digit operands and symbolic operators, converting number words to digits and preserving signs.
+        For X percent of Y use X% of Y; for a discount use X% off Y, never ordinary subtraction. Do not add constants.
+        For conversions copy the ORIGINAL quantity alone into amount, without its unit, NEVER the converted quantity.
+        Copy both units EXACTLY, including plural and regional qualifiers. Never normalize
         units or invent 1 for an implicit ratio. Mass/volume and ounces/cups remain conversion: core owns clarification.
         Copy a supplied ingredient; never infer its density, including water or chicken. Do not guess cooking measures.
         Select text only for an explicit Ask Ode request, a general question, or rewrite request, NEVER arithmetic or

@@ -33,7 +33,7 @@ public sealed partial record PaletteInterpretation(PaletteInterpretationKind Kin
         var literals = NumericLiteral().Matches(Expression);
         var numbers = GroundedNumbers(source, Expression, literals);
         if (numbers is null || numbers.Count == 0 || numbers.Count > 16 || literals.Count != numbers.Count) return null;
-        if (Calculation.Of(Expression) is not { } calculation) return null;
+        if (Calculation.Of(Expression) is not { } calculation || !calculation.PreservesPercentage(source)) return null;
         return Card(PaletteCardKind.Calculation, calculation.Answer, $"{calculation.Expression} =", calculation.Answer);
     }
 
@@ -84,9 +84,15 @@ public sealed partial record PaletteInterpretation(PaletteInterpretationKind Kin
             bool signWord = first.Value.ToLowerInvariant() is "minus" or "plus";
             if (signWord && result.Count > 0 && FollowsNumber(source, first.Index, result[^1])) continue;
             if (!NumberToken(first.Value) && !signWord) continue;
+            int start = first.Index;
+            // A sign immediately after a complete operand is binary; any remaining signs are unary.
+            if (first.Value[0] is '+' or '-' or '−' && result.Count > 0 && FollowsNumber(source, start, result[^1])) {
+                start++;
+                while (start < source.Length && char.IsWhiteSpace(source[start])) start++;
+            }
             index = SourceNumberEnd(source, tokens, index);
-            string quote = source[first.Index..(tokens[index].Index + tokens[index].Length)];
-            if (ReadNumber(quote) is { } value) result.Add(new(quote, value, first.Index));
+            string quote = source[start..(tokens[index].Index + tokens[index].Length)];
+            if (ReadNumber(quote) is { } value) result.Add(new(quote, value, start));
         }
         return result;
     }
@@ -99,6 +105,7 @@ public sealed partial record PaletteInterpretation(PaletteInterpretationKind Kin
         int end = start + tokens[index].Length;
         while (index + 1 < tokens.Count) {
             var next = tokens[index + 1];
+            if (next.Value[0] is '+' or '-' or '−') break;
             string gap = source[end..next.Index];
             if (gap.Length == 0 || !gap.All(character => char.IsWhiteSpace(character) || character == '-')) break;
             if (next.Value.Equals("and", StringComparison.OrdinalIgnoreCase) && ReadNumber(source[start..end]) is null
@@ -143,8 +150,24 @@ public sealed partial record PaletteInterpretation(PaletteInterpretationKind Kin
     /// Bounded number words, not model-supplied normalization. Unsupported words fail closed.
     internal static double? ReadNumber(string quote) {
         if (quote.Length > 80) return null;
-        if (UnitConversion.ReadAmount(quote) is { } numeric) return numeric;
+        string numericQuote = quote.Length > 0 && quote[0] is '+' or '-'
+            ? quote[..1] + quote[1..].TrimStart() : quote;
+        if (UnitConversion.ReadAmount(numericQuote) is { } numeric) return numeric;
         string text = quote.Trim().ToLowerInvariant();
+        double sign = 1;
+        if (text.Length > 0 && text[0] is '+' or '-' or '−') {
+            if (text[0] is '-' or '−') sign = -1;
+            text = text[1..].TrimStart();
+        }
+        string[] signedWords = text.Replace('-', ' ').Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (signedWords.Length > 1 && signedWords[0] is "negative" or "positive" or "minus" or "plus") {
+            if (signedWords[0] is "negative" or "minus") sign = -sign;
+            text = string.Join(' ', signedWords[1..]);
+        }
+        return ReadUnsignedWords(text) is { } value ? sign * value : null;
+    }
+
+    private static double? ReadUnsignedWords(string text) {
         if (text.Length == 0 || !char.IsAsciiLetter(text[0])) return null;
         if (text is "a" or "an") return 1;
         int small = Array.IndexOf(SmallNumbers, text);

@@ -49,7 +49,7 @@ internal sealed partial class UnitConversion {
         // These existing volume factors are US customary, not Imperial or metric cooking measures.
         new("volume", ["tsp", "teaspoon", "teaspoons", "us tsp", "us teaspoon", "us teaspoons"], 0.00492892159375, 0, "US teaspoon", "US teaspoons"),
         new("volume", ["tbsp", "tablespoon", "tablespoons", "us tbsp", "us tablespoon", "us tablespoons"], 0.01478676478125, 0, "US tablespoon", "US tablespoons"),
-        new("volume", ["fl oz", "floz", "fluid ounce", "fluid ounces", "us fl oz", "us floz", "us fluid ounce", "us fluid ounces"], 0.0295735295625, 0, "US fluid ounce", "US fluid ounces"),
+        new("volume", ["fl oz", "fl. oz", "fl. oz.", "floz", "fluid ounce", "fluid ounces", "us fl oz", "us fl. oz", "us fl. oz.", "us floz", "us fluid ounce", "us fluid ounces"], 0.0295735295625, 0, "US fluid ounce", "US fluid ounces"),
         new("volume", ["cup", "cups", "us cup", "us cups"], 0.2365882365, 0, "US cup", "US cups", ChoiceOrder: 1),
         new("volume", ["pt", "pint", "pints", "us pt", "us pint", "us pints"], 0.473176473, 0, "US pint", "US pints", ChoiceOrder: 2),
         new("volume", ["qt", "quart", "quarts", "us qt", "us quart", "us quarts"], 0.946352946, 0, "US quart", "US quarts"),
@@ -87,6 +87,11 @@ internal sealed partial class UnitConversion {
         new("duration", ["d", "day", "days"], 86_400, 0, "day", "days", ChoiceOrder: 3),
         new("duration", ["wk", "wks", "week", "weeks"], 604_800, 0, "week", "weeks", ChoiceOrder: 4),
     ];
+
+    // One longest-first catalog matcher owns complete unit spans, including qualified aliases.
+    private static readonly Regex UnitNames = new(@"(?<![\p{L}\p{N}])(?:"
+        + string.Join("|", Units.SelectMany(unit => unit.Names).OrderByDescending(name => name.Length).Select(Regex.Escape))
+        + @")(?![\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     #endregion
 
@@ -153,9 +158,10 @@ internal sealed partial class UnitConversion {
         if (ingredient is not null && !PaletteInterpretation.Quoted(source, ingredient)) return null;
         if (Regional().IsMatch(source))
             return PaletteInterpretation.Clarification("Imperial and regional cooking measures aren’t supported.");
-        var from = QuotedUnit(source, fromQuote);
-        var to = QuotedUnit(source, toQuote);
-        if (from is null || to is null || from == to) return null;
+        var sourceUnits = SourceUnits(source);
+        var from = QuotedUnit(sourceUnits, fromQuote);
+        var to = QuotedUnit(sourceUnits, toQuote);
+        if (from is null || to is null || from == to && sourceUnits.Count(unit => unit == from) < 2) return null;
         return from.Kind != to.Kind ? ResolveDimensions(from, to, ingredient) : ResolveAmount(source, amountQuote, from, to);
     }
 
@@ -182,19 +188,15 @@ internal sealed partial class UnitConversion {
     }
 
     /// A model may use a catalog alias, but that exact unit must also be present in the source.
-    private static Unit? QuotedUnit(string source, string? proposed) {
+    private static Unit? QuotedUnit(IReadOnlyList<Unit> sourceUnits, string? proposed) {
         if (proposed is null || proposed.Length > 80 || Find(proposed.ToLowerInvariant()) is not { } unit) return null;
+        return sourceUnits.Contains(unit) ? unit : null;
+    }
+
+    private static IReadOnlyList<Unit> SourceUnits(string source) {
         string text = source.ToLowerInvariant();
-        var aliases = Units.SelectMany(owner => owner.Names.Select(name => (Owner: owner, Name: name))).ToArray();
-        foreach (var alias in aliases.Where(alias => alias.Owner == unit)) {
-            foreach (Match match in Regex.Matches(text, @"(?<![\p{L}\p{N}])" + Regex.Escape(alias.Name) + @"(?![\p{L}\p{N}])")) {
-                bool shadowed = aliases.Any(other => other.Name.Length > alias.Name.Length
-                    && Regex.Matches(text, @"(?<![\p{L}\p{N}])" + Regex.Escape(other.Name) + @"(?![\p{L}\p{N}])")
-                        .Any(longer => longer.Index <= match.Index && longer.Index + longer.Length >= match.Index + match.Length));
-                if (!shadowed && !UnitQualifier().IsMatch(text[..match.Index])) return unit;
-            }
-        }
-        return null;
+        return UnitNames.Matches(text).Where(match => !UnitQualifier().IsMatch(text[..match.Index]))
+            .Select(match => Find(match.Value)!).ToArray();
     }
 
     // A qualifier not consumed by the full catalog alias cannot be silently discarded.
@@ -221,8 +223,8 @@ internal sealed partial class UnitConversion {
     [GeneratedRegex(@"^(?<amount>[-+]?\d+(?:[ .,]\d+)*)\s*(?<unit>[a-z°²0-9 ]+)$", RegexOptions.CultureInvariant)]
     private static partial Regex BareMeasurement();
 
-    internal static bool MentionsUnit(string source) => ReadRequest(source) is not null || Units.Any(unit => unit.Names.Any(name =>
-        name.Length > 1 && name != "in" && PaletteInterpretation.Quoted(source.ToLowerInvariant(), name)));
+    internal static bool MentionsUnit(string source) => ReadRequest(source) is not null || UnitNames.Matches(source).Any(match =>
+        match.Length > 1 && !match.Value.Equals("in", StringComparison.OrdinalIgnoreCase));
 
     [GeneratedRegex(@"\b(?:imperial|british|uk|australian|metric\s+(?:cup|spoon|teaspoon|tablespoon))\b",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

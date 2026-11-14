@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace OdeCore.Domain;
 
@@ -7,7 +8,7 @@ namespace OdeCore.Domain;
 /// with at least one operator, or a whole percentage phrase such as
 /// `20% of 80` or `20% off 80`. A bare number or arbitrary prose is never a
 /// calculation. Powers bind before signs and associate to the right.
-public sealed class Calculation {
+public sealed partial class Calculation {
     #region Static Variables
 
     /// The longest text the palette reads as a calculation.
@@ -34,6 +35,7 @@ public sealed class Calculation {
     private int position;
     private int depth;
     private bool operated;
+    private bool? percentageDiscount;
 
     #endregion
 
@@ -59,11 +61,25 @@ public sealed class Calculation {
             double value = calculation.Percentage() ?? calculation.Sum();
             calculation.SkipSpace();
             if (calculation.position != trimmed.Length || !calculation.operated || !double.IsFinite(value)) return null;
-            return new Calculation(trimmed) { Value = value == 0 ? 0 : value };
+            return new Calculation(trimmed) { Value = value == 0 ? 0 : value, percentageDiscount = calculation.percentageDiscount };
         } catch (FormatException) {
             return null;
         }
     }
+
+    /// Grounded operands alone cannot authorize dropping or changing an explicit percentage operation.
+    internal bool PreservesPercentage(string source) {
+        if (!PercentageMarker().IsMatch(source)) return true;
+        var operations = PercentageRequest().Matches(source);
+        return operations.Count == 1 && percentageDiscount is not null
+            && percentageDiscount == operations[0].Groups["operation"].Value.Equals("off", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [GeneratedRegex(@"%|\bpercent(?:age)?\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex PercentageMarker();
+
+    [GeneratedRegex(@"(?:%|\bpercent(?:age)?\b)\s+(?<operation>of|off)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex PercentageRequest();
 
     /// Only two numeric literals and one percentage operation, not an
     /// expression embedded in prose. "Off" subtracts the percentage of the
@@ -84,6 +100,7 @@ public sealed class Calculation {
         if (position != percent) throw new FormatException();
         position = amountStart;
         double amount = SignedNumber();
+        percentageDiscount = discount;
         operated = true;
         double portion = Finite(rate / 100 * amount);
         return discount ? Finite(amount - portion) : portion;

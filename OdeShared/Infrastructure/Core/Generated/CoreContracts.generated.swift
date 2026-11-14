@@ -5232,6 +5232,7 @@ struct PaletteEntry: Equatable, Sendable {
 
 struct PaletteGenerativeLookup: Equatable, Sendable {
     var text: String
+    var isExplicitRequest: Bool
 }
 
 struct PaletteGenerativeResult: Equatable, Sendable {
