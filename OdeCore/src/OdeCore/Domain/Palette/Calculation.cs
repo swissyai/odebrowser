@@ -67,12 +67,17 @@ public sealed partial class Calculation {
         }
     }
 
-    /// Grounded operands alone cannot authorize dropping or changing an explicit percentage operation.
-    internal bool PreservesPercentage(string source) {
+    /// Percentage grammar owns both the operation and the source spans for its rate and base.
+    internal bool PreservesPercentage(string source, IReadOnlyList<(int Start, int Length)> operands) {
         if (!PercentageMarker().IsMatch(source)) return true;
         var operations = PercentageRequest().Matches(source);
-        return operations.Count == 1 && percentageDiscount is not null
-            && percentageDiscount == operations[0].Groups["operation"].Value.Equals("off", StringComparison.OrdinalIgnoreCase);
+        if (operations.Count != 1 || percentageDiscount is null || operands.Count != 2) return false;
+        var operation = operations[0];
+        int rateEnd = operands[0].Start + operands[0].Length;
+        int operationEnd = operation.Index + operation.Length;
+        return percentageDiscount == operation.Groups["operation"].Value.Equals("off", StringComparison.OrdinalIgnoreCase)
+            && rateEnd <= operation.Index && source[rateEnd..operation.Index].All(char.IsWhiteSpace)
+            && operands[1].Start >= operationEnd && source[operationEnd..operands[1].Start].All(char.IsWhiteSpace);
     }
 
     [GeneratedRegex(@"%|\bpercent(?:age)?\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]

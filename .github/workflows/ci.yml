@@ -19,7 +19,7 @@ jobs:
           set -o pipefail
           mkdir -p "$RUNNER_TEMP/semantic-evidence"
           git rev-parse HEAD > "$RUNNER_TEMP/semantic-evidence/source-commit.txt"
-          Scripts/control-plane/generate-contracts.sh 2>&1 | tee "$RUNNER_TEMP/semantic-evidence/generator.log"
+          Scripts/control-plane/generate-contracts.sh --check 2>&1 | tee "$RUNNER_TEMP/semantic-evidence/generator.log"
           git diff --binary > "$RUNNER_TEMP/semantic-evidence/generated.patch"
       - name: Test full core with cross-checks
         run: |

@@ -18,6 +18,8 @@ internal sealed partial class UnitConversion {
     private sealed record Unit(string Kind, string[] Names, double Scale, double Offset, string One, string Many,
         int ChoiceOrder = 0, string? ChoiceAlternative = null, string? ChoiceQualifier = null);
 
+    private sealed record SourceUnit(Unit Unit, int Start, int Length);
+
     #endregion
 
     #region Static Variables
@@ -89,9 +91,10 @@ internal sealed partial class UnitConversion {
     ];
 
     // One longest-first catalog matcher owns complete unit spans, including qualified aliases.
-    private static readonly Regex UnitNames = new(@"(?<![\p{L}\p{N}])(?:"
+    // Apostrophe-linked word fragments are not units; surrounding quotation marks still are allowed.
+    private static readonly Regex UnitNames = new(@"(?<![\p{L}\p{N}])(?<![\p{L}\p{N}]['’])(?:"
         + string.Join("|", Units.SelectMany(unit => unit.Names).OrderByDescending(name => name.Length).Select(Regex.Escape))
-        + @")(?![\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        + @")(?![\p{L}\p{N}])(?!['’][\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     #endregion
 
@@ -161,8 +164,8 @@ internal sealed partial class UnitConversion {
         var sourceUnits = SourceUnits(source);
         var from = QuotedUnit(sourceUnits, fromQuote);
         var to = QuotedUnit(sourceUnits, toQuote);
-        if (from is null || to is null || from == to && sourceUnits.Count(unit => unit == from) < 2) return null;
-        return from.Kind != to.Kind ? ResolveDimensions(from, to, ingredient) : ResolveAmount(source, amountQuote, from, to);
+        if (from is null || to is null || from == to && sourceUnits.Count(unit => unit.Unit == from) < 2) return null;
+        return from.Kind != to.Kind ? ResolveDimensions(from, to, ingredient) : ResolveAmount(source, amountQuote, from, to, sourceUnits);
     }
 
     private static PaletteCard? ResolveDimensions(Unit from, Unit to, string? ingredient) {
@@ -174,13 +177,11 @@ internal sealed partial class UnitConversion {
             : $"Use the weight per measure for {ingredient}.");
     }
 
-    private static PaletteCard? ResolveAmount(string source, string? amountQuote, Unit from, Unit to) {
+    private static PaletteCard? ResolveAmount(string source, string? amountQuote, Unit from, Unit to,
+        IReadOnlyList<SourceUnit> sourceUnits) {
         if (amountQuote is null && (from.Offset != 0 || to.Offset != 0))
             return PaletteInterpretation.Clarification("What temperature are you converting?");
-        bool hasQuantity = GenerativeAnswerLookup.ContainsNumber(source);
-        if (amountQuote is null && hasQuantity) return null;
-        double? amount = amountQuote is null || amountQuote == "1" && !hasQuantity && from.Offset == 0 && to.Offset == 0
-            ? 1 : QuotedAmount(source, amountQuote, from);
+        double? amount = DirectedAmount(source, amountQuote, from, to, sourceUnits);
         if (amount is null) return null;
         var conversion = new UnitConversion(amount.Value, from, to);
         return double.IsFinite(conversion.Value)
@@ -188,32 +189,54 @@ internal sealed partial class UnitConversion {
     }
 
     /// A model may use a catalog alias, but that exact unit must also be present in the source.
-    private static Unit? QuotedUnit(IReadOnlyList<Unit> sourceUnits, string? proposed) {
+    private static Unit? QuotedUnit(IReadOnlyList<SourceUnit> sourceUnits, string? proposed) {
         if (proposed is null || proposed.Length > 80 || Find(proposed.ToLowerInvariant()) is not { } unit) return null;
-        return sourceUnits.Contains(unit) ? unit : null;
+        return sourceUnits.Any(occurrence => occurrence.Unit == unit) ? unit : null;
     }
 
-    private static IReadOnlyList<Unit> SourceUnits(string source) {
+    private static IReadOnlyList<SourceUnit> SourceUnits(string source) {
         string text = source.ToLowerInvariant();
         return UnitNames.Matches(text).Where(match => !UnitQualifier().IsMatch(text[..match.Index]))
-            .Select(match => Find(match.Value)!).ToArray();
+            .Select(match => new SourceUnit(Find(match.Value)!, match.Index, match.Length)).ToArray();
     }
 
     // A qualifier not consumed by the full catalog alias cannot be silently discarded.
     [GeneratedRegex(@"\b(?:fluid|nautical|square|cubic|troy|survey|metric|us)\s+$", RegexOptions.CultureInvariant)]
     private static partial Regex UnitQualifier();
 
-    /// A quoted full quantity may include its own source unit, never another unit or extra prose.
-    private static double? QuotedAmount(string source, string quote, Unit unit) {
-        if (!PaletteInterpretation.Quoted(source, quote)) return null;
-        if (PaletteInterpretation.QuotedNumber(source, quote) is { } amount) return amount;
-        foreach (string name in unit.Names.OrderByDescending(name => name.Length)) {
-            if (!quote.EndsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
-            string number = quote[..^name.Length].TrimEnd();
-            if (number.Length > 0 && PaletteInterpretation.QuotedNumber(source, number, quote) is { } value) return value;
-        }
-        return null;
+    /// A single whole-source quantity must adjoin its source unit, and a directed
+    /// clause must name the target. Unit membership alone never authorizes direction.
+    private static double? DirectedAmount(string source, string? quote, Unit from, Unit to, IReadOnlyList<SourceUnit> units) {
+        var quantities = units.Select(unit => (Unit: unit, Number: PaletteInterpretation.NumberBefore(source, unit.Start)))
+            .Where(quantity => quantity.Number is not null).ToArray();
+        if (quantities.Length != 1 || quantities[0].Unit.Unit != from) return null;
+        var origin = quantities[0].Unit;
+        var number = quantities[0].Number!.Value;
+        int end = origin.Start + origin.Length;
+        var targets = units.Where(unit => unit.Start >= end && DirectedUnit().IsMatch(source[end..unit.Start])).ToArray();
+        if (targets.Length != 1 || targets[0].Unit != to) return null;
+        var target = targets[0];
+        int directionStart = end + DirectedUnit().Match(source[end..target.Start]).Index;
+        // The catalog also recognizes the connector "in" as inches. Only that
+        // exact connector occurrence may sit between the two requested units.
+        if (units.Any(unit => unit != origin && unit != target
+            && !(unit.Start == directionStart && source.Substring(unit.Start, unit.Length).Equals("in", StringComparison.OrdinalIgnoreCase))))
+            return null;
+        return QuotedQuantity(source, quote, from, to, number, end);
     }
+
+    private static double? QuotedQuantity(string source, string? quote, Unit from, Unit to,
+        (string Quote, double Value, int Start) number, int end) {
+        bool article = number.Quote.Equals("a", StringComparison.OrdinalIgnoreCase)
+            || number.Quote.Equals("an", StringComparison.OrdinalIgnoreCase);
+        if (article && (quote is null || quote == "1") && from.Offset == 0 && to.Offset == 0) return 1;
+        string quantity = source[number.Start..end];
+        return quote is not null && (quote.Equals(number.Quote, StringComparison.OrdinalIgnoreCase)
+            || quote.Equals(quantity, StringComparison.OrdinalIgnoreCase)) ? number.Value : null;
+    }
+
+    [GeneratedRegex(@"\b(?:in|into|to|as)\s+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex DirectedUnit();
 
     internal static bool IsBareMeasurement(string source) {
         var match = BareMeasurement().Match(source.Trim().ToLowerInvariant());

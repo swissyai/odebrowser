@@ -19,12 +19,16 @@ struct BrowserCommandPaletteFactCard: View {
 
     @Environment(\.browserChromeAppearance) private var chromeAppearance
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.browserInteractionCapabilities) private var capabilities
 
     private var isSelected: Bool { model.selectedResultIndex == item.index }
     private var isActionable: Bool { card.kind.copiesValue || card.kind.looksUpTerm || card.address != nil }
     private var canCopy: Bool {
         card.kind.copiesValue && ((card.kind != .translation && card.kind != .generativeAnswer) || card.value != nil)
     }
+    private var isCopied: Bool { model.isCopied(item) }
+    private var offersTabCopy: Bool { !capabilities.supportsTouch && model.tabCopyCandidate?.id == item.id }
 
     // MARK: - Actions - Presentation
 
@@ -132,18 +136,30 @@ struct BrowserCommandPaletteFactCard: View {
     }
 
     private var copyButton: some View {
-        Button {
-            model.activate(item.row)
-        } label: {
-            Label("Copy", systemImage: "doc.on.doc")
+        HStack(spacing: OdeSpacing.small) {
+            BrowserCommandPaletteKeycap { Text("Tab") }
+                .opacity(offersTabCopy ? 1 : 0)
+                .accessibilityHidden(true)
+            Button {
+                model.copyCard(item)
+            } label: {
+                // Both labels keep their space so feedback never moves results.
+                ZStack {
+                    Label("Copy", systemImage: "doc.on.doc").opacity(isCopied ? 0 : 1)
+                    Label("Copied", systemImage: "checkmark").opacity(isCopied ? 1 : 0)
+                }
                 .fixedSize(horizontal: true, vertical: false)
+                .animation(OdeMotion.feedbackPresentation.unlessReducingMotion(reduceMotion), value: isCopied)
+            }
+            .buttonStyle(OdeButtonStyle(role: .secondary, tint: .primary))
+            .controlSize(.small)
+            .focusEffectDisabled()
+            .disabled(!model.canCopyCard(item))
+            .accessibilityLabel(isCopied ? Text("Copied") : Text("Copy answer"))
+            .accessibilityValue(isCopied ? Text("Copied") : Text(verbatim: card.value ?? card.title))
+            .accessibilityHint(offersTabCopy ? Text("Tab copies the answer.") : Text(verbatim: ""))
+            .accessibilityIdentifier("command-palette-copy-answer-\(item.index)")
         }
-        .buttonStyle(OdeButtonStyle(role: .secondary, tint: .primary))
-        .controlSize(.small)
-        .focusEffectDisabled()
-        .accessibilityLabel("Copy answer")
-        .accessibilityValue(Text(verbatim: card.value ?? card.title))
-        .accessibilityIdentifier("command-palette-copy-answer-\(item.index)")
     }
 
     @ViewBuilder

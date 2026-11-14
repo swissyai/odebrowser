@@ -995,6 +995,22 @@
     "core-release-validation": {
       "category": "internal",
       "message": "Run core contracts and latency limits in the Release configuration used for distribution."
+    },
+    "quick-answer-tab-copy": {
+      "category": "improved",
+      "message": "Copy a quick answer with Tab and keep browsing in the Command Bar."
+    },
+    "private-numeric-interpretation": {
+      "category": "improved",
+      "message": "Use everyday wording for more calculations and conversions with on-device intelligence."
+    },
+    "command-bar-scrolling-sidebar-hide": {
+      "category": "fixed",
+      "message": "Smoother Command Bar scrolling and a steadier sidebar when hiding it."
+    },
+    "favicon-svg-readback": {
+      "category": "fixed",
+      "message": "Restore missing website icons on affected Macs."
     }
   }
 }

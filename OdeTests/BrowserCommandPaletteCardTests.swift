@@ -89,13 +89,130 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(cards.count, 2)
             XCTAssertLessThanOrEqual(cards.count, 4)
             XCTAssertEqual(Set(cards.map(\.id)).count, cards.count)
-            for item in cards {
+            for (index, item) in cards.enumerated() {
+                if index > 0 {
+                    // Return closed the previous copy session; a new edit owns the next one.
+                    model.query = ""
+                    model.query = text
+                    await model.waitForPendingResults()
+                }
                 let value = try XCTUnwrap(item.row.card?.value)
                 model.selectResult(at: item.index)
                 model.pressReturn()
                 XCTAssertEqual(copied.last, value)
             }
             XCTAssertEqual(copied, cards.compactMap { $0.row.card?.value })
+        }
+    }
+
+    func testTabCopiesReadyAnswerFromDefaultSearchWithoutChangingReturnsTarget() async throws {
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], perform: { _ in }, copy: { copied.append($0) })
+        let (model, shown) = makeModel(definition: nil, commands: commands)
+        defer { model.stop() }
+        model.isFieldFocused = true
+        model.query = "5 km in miles"
+        await model.waitForPendingResults()
+        let candidate = try XCTUnwrap(model.tabCopyCandidate)
+
+        model.pressTab()
+
+        XCTAssertEqual(copied, [candidate.row.card?.value].compactMap { $0 })
+        XCTAssertEqual(model.selectedResultIndex, 0)
+        XCTAssertTrue(model.isCopied(candidate))
+        XCTAssertEqual(shown.dismissals, 0)
+        model.pressReturn()
+        XCTAssertEqual(shown.opened.count, 1, "Return still runs the primary web search")
+        XCTAssertEqual(copied.count, 1)
+        XCTAssertNil(model.copiedCardID)
+    }
+
+    func testAmbiguousAnswersRequireAnExplicitSelectedCardForTabCopy() async throws {
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], perform: { _ in }, copy: { copied.append($0) })
+        let (model, shown) = makeModel(definition: nil, commands: commands)
+        defer { model.stop() }
+        model.isFieldFocused = true
+        model.query = "how many oz in a"
+        await model.waitForPendingResults()
+        let cards = model.items.filter { model.canCopyCard($0) }
+        XCTAssertGreaterThan(cards.count, 1)
+        XCTAssertNil(model.tabCopyCandidate)
+        let selected = try XCTUnwrap(cards.last)
+        model.selectResult(at: selected.index)
+
+        model.pressTab()
+
+        XCTAssertEqual(copied, [selected.row.card?.value].compactMap { $0 })
+        XCTAssertEqual(model.selectedResultIndex, selected.index)
+        XCTAssertEqual(shown.dismissals, 0)
+    }
+
+    func testTabNeverCopiesAResultThatArrivesAfterTheKeyOrAfterAnotherEdit() async throws {
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], perform: { _ in }, copy: { copied.append($0) })
+        let (model, _) = makeModel(definition: nil, commands: commands)
+        defer { model.stop() }
+        model.isFieldFocused = true
+        model.query = "5 km in miles"
+        model.pressTab()
+        await model.waitForPendingResults()
+        XCTAssertTrue(copied.isEmpty)
+        let old = try XCTUnwrap(model.items.first { model.canCopyCard($0) })
+        model.query = "20% of 80"
+        model.copyCard(old)
+        model.pressTab()
+        await model.waitForPendingResults()
+        XCTAssertTrue(copied.isEmpty)
+        XCTAssertNil(model.copiedCardID)
+    }
+
+    func testCopyRevalidatesFocusSourceAndPresentationWithoutStealingFocus() async throws {
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], perform: { _ in }, copy: { copied.append($0) })
+        let (model, shown) = makeModel(definition: nil, commands: commands)
+        defer { model.stop() }
+        model.query = "5 km in miles"
+        await model.waitForPendingResults()
+        let card = try XCTUnwrap(model.items.first { model.canCopyCard($0) })
+        XCTAssertNil(model.tabCopyCandidate, "No hardware offer outside the field")
+        model.copyCard(card)
+        XCTAssertFalse(model.isFieldFocused, "A touch or accessibility Copy must not move focus")
+        XCTAssertTrue(model.isCopied(card))
+        shown.sourceAvailable = false
+        model.copyCard(card)
+        XCTAssertFalse(model.isCopied(card))
+        XCTAssertEqual(copied.count, 1)
+        model.sourceAvailabilityChanged(false)
+        XCTAssertNil(model.copiedCardID)
+        shown.sourceAvailable = true
+        model.sourceAvailabilityChanged(true)
+        await model.waitForPendingResults()
+        let current = try XCTUnwrap(model.items.first { model.canCopyCard($0) })
+        model.dismiss()
+        model.copyCard(current)
+        XCTAssertEqual(copied.count, 1)
+        XCTAssertNil(model.copiedCardID)
+    }
+
+    func testUnavailableOrRefusedCopyDoesNotReportSuccess() async throws {
+        let registries: [BrowserCommandPaletteCommandRegistry?] = [
+            nil,
+            BrowserCommandPaletteCommandRegistry(commands: [], perform: { _ in }),
+            BrowserCommandPaletteCommandRegistry(commands: [], perform: { _ in }, copyInline: { _ in false }),
+        ]
+        for commands in registries {
+            let (model, _) = makeModel(definition: nil, commands: commands)
+            model.query = "5 km in miles"
+            await model.waitForPendingResults()
+            let card = try XCTUnwrap(model.items.first { $0.row.card?.kind == .conversion })
+            model.copyCard(card)
+            XCTAssertNil(model.copiedCardID)
+            model.stop()
         }
     }
 
@@ -170,6 +287,9 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
 
     private final class Shown {
         var terms: [String] = []
+        var opened: [URL] = []
+        var dismissals = 0
+        var sourceAvailable = true
     }
 
     private func makeModel(
@@ -197,7 +317,11 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
                     asked.record(lookup.topic)
                     return summary
                 }),
-            isSourceAvailable: { _ in true }, selectTab: { _, _ in false }, openURL: { _, _, _ in false }, dismiss: {},
+            isSourceAvailable: { _ in shown.sourceAvailable }, selectTab: { _, _ in false },
+            openURL: { _, url, _ in
+                shown.opened.append(url)
+                return true
+            }, dismiss: { shown.dismissals += 1 },
             openings: BrowserCommandPaletteOpening.all)
         return (model, shown)
     }

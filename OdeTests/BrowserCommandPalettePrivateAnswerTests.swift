@@ -42,6 +42,97 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         XCTAssertTrue(opened[0].absoluteString.contains("why%20are%20leaves%20green"))
     }
 
+    func testTabCopiesOnlyAnAlreadyReadyLocalAnswerAndRechecksOptOut() async throws {
+        let started = expectation(description: "Generation")
+        let gate = PrivateAnswerGate(started: started)
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], perform: { _ in }, copy: { copied.append($0) })
+        let model = try makeModel(commands: commands) { await gate.answer($0) }
+        defer { model.stop() }
+        model.isFieldFocused = true
+        model.query = "why is the sky blue?"
+        await fulfillment(of: [started], timeout: 2)
+        XCTAssertNil(model.tabCopyCandidate)
+        model.pressTab()
+        await gate.finish()
+        await model.waitForPendingResults()
+        XCTAssertTrue(copied.isEmpty, "Tab while pending must not copy delayed output")
+        let requests = await gate.requests
+        XCTAssertEqual(requests.count, 1, "Tab must not request or retry generation")
+        model.selectResult(at: 0)
+        let candidate = try XCTUnwrap(model.tabCopyCandidate)
+        model.pressTab()
+        XCTAssertEqual(copied, [candidate.row.card?.value].compactMap { $0 })
+        XCTAssertTrue(model.isCopied(candidate))
+
+        var preferences = model.browser.workspaceModel?.appPreferences ?? .default
+        preferences.palette = preferences.palette.offering(.askOde, false)
+        try model.browser.core.send(
+            SetAppPreferences(workspaceID: model.browser.family.workspaceID, preferences: preferences))
+        model.copyCard(candidate)
+        XCTAssertEqual(copied.count, 1, "Opt-out revokes copy before a presentation observer runs")
+        XCTAssertNil(model.tabCopyCandidate)
+        XCTAssertFalse(model.isCopied(candidate))
+    }
+
+    func testSemanticNumericCopyAndTabRecheckAskOdeWithoutPresentationRefresh() async throws {
+        for conversion in [false, true] {
+            var copied: [String] = []
+            var dismissals = 0
+            let commands = BrowserCommandPaletteCommandRegistry(
+                commands: [], perform: { _ in }, copy: { copied.append($0) })
+            let model = try makeModel(
+                commands: commands, dismiss: { dismissals += 1 },
+                generate: { lookup in
+                    let interpretation = PaletteInterpretation(
+                        kind: conversion ? .conversion : .calculation, expression: conversion ? nil : "12*4",
+                        amount: conversion ? "6" : nil, fromUnit: conversion ? "kilometres" : nil,
+                        toUnit: conversion ? "metres" : nil, ingredient: nil)
+                    return PaletteGenerativeResult(
+                        lookup: lookup, text: nil, status: .answered, interpretation: interpretation)
+                })
+            defer { model.stop() }
+            model.isFieldFocused = true
+            model.query =
+                conversion ? "Express 6 kilometres in metres please" : "Work out the product of twelve and four"
+            await model.waitForPendingResults()
+            let candidate = try XCTUnwrap(model.tabCopyCandidate)
+            XCTAssertEqual(candidate.row.card?.value, conversion ? "6000" : "48")
+            model.copyCard(candidate)
+            XCTAssertEqual(copied.count, 1)
+            var preferences = model.browser.workspaceModel?.appPreferences ?? .default
+            preferences.palette = preferences.palette.offering(.askOde, false)
+            try model.browser.core.send(
+                SetAppPreferences(workspaceID: model.browser.family.workspaceID, preferences: preferences))
+            XCTAssertFalse(model.canCopyCard(candidate))
+            XCTAssertNil(model.tabCopyCandidate)
+            model.copyCard(candidate)
+            model.pressTab()
+            XCTAssertEqual(copied.count, 1, "Both actions must revoke semantic output before preferencesChanged")
+            model.activate(candidate.row)
+            model.selectResult(at: candidate.index)
+            model.pressReturn()
+            XCTAssertEqual(copied.count, 1, "Activation and Return must also recheck immediate opt-out")
+            XCTAssertEqual(dismissals, 0, "Denied copying must not close the palette")
+            model.query = conversion ? "7 km to m" : "12*5"
+            await model.waitForPendingResults()
+            let deterministic = try XCTUnwrap(model.tabCopyCandidate)
+            XCTAssertEqual(deterministic.row.card?.value, conversion ? "7000" : "60")
+            XCTAssertTrue(model.canCopyCard(deterministic), "Ask Ode opt-out must not disable checked local tools")
+            model.activate(candidate.row)
+            XCTAssertEqual(copied.count, 1, "A retained old card cannot activate against a replacement result set")
+            XCTAssertEqual(dismissals, 0)
+            model.selectResult(at: 0)
+            model.pressTab()
+            XCTAssertEqual(copied.count, 2)
+            model.selectResult(at: deterministic.index)
+            model.pressReturn()
+            XCTAssertEqual(copied.count, 3, "Deterministic Return still copies with Ask Ode disabled")
+            XCTAssertEqual(dismissals, 1, "Return retains its copy-and-close behavior")
+        }
+    }
+
     func testUnavailableAndRefusedAreNotCopyableAndNeverFallBackToRemote() async throws {
         for status: PaletteGenerativeStatus in [.intelligenceDisabled, .modelNotReady, .refused, .failed] {
             let model = try makeModel { lookup in PaletteGenerativeResult(lookup: lookup, text: nil, status: status) }
@@ -268,6 +359,7 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         isSourceAvailable: @escaping (BrowserTabRuntimeAssignment) -> Bool = { _ in true },
         openURL: @escaping (URL) -> Bool = { _ in false },
         remoteCalls: PrivateAnswerRemoteCalls? = nil,
+        dismiss: @escaping () -> Void = {},
         generate: @escaping @Sendable (PaletteGenerativeLookup) async -> PaletteGenerativeResult
     ) throws -> BrowserCommandPaletteModel {
         let tab = TabState.Seed.startPage()
@@ -302,7 +394,7 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
                 },
                 generativeDebounce: debounce, generateAnswer: generate),
             isSourceAvailable: isSourceAvailable, selectTab: { _, _ in false },
-            openURL: { _, url, _ in openURL(url) }, dismiss: {})
+            openURL: { _, url, _ in openURL(url) }, dismiss: dismiss)
     }
 }
 

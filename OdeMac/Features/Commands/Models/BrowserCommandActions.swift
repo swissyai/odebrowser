@@ -62,6 +62,7 @@ struct BrowserCommandActions: BrowserNumberedSelectionPerformer {
             switchSpace: selectSpace,
             reopenArchivedTab: reopenArchivedTab,
             copy: copy,
+            copyInline: copyInline,
             currentTitle: menuTitle(of:)
         )
     }
@@ -95,9 +96,12 @@ struct BrowserCommandActions: BrowserNumberedSelectionPerformer {
 
     /// Copies `text` and says so.
     func copy(_ text: String) {
+        if copyInline(text) { chrome.showNotice(.copied) }
+    }
+
+    private func copyInline(_ text: String) -> Bool {
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
-        chrome.showNotice(.copied)
+        return NSPasteboard.general.setString(text, forType: .string)
     }
 
     /// Runs `command` when the window and its page allow it, putting an open

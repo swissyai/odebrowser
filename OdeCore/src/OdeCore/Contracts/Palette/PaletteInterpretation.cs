@@ -33,7 +33,8 @@ public sealed partial record PaletteInterpretation(PaletteInterpretationKind Kin
         var literals = NumericLiteral().Matches(Expression);
         var numbers = GroundedNumbers(source, Expression, literals);
         if (numbers is null || numbers.Count == 0 || numbers.Count > 16 || literals.Count != numbers.Count) return null;
-        if (Calculation.Of(Expression) is not { } calculation || !calculation.PreservesPercentage(source)) return null;
+        if (Calculation.Of(Expression) is not { } calculation
+            || !calculation.PreservesPercentage(source, numbers.Select(number => (number.Start, number.Quote.Length)).ToArray())) return null;
         return Card(PaletteCardKind.Calculation, calculation.Answer, $"{calculation.Expression} =", calculation.Answer);
     }
 
@@ -128,6 +129,13 @@ public sealed partial record PaletteInterpretation(PaletteInterpretationKind Kin
     internal static double? QuotedNumber(string source, string quote, string? quantity = null) => SourceNumbers(source)
         .FirstOrDefault(number => number.Quote.Equals(quote, StringComparison.OrdinalIgnoreCase)
             && (quantity is null || source.AsSpan(number.Start).StartsWith(quantity, StringComparison.OrdinalIgnoreCase)))?.Value;
+
+    /// Bind a quantity to the immediately following complete unit occurrence.
+    internal static (string Quote, double Value, int Start)? NumberBefore(string source, int unitStart) {
+        var number = SourceNumbers(source).LastOrDefault(number => number.Start + number.Quote.Length <= unitStart
+            && source[(number.Start + number.Quote.Length)..unitStart].All(char.IsWhiteSpace));
+        return number is null ? null : (number.Quote, number.Value, number.Start);
+    }
 
     internal static bool HasNumber(string source) => SourceToken().Matches(source).Any(token =>
         token.Value.ToLowerInvariant() is not ("a" or "an" or "negative" or "positive") && NumberToken(token.Value));

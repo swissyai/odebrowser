@@ -1715,8 +1715,10 @@ final class BrowserPagePoolTests: XCTestCase {
     }
 
     /// Loads `url` as a simulated response so a back/forward entry exists without
-    /// a network fixture, and waits for WebKit to commit it.
+    /// a network fixture, and waits for the production delegate and core to
+    /// acknowledge its completion before another navigation or archive.
     private func load(_ url: URL, in page: BrowserPage) async throws {
+        let completedBeforeLoad = page.completedNavigationCount
         page.webView.frame = CGRect(x: 0, y: 0, width: 640, height: 480)
         page.webView.loadSimulatedRequest(
             URLRequest(url: url),
@@ -1724,7 +1726,11 @@ final class BrowserPagePoolTests: XCTestCase {
                 <!doctype html><html><body style="height: 4000px">\(url.path)</body></html>
                 """
         )
-        try await waitForLoad(url, in: page.webView)
+        try await waitUntil("\(url) to complete in the core", timeout: .seconds(4), interval: .milliseconds(20)) {
+            page.completedNavigationCount > completedBeforeLoad && page.activeNavigation == nil
+                && page.webView.url == url && !page.webView.isLoading
+                && page.live.documentURL == url && !page.live.isLoading && page.live.pendingURL == nil
+        }
     }
 
     private func makeTabStateArchive() throws -> BrowserTabStateArchive {
