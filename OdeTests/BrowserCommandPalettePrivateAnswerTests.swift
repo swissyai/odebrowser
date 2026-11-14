@@ -246,11 +246,13 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
                 await model.waitForPendingResults()
                 XCTAssertEqual(
                     model.items.contains { $0.row.card?.kind == .generativeAnswer },
-                    enabled && prompt == "ask ode hi", prompt)
+                    enabled && (prompt == "ask ode hi" || prompt == "why is the"), prompt)
             }
             let requests = await remote.generations
+            // "why" belongs to the dictionary; "why is the" is a recognized
+            // nonnumeric question. Numeric requests still cannot yield text cards.
             let expected = [
-                "hi", "why", "why is", "why is the", "ordinary local topic", "explain synthetic topic number 19",
+                "hi", "why is", "why is the", "ordinary local topic", "explain synthetic topic number 19",
             ]
             XCTAssertEqual(requests.map(\.text), enabled ? expected : [])
             let calls = await remote.counts
