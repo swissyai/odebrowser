@@ -613,7 +613,8 @@ enum BrowserFaviconCapture {
             observation.canvasHeight = canvas.height;
         }
         mark('context');
-        const context = canvas.getContext('2d');
+        // This canvas is immediately read back as PNG rather than displayed.
+        const context = canvas.getContext('2d', { willReadFrequently: true });
         if (diagnostics) {
             observation.contextAvailable = !!context;
             observation.contextLossAvailable = typeof context?.isContextLost === 'function';
