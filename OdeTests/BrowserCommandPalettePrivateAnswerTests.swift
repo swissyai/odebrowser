@@ -79,16 +79,19 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
     func testSemanticNumericCopyAndTabRecheckAskOdeWithoutPresentationRefresh() async throws {
         for conversion in [false, true] {
             var copied: [String] = []
+            var dismissals = 0
             let commands = BrowserCommandPaletteCommandRegistry(
                 commands: [], perform: { _ in }, copy: { copied.append($0) })
-            let model = try makeModel(commands: commands) { lookup in
-                let interpretation = PaletteInterpretation(
-                    kind: conversion ? .conversion : .calculation, expression: conversion ? nil : "12*4",
-                    amount: conversion ? "6" : nil, fromUnit: conversion ? "kilometres" : nil,
-                    toUnit: conversion ? "metres" : nil, ingredient: nil)
-                return PaletteGenerativeResult(
-                    lookup: lookup, text: nil, status: .answered, interpretation: interpretation)
-            }
+            let model = try makeModel(
+                commands: commands, dismiss: { dismissals += 1 },
+                generate: { lookup in
+                    let interpretation = PaletteInterpretation(
+                        kind: conversion ? .conversion : .calculation, expression: conversion ? nil : "12*4",
+                        amount: conversion ? "6" : nil, fromUnit: conversion ? "kilometres" : nil,
+                        toUnit: conversion ? "metres" : nil, ingredient: nil)
+                    return PaletteGenerativeResult(
+                        lookup: lookup, text: nil, status: .answered, interpretation: interpretation)
+                })
             defer { model.stop() }
             model.isFieldFocused = true
             model.query =
@@ -107,12 +110,26 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
             model.copyCard(candidate)
             model.pressTab()
             XCTAssertEqual(copied.count, 1, "Both actions must revoke semantic output before preferencesChanged")
-            model.query = conversion ? "6 km to m" : "12*4"
+            model.activate(candidate.row)
+            model.selectResult(at: candidate.index)
+            model.pressReturn()
+            XCTAssertEqual(copied.count, 1, "Activation and Return must also recheck immediate opt-out")
+            XCTAssertEqual(dismissals, 0, "Denied copying must not close the palette")
+            model.query = conversion ? "7 km to m" : "12*5"
             await model.waitForPendingResults()
             let deterministic = try XCTUnwrap(model.tabCopyCandidate)
+            XCTAssertEqual(deterministic.row.card?.value, conversion ? "7000" : "60")
             XCTAssertTrue(model.canCopyCard(deterministic), "Ask Ode opt-out must not disable checked local tools")
+            model.activate(candidate.row)
+            XCTAssertEqual(copied.count, 1, "A retained old card cannot activate against a replacement result set")
+            XCTAssertEqual(dismissals, 0)
+            model.selectResult(at: 0)
             model.pressTab()
             XCTAssertEqual(copied.count, 2)
+            model.selectResult(at: deterministic.index)
+            model.pressReturn()
+            XCTAssertEqual(copied.count, 3, "Deterministic Return still copies with Ask Ode disabled")
+            XCTAssertEqual(dismissals, 1, "Return retains its copy-and-close behavior")
         }
     }
 
@@ -342,6 +359,7 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         isSourceAvailable: @escaping (BrowserTabRuntimeAssignment) -> Bool = { _ in true },
         openURL: @escaping (URL) -> Bool = { _ in false },
         remoteCalls: PrivateAnswerRemoteCalls? = nil,
+        dismiss: @escaping () -> Void = {},
         generate: @escaping @Sendable (PaletteGenerativeLookup) async -> PaletteGenerativeResult
     ) throws -> BrowserCommandPaletteModel {
         let tab = TabState.Seed.startPage()
@@ -376,7 +394,7 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
                 },
                 generativeDebounce: debounce, generateAnswer: generate),
             isSourceAvailable: isSourceAvailable, selectTab: { _, _ in false },
-            openURL: { _, url, _ in openURL(url) }, dismiss: {})
+            openURL: { _, url, _ in openURL(url) }, dismiss: dismiss)
     }
 }
 

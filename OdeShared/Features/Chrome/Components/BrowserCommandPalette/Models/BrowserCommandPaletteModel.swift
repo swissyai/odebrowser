@@ -466,7 +466,7 @@ final class BrowserCommandPaletteModel {
             let card = item.row.card, card.kind.copiesValue,
             let value = BrowserCommandPaletteCardText.copied(card), !value.isEmpty
         else { return false }
-        let sources = browser.workspaceModel?.appPreferences.palette ?? preferences
+        let sources = browser.workspaceModel?.appPreferences?.palette ?? preferences
         if shownAnswerRequiresAskOde, !sources.offers(.askOde) { return false }
         if card.kind == .calculation { return sources.offers(.calculator) }
         if card.kind == .conversion || card.kind == .time { return sources.offers(.conversions) }
@@ -575,7 +575,9 @@ final class BrowserCommandPaletteModel {
             return false
         }
         if card.kind.copiesValue {
-            guard let value = BrowserCommandPaletteCardText.copied(card), let commands else { return false }
+            guard let item = items.first(where: { $0.row == row }), canCopyCard(item),
+                let value = BrowserCommandPaletteCardText.copied(card), let commands
+            else { return false }
             commands.copy(value)
             return true
         }

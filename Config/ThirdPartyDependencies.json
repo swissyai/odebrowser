@@ -179,7 +179,8 @@
     "actions/labeler": "MIT",
     "actions/setup-dotnet": "MIT",
     "actions/setup-node": "MIT",
-    "actions/stale": "MIT"
+    "actions/stale": "MIT",
+    "actions/upload-artifact": "MIT"
   },
   "helpCenterDirectDependencies": {
     "@docusaurus/core": "MIT",

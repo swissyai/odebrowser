@@ -91,9 +91,10 @@ internal sealed partial class UnitConversion {
     ];
 
     // One longest-first catalog matcher owns complete unit spans, including qualified aliases.
-    private static readonly Regex UnitNames = new(@"(?<![\p{L}\p{N}])(?:"
+    // Apostrophe-linked word fragments are not units; surrounding quotation marks still are allowed.
+    private static readonly Regex UnitNames = new(@"(?<![\p{L}\p{N}])(?<![\p{L}\p{N}]['’])(?:"
         + string.Join("|", Units.SelectMany(unit => unit.Names).OrderByDescending(name => name.Length).Select(Regex.Escape))
-        + @")(?![\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        + @")(?![\p{L}\p{N}])(?!['’][\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     #endregion
 

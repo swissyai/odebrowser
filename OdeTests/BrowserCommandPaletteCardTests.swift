@@ -89,7 +89,13 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(cards.count, 2)
             XCTAssertLessThanOrEqual(cards.count, 4)
             XCTAssertEqual(Set(cards.map(\.id)).count, cards.count)
-            for item in cards {
+            for (index, item) in cards.enumerated() {
+                if index > 0 {
+                    // Return closed the previous copy session; a new edit owns the next one.
+                    model.query = ""
+                    model.query = text
+                    await model.waitForPendingResults()
+                }
                 let value = try XCTUnwrap(item.row.card?.value)
                 model.selectResult(at: item.index)
                 model.pressReturn()
