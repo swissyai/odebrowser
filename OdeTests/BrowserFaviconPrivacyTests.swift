@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Network
 import WebKit
@@ -155,6 +156,64 @@ final class BrowserFaviconPrivacyTests: XCTestCase {
         }
         XCTAssertTrue(requests.contains { $0.path == "/oversized-manifest" && $0.headers["sec-fetch-mode"] == "cors" })
         XCTAssertTrue(requests.contains { $0.path == "/oversized-manifest" && $0.headers["sec-fetch-mode"] == nil })
+    }
+
+    // Temporary diagnostic-branch calibration, not a replacement for the
+    // privacy cases above. Both variants keep their original isolated store.
+    func testDiagnosticSVGCanvasUnattachedVersusHosted() async throws {
+        guard ProcessInfo.processInfo.environment["ODE_NATIVE_CI_DIAGNOSTICS"] == "1" else { return }
+        let server = try BrowserPrivacyHTTPServer()
+        try await server.start()
+        defer { server.stop() }
+        let svg = Data(
+            #"<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="blue"/></svg>"#
+                .utf8)
+        for hosted in [false, true] {
+            let webView = makeWebView()
+            let window: NSWindow?
+            if hosted {
+                // Use the native test host's placement/safety policy, never a
+                // bespoke far-offscreen window or a host-wide policy change.
+                let host = NSWindow(
+                    contentRect: webView.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+                host.isReleasedWhenClosed = false
+                host.collectionBehavior = [.transient, .ignoresCycle]
+                host.ignoresMouseEvents = true
+                host.contentView = webView
+                host.orderFront(nil)
+                window = host
+                XCTAssertFalse(NSScreen.screens.contains { $0.frame.intersects(host.frame) })
+                XCTAssertTrue(host.collectionBehavior.contains(.transient))
+                XCTAssertFalse(NSApp.isActive)
+            } else {
+                window = nil
+            }
+            defer {
+                webView.stopLoading()
+                window?.contentView = nil
+                window?.close()
+            }
+            try await load(server.url(host: "parent.localhost", path: "/policy/no-referrer"), in: webView)
+            print("ODE_NATIVE_CI favicon calibration hosted=\(hosted) attached=\(webView.window != nil)")
+            // This is the actual SVG rasterizer, not a mocked JS/image result.
+            let rasterized = await BrowserFaviconCapture.rasterizedSVGData(svg, in: webView)
+            print("ODE_NATIVE_CI favicon calibration svgPresent=\(rasterized != nil)")
+            let control = try await webView.callAsyncJavaScript(
+                """
+                const canvas = document.createElement('canvas');
+                canvas.width = 32;
+                canvas.height = 32;
+                const context = canvas.getContext('2d');
+                if (!context) return 'no-context';
+                context.fillRect(0, 0, 32, 32);
+                const result = canvas.toDataURL('image/png');
+                return result === 'data:,' ? 'empty-sentinel'
+                    : result.startsWith('data:image/png;base64,') ? 'png' : 'other';
+                """, arguments: [:], in: nil, contentWorld: .defaultClient)
+            let classes = ["no-context", "empty-sentinel", "png", "other"]
+            let category = (control as? String).flatMap { classes.contains($0) ? $0 : nil } ?? "unavailable"
+            print("ODE_NATIVE_CI favicon calibration solidCanvas=\(category)")
+        }
     }
 
     private func makeWebView() -> WKWebView {

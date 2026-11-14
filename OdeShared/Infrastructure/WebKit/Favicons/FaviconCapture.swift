@@ -223,7 +223,7 @@ enum BrowserFaviconCapture {
             // Preserve the existing try? behavior: failed JavaScript is still nil, never retried.
         }
         if diagnoses {
-            let stage = try? await webView.callAsyncJavaScript(
+            let observation = try? await webView.callAsyncJavaScript(
                 "const stage = globalThis[diagnosticKey]; delete globalThis[diagnosticKey]; return stage;",
                 arguments: ["diagnosticKey": key], in: nil, contentWorld: .defaultClient)
             let allowed = [
@@ -231,8 +231,27 @@ enum BrowserFaviconCapture {
                 "page-changed", "cross-origin", "embedded-credentials", "response-rejected", "body-missing",
                 "length-rejected", "body-too-large", "body-empty",
             ]
-            let category = (stage as? String).flatMap { allowed.contains($0) ? $0 : nil } ?? "unavailable"
+            let metrics = observation as? [String: Any]
+            let stage = metrics?["stage"] as? String ?? observation as? String
+            let category = stage.flatMap { allowed.contains($0) ? $0 : nil } ?? "unavailable"
             print("ODE_NATIVE_CI favicon phase=\(phase) stage=\(category) resultPresent=\(value != nil)")
+            if let metrics {
+                // Temporary calibration: fixed keys, bounded dimensions and
+                // exact serialization classes only; never print page/data URLs.
+                for key in ["canvasWidth", "canvasHeight", "imageWidth", "imageHeight"] {
+                    let number = (metrics[key] as? NSNumber)?.doubleValue ?? -1
+                    let bounded = number.isFinite && (0...4096).contains(number) ? Int(number) : -1
+                    print("ODE_NATIVE_CI favicon canvasMetric=\(key) value=\(bounded)")
+                }
+                for key in ["contextAvailable", "contextLossAvailable", "contextLost"] {
+                    print("ODE_NATIVE_CI favicon canvasFlag=\(key) value=\(metrics[key] as? Bool == true)")
+                }
+                let classes = ["empty-sentinel", "png", "other"]
+                let serialization =
+                    (metrics["serialization"] as? String)
+                    .flatMap { classes.contains($0) ? $0 : nil } ?? "unavailable"
+                print("ODE_NATIVE_CI favicon serialization=\(serialization)")
+            }
         }
         return value
     }
@@ -566,7 +585,14 @@ enum BrowserFaviconCapture {
         """#
 
     private static let rasterizeSVGScript = #"""
-        const mark = (phase) => { if (diagnostics) globalThis[diagnosticKey] = phase; };
+        // Temporary CI calibration, removed with the diagnostic branch.
+        const observation = {};
+        const mark = (phase) => {
+            if (diagnostics) {
+                observation.stage = phase;
+                globalThis[diagnosticKey] = observation;
+            }
+        };
         const image = new Image();
         image.src = `data:image/svg+xml;base64,${svgBase64}`;
         mark('decode');
@@ -580,8 +606,19 @@ enum BrowserFaviconCapture {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
+        if (diagnostics) {
+            observation.imageWidth = image.naturalWidth;
+            observation.imageHeight = image.naturalHeight;
+            observation.canvasWidth = canvas.width;
+            observation.canvasHeight = canvas.height;
+        }
         mark('context');
         const context = canvas.getContext('2d');
+        if (diagnostics) {
+            observation.contextAvailable = !!context;
+            observation.contextLossAvailable = typeof context?.isContextLost === 'function';
+            observation.contextLost = context?.isContextLost?.() === true;
+        }
         if (!context) {
             throw new Error('Canvas 2D context is unavailable');
         }
@@ -589,6 +626,11 @@ enum BrowserFaviconCapture {
         context.drawImage(image, 0, 0, width, height);
         mark('serialize');
         const result = canvas.toDataURL('image/png');
+        if (diagnostics) {
+            observation.contextLost = context.isContextLost?.() === true;
+            observation.serialization = result === 'data:,' ? 'empty-sentinel'
+                : result.startsWith('data:image/png;base64,') ? 'png' : 'other';
+        }
         mark('complete');
         return result;
         """#

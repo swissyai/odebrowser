@@ -200,6 +200,8 @@ private final class AgentExecutionFixture: NSObject, WKScriptMessageHandler {
     var restoreSpaceOnInput = false
     private var closed = false
     private var loadGeneration = 0
+    private var expectedDocument: String?
+    private var loadedDocument: String?
 
     var core: OdeCore { application.browser.core }
     var page: BrowserPage {
@@ -260,14 +262,39 @@ private final class AgentExecutionFixture: NSObject, WKScriptMessageHandler {
                       return dispatch.call(this, event);
                     };
                     """, injectionTime: .atDocumentStart, forMainFrameOnly: true, in: WebKitPageAgents.agentWorld))
+        // Both readiness phases share the original five-second budget.
+        let deadline = ContinuousClock.now + .seconds(5)
+        // Let the application's initial about:blank finish before taking the
+        // baseline. Its completion must never acknowledge the fixture load.
+        try await waitUntil(deadline: deadline) {
+            self.page.completedNavigationCount > 0 && self.page.activeNavigation == nil
+                && !self.webView.isLoading && !self.page.live.isLoading && self.page.live.pendingURL == nil
+        }
+        let completedBeforeLoad = page.completedNavigationCount
+        let document = UUID().uuidString
+        expectedDocument = document
+        loadedDocument = nil
         loadGeneration += 1
         probe("document-load-start")
-        let navigation = webView.loadHTMLString("<title>Execution fixture</title><input autofocus>", baseURL: nil)
+        // Focus is explicit below; a deferred autofocus must not undo a test's
+        // deliberate blur and turn a negative input receipt into a delivery.
+        let navigation = webView.loadHTMLString(
+            """
+            <title>Execution fixture</title><input>
+            <script>
+            window.addEventListener('load', () => {
+              webkit.messageHandlers.agentExecution.postMessage({ loadedDocument: '\(document)' });
+            }, { once: true });
+            </script>
+            """, baseURL: nil)
+        _ = try XCTUnwrap(navigation, "WebKit must accept the fixture document")
         probe("document-load-submitted", navigationSubmitted: navigation != nil)
         do {
             probe("readiness-start")
-            try await waitUntil {
-                self.page.committedNavigationCount > 0 && !self.page.live.isLoading && self.page.live.pendingURL == nil
+            try await waitUntil(deadline: deadline) {
+                self.loadedDocument == document && self.page.completedNavigationCount > completedBeforeLoad
+                    && self.page.activeNavigation == nil && !self.webView.isLoading
+                    && !self.page.live.isLoading && self.page.live.pendingURL == nil
             }
             probe("readiness-complete")
         } catch {
@@ -338,8 +365,8 @@ private final class AgentExecutionFixture: NSObject, WKScriptMessageHandler {
             .first { $0.tabID == tabID }?.claimed ?? false
     }
 
-    func waitUntil(_ condition: () -> Bool) async throws {
-        let deadline = ContinuousClock.now + .seconds(5)
+    func waitUntil(deadline: ContinuousClock.Instant? = nil, _ condition: () -> Bool) async throws {
+        let deadline = deadline ?? ContinuousClock.now + .seconds(5)
         while !condition(), ContinuousClock.now < deadline {
             try await Task.sleep(for: .milliseconds(5))
         }
@@ -348,6 +375,13 @@ private final class AgentExecutionFixture: NSObject, WKScriptMessageHandler {
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.frameInfo.isMainFrame, message.world == .page,
+            let receipt = message.body as? [String: String],
+            let document = receipt["loadedDocument"], document == expectedDocument
+        {
+            loadedDocument = document
+            return
+        }
         guard let submission = message.body as? String else { return }
         if submission == "input" {
             // One request may dispatch several events, such as Enter's
