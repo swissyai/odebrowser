@@ -64,11 +64,32 @@ final class BrowserPagePoolTests: XCTestCase {
             browser: browser, pages: pool, spaceAccess: BrowserSpaceAccessController()
         )
 
-        XCTAssertTrue(
-            action.perform(
-                BrowserTabRuntimeAssignment(
-                    tabID: tab.id, spaceID: space.id, profileID: space.profileID
-                )))
+        let assignment = BrowserTabRuntimeAssignment(
+            tabID: tab.id, spaceID: space.id, profileID: space.profileID)
+        let diagnoses = ProcessInfo.processInfo.environment["ODE_NATIVE_CI_DIAGNOSTICS"] == "1"
+        if diagnoses {
+            let unlocked = browser.selectedUnlockedSpace(
+                matching: BrowserSpaceRuntimeAssignment(spaceID: space.id, profileID: space.profileID),
+                accessController: action.spaceAccess)
+            print(
+                "ODE_NATIVE_CI reset phase=before childAccepted=\(browser.shownTab?.address == child) "
+                    + "selectedMatches=\(browser.shownTab?.id == tab.id) unlockedMatches=\(unlocked != nil) "
+                    + "shownMatches=\(unlocked?.shownTab(tab.id) != nil) "
+                    + "residentMatches=\(pool.containsResidentPage(matching: assignment)) "
+                    + "residentExists=\(pool.containsResidentPage(for: tab.id)) "
+                    + "away=\(browser.shownTab?.isAwayFromSavedAddress == true) "
+                    + "available=\(browser.returnsToSavedAddress(tab.id, in: space.id)) "
+                    + "committed=\(page.committedNavigationCount) completed=\(page.completedNavigationCount)")
+        }
+        let performed = action.perform(assignment)
+        XCTAssertTrue(performed)
+        if diagnoses {
+            print(
+                "ODE_NATIVE_CI reset phase=after performed=\(performed) "
+                    + "samePage=\(pool.activePage === page) pendingRoot=\(page.live.pendingNavigationURL == root) "
+                    + "archivePresent=\(archive.archivedState(profileID: space.profileID, tabID: tab.id) != nil) "
+                    + "committed=\(page.committedNavigationCount) completed=\(page.completedNavigationCount)")
+        }
 
         XCTAssertTrue(pool.activePage === page)
         XCTAssertEqual(page.live.pendingNavigationURL, root)

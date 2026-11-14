@@ -31,9 +31,12 @@ final class BrowserAgentExecutionTests: XCTestCase {
             for runsScript in [true, false] {
                 let fixture = try AgentExecutionFixture()
                 defer { fixture.close() }
+                fixture.probe("iteration", stopsTab: stopsTab, runsScript: runsScript)
                 try await fixture.load()
+                fixture.probe("task-create")
                 let task = Task {
-                    await fixture.perform(
+                    fixture.probe("task-start")
+                    return await fixture.perform(
                         runsScript ? .evaluateScript : .pressKey,
                         arguments: runsScript
                             ? [
@@ -45,7 +48,14 @@ final class BrowserAgentExecutionTests: XCTestCase {
                 defer { task.cancel() }
                 // holdRendering records its engine receipt before the executor's
                 // layout-settlement await. Revoke in that actual await.
-                try await fixture.waitUntil { fixture.link.heldPages[fixture.tabID] != nil }
+                fixture.probe("held-await-start")
+                do {
+                    try await fixture.waitUntil { fixture.link.heldPages[fixture.tabID] != nil }
+                    fixture.probe("held-await-complete")
+                } catch {
+                    fixture.probe("held-await-error", error: error)
+                    throw error
+                }
                 try fixture.revoke(stopsTab: stopsTab)
                 if !stopsTab, !runsScript {
                     // Restoring reach does not restore the pruned claim of an
@@ -189,6 +199,7 @@ private final class AgentExecutionFixture: NSObject, WKScriptMessageHandler {
     var stopOnFieldRead = false
     var restoreSpaceOnInput = false
     private var closed = false
+    private var loadGeneration = 0
 
     var core: OdeCore { application.browser.core }
     var page: BrowserPage {
@@ -249,11 +260,47 @@ private final class AgentExecutionFixture: NSObject, WKScriptMessageHandler {
                       return dispatch.call(this, event);
                     };
                     """, injectionTime: .atDocumentStart, forMainFrameOnly: true, in: WebKitPageAgents.agentWorld))
-        webView.loadHTMLString("<title>Execution fixture</title><input autofocus>", baseURL: nil)
-        try await waitUntil {
-            self.page.committedNavigationCount > 0 && !self.page.live.isLoading && self.page.live.pendingURL == nil
+        loadGeneration += 1
+        probe("document-load-start")
+        let navigation = webView.loadHTMLString("<title>Execution fixture</title><input autofocus>", baseURL: nil)
+        probe("document-load-submitted", navigationSubmitted: navigation != nil)
+        do {
+            probe("readiness-start")
+            try await waitUntil {
+                self.page.committedNavigationCount > 0 && !self.page.live.isLoading && self.page.live.pendingURL == nil
+            }
+            probe("readiness-complete")
+        } catch {
+            probe("readiness-error", error: error)
+            throw error
         }
-        _ = try await webView.evaluateJavaScript("document.querySelector('input').focus()")
+        do {
+            probe("focus-start")
+            _ = try await webView.evaluateJavaScript("document.querySelector('input').focus()")
+            probe("focus-complete")
+        } catch {
+            probe("focus-error", error: error)
+            throw error
+        }
+    }
+
+    // Temporary CI attribution only: never include identifiers, script values or error descriptions.
+    func probe(
+        _ phase: StaticString, stopsTab: Bool = false, runsScript: Bool = false,
+        navigationSubmitted: Bool = false, error: Error? = nil
+    ) {
+        guard ProcessInfo.processInfo.environment["ODE_NATIVE_CI_DIAGNOSTICS"] == "1" else { return }
+        print(
+            "ODE_NATIVE_CI agent phase=\(phase) generation=\(loadGeneration) "
+                + "committed=\(page.committedNavigationCount) completed=\(page.completedNavigationCount) "
+                + "loading=\(page.live.isLoading) pending=\(page.live.pendingURL != nil) "
+                + "webLoading=\(webView.isLoading) held=\(link.heldPages[tabID] != nil) "
+                + "cancelled=\(Task.isCancelled) stopsTab=\(stopsTab) runsScript=\(runsScript) "
+                + "navigationSubmitted=\(navigationSubmitted)")
+        if let error {
+            let native = error as NSError
+            print("ODE_NATIVE_CI agent errorDomain=\(native.domain) errorCode=\(native.code)")
+        }
     }
 
     func perform(_ tool: BrowserAgentTool, arguments: [String: AgentJSON]) async -> AgentToolResult {

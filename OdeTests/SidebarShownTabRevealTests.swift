@@ -302,7 +302,10 @@ final class SidebarDeferredRevealTests: XCTestCase {
 
     private func makeFixture() async throws -> (window: NSWindow, scroll: NSScrollView, model: DeferredRevealModel) {
         let model = DeferredRevealModel()
-        let host = NSHostingView(rootView: DeferredRevealContent(model: model))
+        let host = NSHostingView(
+            rootView: DeferredRevealContent(model: model)
+                .environment(\.accessibilityReduceMotion, false)
+                .background(DeferredRevealEnvironmentProbe()))
         let window = DeferredRevealWindow(
             contentRect: CGRect(x: -40000, y: -40000, width: 280, height: 400),
             styleMask: .borderless, backing: .buffered, defer: false)
@@ -370,10 +373,23 @@ private final class DeferredRevealModel {
     var phases: [ScrollPhase] = []
 }
 
+// Temporary CI probe reads both inherited and fixture-effective values without changing system settings.
+private struct DeferredRevealEnvironmentProbe: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Color.clear.onAppear {
+            guard ProcessInfo.processInfo.environment["ODE_NATIVE_CI_DIAGNOSTICS"] == "1" else { return }
+            print("ODE_NATIVE_CI sidebar phase=inherited-environment reduceMotion=\(reduceMotion)")
+        }
+    }
+}
+
 private struct DeferredRevealContent: View {
     // MARK: - Variables
 
     let model: DeferredRevealModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // MARK: - Actions - Content
 
@@ -407,6 +423,10 @@ private struct DeferredRevealContent: View {
                 .onScrollPhaseChange { _, phase in model.phases.append(phase) }
                 .environment(\.sidebarSpaceIsSelected, model.active)
             }
+        }
+        .onAppear {
+            guard ProcessInfo.processInfo.environment["ODE_NATIVE_CI_DIAGNOSTICS"] == "1" else { return }
+            print("ODE_NATIVE_CI sidebar phase=fixture-environment reduceMotion=\(reduceMotion)")
         }
     }
 }

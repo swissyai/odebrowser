@@ -23,6 +23,9 @@ enum BrowserFaviconCapture {
             contentWorld: .defaultClient
         )
         let discovered = discovery(from: value, pageURL: pageURL, prefersDark: prefersDark(webView))
+        diagnostic(
+            "discovery", count: discovered.iconURLs.count, secondCount: discovered.manifestURLs.count,
+            flag: value != nil)
         guard webView.url == pageURL, !Task.isCancelled else { return nil }
         var manifestIcons: [URL] = []
         for manifestURL in discovered.manifestURLs {
@@ -164,19 +167,74 @@ enum BrowserFaviconCapture {
             max(1, maximumPixelSize),
             maximumRasterizedPixelSize
         )
+        diagnostic("svg-start", count: data.count)
         guard
-            let value = try? await webView.callAsyncJavaScript(
-                rasterizeSVGScript,
+            let value = await diagnosticJavaScript(
+                rasterizeSVGScript, phase: "svg", in: webView,
                 arguments: [
                     "svgBase64": data.base64EncodedString(),
                     "maximumPixelSize": pixelSize,
-                ],
-                in: nil,
-                contentWorld: .defaultClient
+                ]
             ),
             let dataURL = value as? String
         else { return nil }
-        return decodeDataURL(dataURL)
+        let decoded = decodeDataURL(dataURL)
+        diagnostic("svg-serialized", count: dataURL.utf8.count, secondCount: decoded?.count ?? 0, flag: decoded != nil)
+        return decoded
+    }
+
+    // Temporary Debug-only CI attribution. Values are counts, bools and fixed phases, never resource data.
+    private static var diagnosesNativeCI: Bool {
+        #if DEBUG
+            ProcessInfo.processInfo.environment["ODE_NATIVE_CI_DIAGNOSTICS"] == "1"
+        #else
+            false
+        #endif
+    }
+
+    private static func diagnostic(
+        _ phase: StaticString, count: Int = 0, secondCount: Int = 0, flag: Bool = false
+    ) {
+        guard diagnosesNativeCI else { return }
+        print(
+            "ODE_NATIVE_CI favicon phase=\(phase) count=\(count) secondCount=\(secondCount) "
+                + "flag=\(flag) cancelled=\(Task.isCancelled)")
+    }
+
+    private static func diagnosticJavaScript(
+        _ script: String, phase: StaticString, in webView: WKWebView, arguments: [String: Any]
+    ) async -> Any? {
+        let diagnoses = diagnosesNativeCI
+        let key = diagnoses ? "odeNativeCI" + UUID().uuidString : ""
+        var arguments = arguments
+        arguments["diagnostics"] = diagnoses
+        arguments["diagnosticKey"] = key
+        var value: Any?
+        do {
+            value = try await webView.callAsyncJavaScript(
+                script, arguments: arguments, in: nil, contentWorld: .defaultClient)
+        } catch {
+            if diagnoses {
+                let native = error as NSError
+                print(
+                    "ODE_NATIVE_CI favicon phase=\(phase) errorDomain=\(native.domain) "
+                        + "errorCode=\(native.code) cancelled=\(Task.isCancelled)")
+            }
+            // Preserve the existing try? behavior: failed JavaScript is still nil, never retried.
+        }
+        if diagnoses {
+            let stage = try? await webView.callAsyncJavaScript(
+                "const stage = globalThis[diagnosticKey]; delete globalThis[diagnosticKey]; return stage;",
+                arguments: ["diagnosticKey": key], in: nil, contentWorld: .defaultClient)
+            let allowed = [
+                "decode", "dimensions", "context", "draw", "serialize", "complete", "fetch", "response", "body",
+                "page-changed", "cross-origin", "embedded-credentials", "response-rejected", "body-missing",
+                "length-rejected", "body-too-large", "body-empty",
+            ]
+            let category = (stage as? String).flatMap { allowed.contains($0) ? $0 : nil } ?? "unavailable"
+            print("ODE_NATIVE_CI favicon phase=\(phase) stage=\(category) resultPresent=\(value != nil)")
+        }
+        return value
     }
 
     private static func downloadResource(
@@ -191,16 +249,14 @@ enum BrowserFaviconCapture {
         // The isolated world keeps page scripts from replacing fetch. WebKit
         // owns cookie scope, SameSite, Space storage, and redirect credentials.
         // No referrer is needed for discovery, even when a policy permits one.
-        let value = try? await webView.callAsyncJavaScript(
-            fetchResourceScript,
+        let value = await diagnosticJavaScript(
+            fetchResourceScript, phase: "resource", in: webView,
             arguments: [
                 "resourceURL": url.absoluteString,
                 "pageURL": pageURL.absoluteString,
                 "maximumByteCount": maximumByteCount,
                 "accept": accept,
-            ],
-            in: nil,
-            contentWorld: .defaultClient
+            ]
         )
         guard webView.url == pageURL, !Task.isCancelled else { return nil }
         if let result = value as? [String: Any],
@@ -210,16 +266,20 @@ enum BrowserFaviconCapture {
             !data.isEmpty, data.count <= maximumByteCount,
             let source = result["url"] as? String, let responseURL = URL(string: source)
         {
+            diagnostic("response-accepted", count: data.count, flag: result["mimeType"] as? String == "image/svg+xml")
             return .init(data: data, mimeType: result["mimeType"] as? String, url: responseURL)
         }
         // Public CDN icons may not grant CORS access. The native fallback
         // carries neither the page URL nor its credentials, on any redirect.
-        return await BrowserFaviconResourceLoader.download(
+        diagnostic("native-fallback-start")
+        let resource = await BrowserFaviconResourceLoader.download(
             url,
             maximumByteCount: maximumByteCount,
             accept: accept,
             userAgent: userAgent
         )
+        diagnostic("native-fallback-complete", count: resource?.data.count ?? 0, flag: resource?.isImage == true)
+        return resource
     }
 
     private static func renderableCandidateData(
@@ -227,6 +287,7 @@ enum BrowserFaviconCapture {
         mimeType: String?,
         in webView: WKWebView
     ) async -> Data? {
+        diagnostic("candidate", count: data.count, flag: isSVG(data, mimeType: mimeType))
         guard isSVG(data, mimeType: mimeType) else { return data }
         return await rasterizedSVGData(data, in: webView)
     }
@@ -449,13 +510,16 @@ enum BrowserFaviconCapture {
     }
 
     private static let fetchResourceScript = #"""
-        if (location.href !== pageURL) return null;
+        const mark = (phase) => { if (diagnostics) globalThis[diagnosticKey] = phase; };
+        if (location.href !== pageURL) { mark('page-changed'); return null; }
         const target = new URL(resourceURL);
         // Cross-origin public resources use the credential-free native loader.
-        if (target.origin !== location.origin || target.username || target.password) return null;
+        if (target.origin !== location.origin) { mark('cross-origin'); return null; }
+        if (target.username || target.password) { mark('embedded-credentials'); return null; }
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 12000);
         try {
+            mark('fetch');
             const response = await fetch(target.href, {
                 credentials: 'same-origin',
                 referrer: '',
@@ -464,9 +528,12 @@ enum BrowserFaviconCapture {
                 headers: { Accept: accept },
                 signal: controller.signal
             });
-            if (!response.ok || !response.body) return null;
+            mark('response');
+            if (!response.ok) { mark('response-rejected'); return null; }
+            if (!response.body) { mark('body-missing'); return null; }
             const length = Number(response.headers.get('content-length'));
-            if (length > maximumByteCount) return null;
+            if (length > maximumByteCount) { mark('length-rejected'); return null; }
+            mark('body');
             const reader = response.body.getReader();
             const chunks = [];
             let count = 0;
@@ -474,16 +541,17 @@ enum BrowserFaviconCapture {
                 const { done, value } = await reader.read();
                 if (done) break;
                 count += value.byteLength;
-                if (count > maximumByteCount) return null;
+                if (count > maximumByteCount) { mark('body-too-large'); return null; }
                 chunks.push(value);
             }
-            if (!count) return null;
+            if (!count) { mark('body-empty'); return null; }
             let binary = '';
             for (const chunk of chunks) {
                 for (let offset = 0; offset < chunk.length; offset += 8192) {
                     binary += String.fromCharCode(...chunk.subarray(offset, offset + 8192));
                 }
             }
+            mark('complete');
             return {
                 base64: btoa(binary),
                 mimeType: (response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase(),
@@ -498,9 +566,12 @@ enum BrowserFaviconCapture {
         """#
 
     private static let rasterizeSVGScript = #"""
+        const mark = (phase) => { if (diagnostics) globalThis[diagnosticKey] = phase; };
         const image = new Image();
         image.src = `data:image/svg+xml;base64,${svgBase64}`;
+        mark('decode');
         await image.decode();
+        mark('dimensions');
         const sourceWidth = Math.max(1, image.naturalWidth || maximumPixelSize);
         const sourceHeight = Math.max(1, image.naturalHeight || maximumPixelSize);
         const scale = maximumPixelSize / Math.max(sourceWidth, sourceHeight);
@@ -509,12 +580,17 @@ enum BrowserFaviconCapture {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
+        mark('context');
         const context = canvas.getContext('2d');
         if (!context) {
             throw new Error('Canvas 2D context is unavailable');
         }
+        mark('draw');
         context.drawImage(image, 0, 0, width, height);
-        return canvas.toDataURL('image/png');
+        mark('serialize');
+        const result = canvas.toDataURL('image/png');
+        mark('complete');
+        return result;
         """#
 
     private static let maximumRasterizedPixelSize = 512

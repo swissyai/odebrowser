@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      native_diagnostics:
+        description: Run only the full native suite with temporary categorical diagnostics
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -15,6 +20,7 @@ concurrency:
 
 jobs:
   source:
+    if: inputs.native_diagnostics != true
     name: Public-source compliance
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -31,6 +37,7 @@ jobs:
   # Tests that need macOS tools, such as plutil, skip here. A macOS build job
   # runs the whole suite again on its runner.
   script-tests:
+    if: inputs.native_diagnostics != true
     name: Release and repository contracts
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -46,6 +53,7 @@ jobs:
         run: python3 -m unittest discover -s Scripts/Tests
 
   core:
+    if: inputs.native_diagnostics != true
     name: .NET core contracts and lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -75,6 +83,7 @@ jobs:
   # Pull requests and pushes to main build only the apps their files can
   # affect; manual runs build both.
   changes:
+    if: inputs.native_diagnostics != true
     name: Changed areas
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -146,46 +155,76 @@ jobs:
   mac-app:
     name: Build and test macOS
     needs: changes
-    if: needs.changes.outputs.mac == 'true'
+    if: always() && !cancelled() && (inputs.native_diagnostics == true || needs.changes.outputs.mac == 'true')
     runs-on: xcode-27
     timeout-minutes: 60
+    env:
+      ODE_NATIVE_CI_DIAGNOSTICS: ${{ inputs.native_diagnostics && '1' || '0' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./.github/actions/prepare-apple-build
 
-      - name: Build macOS
+      - name: Record native runner environment (read only)
         run: |
+          {
+            sw_vers
+            xcodebuild -version
+            motion=$(defaults read com.apple.universalaccess reduceMotion 2>/dev/null || true)
+            case "$motion" in
+              0|1) printf 'ReduceMotion=%s\n' "$motion" ;;
+              *) printf 'ReduceMotion=unavailable\n' ;;
+            esac
+          } | tee "$RUNNER_TEMP/ode-native-environment.log"
+
+      - name: Build macOS
+        if: inputs.native_diagnostics != true
+        run: |
+          set -o pipefail
           xcodebuild build \
             -project Ode.xcodeproj \
             -scheme Ode \
             -configuration Release \
             -destination 'generic/platform=macOS' \
             -derivedDataPath "$RUNNER_TEMP/crest-build-derived-data" \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$RUNNER_TEMP/ode-native-release-build.log"
 
       - name: Build native tests
         run: |
+          set -o pipefail
           xcodebuild build-for-testing \
             -project Ode.xcodeproj \
             -scheme Ode \
             -destination 'platform=macOS,arch=arm64' \
             -derivedDataPath "$RUNNER_TEMP/crest-build-derived-data" \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$RUNNER_TEMP/ode-native-test-build.log"
 
       - name: Test native contracts in an isolated session
         env:
           ODE_ISOLATED_SESSION: '1'
           # Fixtures need separate in-memory stores, not one named persistent profile.
           TEST_RUNNER_ODE_ISOLATED_SESSION: '1'
+          TEST_RUNNER_ODE_NATIVE_CI_DIAGNOSTICS: ${{ inputs.native_diagnostics && '1' || '0' }}
         run: |
+          set -o pipefail
           xcodebuild test-without-building \
             -project Ode.xcodeproj \
             -scheme Ode \
             -destination 'platform=macOS,arch=arm64' \
             -derivedDataPath "$RUNNER_TEMP/crest-build-derived-data" \
             -resultBundlePath "$RUNNER_TEMP/ode-native-tests.xcresult" \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$RUNNER_TEMP/ode-native-tests.log"
+
+      - name: Retain native results and logs even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ode-native-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/ode-native-tests.xcresult
+            ${{ runner.temp }}/ode-native-*.log
 
       - name: Remove generated build data
         if: always()
@@ -236,6 +275,7 @@ jobs:
         run: find "$RUNNER_TEMP/crest-build-derived-data" -depth -delete 2>/dev/null || true
 
   website:
+    if: inputs.native_diagnostics != true
     name: Website and Help Center
     runs-on: ubuntu-latest
     timeout-minutes: 15
