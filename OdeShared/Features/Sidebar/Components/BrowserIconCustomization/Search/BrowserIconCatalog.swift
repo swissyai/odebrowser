@@ -55,7 +55,10 @@ struct BrowserIconCatalog: Sendable {
 
     // MARK: - Initializers
 
-    init(symbolNames: [String], emojiChoices: [BrowserTabEmojiChoice], concepts: [SpaceIconConcept], emojiKeywords: [String: String]) {
+    init(
+        symbolNames: [String], emojiChoices: [BrowserTabEmojiChoice], concepts: [SpaceIconConcept],
+        emojiKeywords: [String: String]
+    ) {
         self.concepts = concepts
         let keywordsBySymbol = Self.conceptTerms(concepts.map { ($0.symbols, $0.terms) })
         let keywordsByEmoji = Self.conceptTerms(
@@ -161,7 +164,10 @@ struct BrowserIconCatalog: Sendable {
     }
 
     static func symbolTokens(_ name: String) -> [String] {
-        unique(name.split(separator: ".").map(String.init).filter { !structuralWords.contains($0) && !$0.allSatisfy(\.isNumber) })
+        unique(
+            name.split(separator: ".").map(String.init).filter {
+                !structuralWords.contains($0) && !$0.allSatisfy(\.isNumber)
+            })
     }
 
     static func words(_ text: String) -> [String] {

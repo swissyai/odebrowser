@@ -63,7 +63,8 @@ jobs:
 
       - name: Test core contracts
         working-directory: OdeCore
-        run: dotnet test tests/OdeCore.Tests/OdeCore.Tests.csproj --nologo
+        # The latency contract measures optimized code, as the packaged core uses.
+        run: dotnet test tests/OdeCore.Tests/OdeCore.Tests.csproj --nologo --configuration Release
 
       - name: Check core analyzers and code style
         run: Scripts/control-plane/lint-dotnet.sh

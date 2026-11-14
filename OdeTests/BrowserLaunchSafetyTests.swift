@@ -56,7 +56,8 @@ final class BrowserLaunchSafetyTests: XCTestCase {
         XCTAssertEqual(now.controls, [.pagesWaitUntilOpened, .syncPaused])
         XCTAssertEqual(
             now.offer,
-            "You can start with sync paused and with pages loading only when you open them. Nothing is deleted or changed.")
+            "You can start with sync paused and with pages loading only when you open them. Nothing is deleted or changed."
+        )
         XCTAssertEqual(now.banner, "Safe mode: sync is off, and pages load when you open them.")
 
         let withEngine = BrowserSafeMode(controls: [

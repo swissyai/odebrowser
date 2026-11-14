@@ -25,8 +25,12 @@ ENGINE_APP_ENTITLEMENTS = {
     "com.apple.security.personal-information.location": True,
     "com.apple.security.personal-information.photos-library": True,
 }
-# V8 in these helpers maps executable memory (chrome/app/helper-*-entitlements.plist).
-JIT_HELPER_SUFFIXES = ("Helper (Renderer).app", "Helper (GPU).app")
+# Standard and Aperitif helpers use the same renderer/GPU entitlements
+# (chrome/installer/mac/signing/parts.py); V8 maps executable memory in both.
+JIT_HELPER_SUFFIXES = (
+    "Helper (Renderer).app", "Helper (GPU).app",
+    "Helper (Aperitif Renderer).app", "Helper (Aperitif GPU).app",
+)
 # macOS kills an app at launch when it claims one of these without an
 # embedded provisioning profile that grants it.
 PROFILE_ENTITLEMENT_KEYS = {"com.apple.application-identifier", "keychain-access-groups"}

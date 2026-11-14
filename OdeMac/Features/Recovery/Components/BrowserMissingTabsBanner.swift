@@ -34,13 +34,15 @@ struct BrowserMissingTabsBanner: View {
             .frame(maxWidth: 640)
             .background {
                 if reduceTransparency {
-                    RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).fill(Color(nsColor: .windowBackgroundColor))
+                    RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).fill(
+                        Color(nsColor: .windowBackgroundColor))
                 } else {
                     RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).fill(.regularMaterial)
                 }
             }
             .overlay {
-                RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).strokeBorder(.separator, lineWidth: 0.5)
+                RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).strokeBorder(
+                    .separator, lineWidth: 0.5)
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("missing-tabs-banner")

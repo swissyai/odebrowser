@@ -46,7 +46,8 @@ struct BrowserTabSelectionGlow: View {
                         .overlay { Capsule().strokeBorder(index == 2 ? .orange : .clear, lineWidth: 2) }
                         .background {
                             if index == 2 {
-                                BrowserTabSelectionGlow(cornerRadius: OdeCornerScale.row, color: .orange.opacity(strength * 0.6))
+                                BrowserTabSelectionGlow(
+                                    cornerRadius: OdeCornerScale.row, color: .orange.opacity(strength * 0.6))
                             }
                         }
                 }

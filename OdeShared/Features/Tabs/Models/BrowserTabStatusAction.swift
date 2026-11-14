@@ -32,7 +32,8 @@ struct BrowserTabStatusAction {
     )
 
     static let stopUnresponsivePage = Self(
-        title: LocalizedStringResource("Stop Page", comment: "Stops a tab's page that does not answer, keeping the tab."),
+        title: LocalizedStringResource(
+            "Stop Page", comment: "Stops a tab's page that does not answer, keeping the tab."),
         symbol: "stop.circle",
         role: .destructive
     ) { $0.stopUnresponsivePage() }

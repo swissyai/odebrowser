@@ -171,7 +171,9 @@ struct BrowserSafeStartView: View {
                 ? String(localized: "It didn't finish starting in safe mode either.")
                 : String(localized: "It didn't finish starting the last \(failedStarts) times.")
             return what + " "
-                + String(localized: "A newer version may fix it, or you can try safe mode again. Nothing is deleted or changed.")
+                + String(
+                    localized:
+                        "A newer version may fix it, or you can try safe mode again. Nothing is deleted or changed.")
         default:
             return safeMode.offer
         }

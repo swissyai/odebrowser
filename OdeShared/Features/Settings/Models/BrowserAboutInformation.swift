@@ -1,11 +1,26 @@
 import Foundation
 
 struct BrowserAboutBuildInformation: Equatable, Sendable {
+    // MARK: - Static Variables
+
+    static let current = BrowserAboutBuildInformation(bundle: .main)
+
+    // MARK: - Variables
+
     let version: String
     let build: String
     let bundleIdentifier: String
 
-    static let current = BrowserAboutBuildInformation(bundle: .main)
+    /// Release publication must provide this immutable tag for the packaged version.
+    var sourceCodeURL: URL? {
+        let components = version.split(separator: ".", omittingEmptySubsequences: false)
+        guard components.count == 3,
+            components.allSatisfy({ !$0.isEmpty && $0.allSatisfy { ("0"..."9").contains($0) } })
+        else { return nil }
+        return URL(string: "https://github.com/swissyai/odebrowser/tree/v\(version)")
+    }
+
+    // MARK: - Initializers
 
     init(bundle: Bundle) {
         self.init(
@@ -28,9 +43,6 @@ struct BrowserAboutBuildInformation: Equatable, Sendable {
 enum BrowserAboutLinks {
     // MARK: - Static Variables
 
-    /// The license Ode's source is under, as Crest's is.
-    static let mozillaPublicLicense = URL(string: "https://mozilla.org/MPL/2.0/")!
-    static let chromiumLicense = URL(string: "https://chromium.googlesource.com/chromium/src/+/main/LICENSE")!
     static let webKitLicense = URL(string: "https://webkit.org/licensing-webkit/")!
 }
 

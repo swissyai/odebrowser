@@ -186,8 +186,9 @@ final class BrowserCrashReports {
         reports = files.filter { $0.pathExtension == "json" && $0.lastPathComponent != Self.memoryFileName }
             .compactMap { try? Self.decoder.decode(BrowserCrashReport.self, from: Data(contentsOf: $0)) }
             .sorted { $0.occurredAt > $1.occurredAt }
-        memory = (try? Self.decoder.decode(
-            Memory.self, from: Data(contentsOf: directory.appendingPathComponent(Self.memoryFileName))))
+        memory =
+            (try? Self.decoder.decode(
+                Memory.self, from: Data(contentsOf: directory.appendingPathComponent(Self.memoryFileName))))
             ?? memory
     }
 

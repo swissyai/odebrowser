@@ -50,7 +50,8 @@ final class SpaceIconSuggester {
     // MARK: - Actions - Suggesting
 
     func suggestions(for name: String, limit: Int = 8) -> SpaceIconSuggestions {
-        let typedEmoji = name.filter { $0.unicodeScalars.contains { $0.properties.isEmojiPresentation } }.map(String.init)
+        let typedEmoji = name.filter { $0.unicodeScalars.contains { $0.properties.isEmojiPresentation } }.map(
+            String.init)
         let words = BrowserIconCatalog.words(name).filter { !Self.stopWords.contains($0) }
         guard !words.isEmpty || !typedEmoji.isEmpty else { return SpaceIconSuggestions() }
         let phrase = words.joined(separator: " ")

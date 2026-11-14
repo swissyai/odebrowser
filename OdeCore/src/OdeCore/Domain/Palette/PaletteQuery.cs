@@ -231,7 +231,7 @@ public sealed class PaletteQuery {
     /// the text, its host or host name is, or failing that one of its host
     /// labels is.
     private int Bonus(PlaceText place) {
-        if (FoldedText(place.Core) == folded) return ExactBonus;
+        if (place.FoldedCore == folded) return ExactBonus;
         if (terms.Length != 1) return 0;
         if (place.Host == folded || place.Name == folded) return ExactBonus;
         return place.HostLabels.Contains(folded, StringComparer.Ordinal) ? HostLabelBonus : 0;
@@ -326,7 +326,7 @@ public sealed class PaletteQuery {
 
     /// `text`, already normalized, folded as the terms are and with its
     /// whitespace collapsed to single spaces, for exact comparisons.
-    private static string FoldedText(string text) {
+    internal static string FoldedText(string text) {
         var builder = new StringBuilder(text.Length);
         bool space = false;
         Span<Rune> letters = stackalloc Rune[MaxFold];

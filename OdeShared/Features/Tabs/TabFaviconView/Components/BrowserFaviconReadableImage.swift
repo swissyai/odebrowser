@@ -12,9 +12,10 @@ struct BrowserFaviconReadableImage: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        let treatment = rendered.tone.map {
-            BrowserFaviconTreatment.choose(for: $0, groundLuminance: ground)
-        } ?? .asIs
+        let treatment =
+            rendered.tone.map {
+                BrowserFaviconTreatment.choose(for: $0, groundLuminance: ground)
+            } ?? .asIs
         switch treatment {
         case .inverted where rendered.invertedImage != nil:
             icon(rendered.invertedImage ?? rendered.image)

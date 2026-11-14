@@ -1,13 +1,17 @@
 import SwiftUI
 
 struct BrowserOnboardingWelcomeCallToAction: View {
+    // MARK: - Variables
+
     let action: BrowserOnboardingWelcomeAction
     let cloudStatusDetail: String?
     let perform: () -> Void
     let setUpWithoutCloud: () -> Void
 
+    // MARK: - Actions - Presentation
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: 12) {
             Button(action: perform) {
                 HStack(spacing: 10) {
                     if action.waitsOnCloud {
@@ -41,5 +45,6 @@ struct BrowserOnboardingWelcomeCallToAction: View {
                     .accessibilityIdentifier("onboarding-welcome-setup-without-icloud")
             }
         }
+        .multilineTextAlignment(.center)
     }
 }

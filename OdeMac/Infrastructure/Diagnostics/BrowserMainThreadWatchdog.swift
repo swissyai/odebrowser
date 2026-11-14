@@ -47,12 +47,12 @@ final class BrowserMainThreadWatchdog: @unchecked Sendable {
         let center = NotificationCenter.default
         if followsActivation {
             observers = [
-            center.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: nil) {
-                [weak self] _ in self?.setPaused(false)
-            },
-            center.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: nil) {
-                [weak self] _ in self?.setPaused(true)
-            },
+                center.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: nil) {
+                    [weak self] _ in self?.setPaused(false)
+                },
+                center.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: nil) {
+                    [weak self] _ in self?.setPaused(true)
+                },
             ]
         }
         let thread = Thread { [weak self] in self?.watch() }

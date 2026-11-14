@@ -103,18 +103,18 @@ struct BrowserAboutSettingsPane: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .accessibilityElement(children: .combine)
-                BrowserAboutLink(
-                    title: "Mozilla Public License 2.0",
-                    systemImage: "doc.text",
-                    destination: BrowserAboutLinks.mozillaPublicLicense,
-                    identifier: "about-license-link"
-                )
-                BrowserAboutLink(
-                    title: "Chromium license",
-                    systemImage: "doc.text",
-                    destination: BrowserAboutLinks.chromiumLicense,
-                    identifier: "about-chromium-license-link"
-                )
+                if let sourceCodeURL = buildInformation.sourceCodeURL {
+                    BrowserAboutLink(
+                        title: "Source Code",
+                        systemImage: "chevron.left.forwardslash.chevron.right",
+                        destination: sourceCodeURL,
+                        identifier: "about-source-code-link"
+                    )
+                } else {
+                    Text("Source Code unavailable for this version.")
+                        .foregroundStyle(.secondary)
+                }
+                BrowserAboutLicensesView()
                 BrowserAboutLink(
                     title: "WebKit license",
                     systemImage: "doc.text",

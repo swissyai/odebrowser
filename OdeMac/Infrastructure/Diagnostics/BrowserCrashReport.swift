@@ -62,7 +62,9 @@ struct BrowserCrashReport: Codable, Equatable, Identifiable, Sendable {
 /// facts, then its details with anything that could identify a page or the
 /// person taken out once more, whatever reader made it.
 enum BrowserCrashReportPayload {
-    static func text(for report: BrowserCrashReport, osVersion: String = ProcessInfo.processInfo.operatingSystemVersionString) -> String {
+    static func text(
+        for report: BrowserCrashReport, osVersion: String = ProcessInfo.processInfo.operatingSystemVersionString
+    ) -> String {
         let header = [
             "Kind: \(report.kind.rawValue)",
             "When: \(report.occurredAt.ISO8601Format())",

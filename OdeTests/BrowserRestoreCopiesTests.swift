@@ -100,7 +100,8 @@ final class BrowserRestoreCopiesTests: XCTestCase {
         var actions = BrowserRestoreCopiesModel.Actions()
         actions.requestRestore = { _, _ in false }
         actions.relaunch = { relaunches += 1 }
-        let model = BrowserRestoreCopiesModel(directory: directory, timing: .relaunch, copies: [copy()], actions: actions)
+        let model = BrowserRestoreCopiesModel(
+            directory: directory, timing: .relaunch, copies: [copy()], actions: actions)
 
         XCTAssertFalse(model.restore(copy()))
         XCTAssertEqual(relaunches, 0)
@@ -136,7 +137,8 @@ final class BrowserRestoreCopiesTests: XCTestCase {
         var shownRestores: [URL] = []
         let held = copy(held: true, spaces: 5, tabs: 159)
         let banner = BrowserHeldCopy(
-            directory: directory, copies: [copy(), held], keep: { kept += 1 }, showRestore: { shownRestores.append($0) })
+            directory: directory, copies: [copy(), held], keep: { kept += 1 }, showRestore: { shownRestores.append($0) }
+        )
         XCTAssertEqual(banner.copy, held)
         XCTAssertNotNil(banner.message)
 
@@ -151,7 +153,8 @@ final class BrowserRestoreCopiesTests: XCTestCase {
         banner.keepThisSession()
         XCTAssertEqual(kept, 1)
 
-        let none = BrowserHeldCopy(directory: directory, copies: [copy()], keep: { XCTFail() }, showRestore: { _ in XCTFail() })
+        let none = BrowserHeldCopy(
+            directory: directory, copies: [copy()], keep: { XCTFail() }, showRestore: { _ in XCTFail() })
         XCTAssertNil(none.copy)
         none.keepThisSession()
         none.restoreThatCopy()

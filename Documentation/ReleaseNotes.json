@@ -961,6 +961,40 @@
     "2026-11-13-command-bar-page-surface": {
       "category": "improved",
       "message": "Cleaner search and a clearer Start Page frame."
+    },
+    "welcome-characters-below-actions": {
+      "category": "improved",
+      "message": "A centered welcome, with Ode’s characters beneath the next step."
+    },
+    "offline-licenses-and-release-source": {
+      "category": "improved",
+      "message": "Read licenses offline and find the source code for your version in About."
+    },
+    "portable-import-source-copy": {
+      "category": "internal",
+      "message": "Read browser import databases on Linux without changing the macOS copy path."
+    },
+    "complete-swift-formatting": {
+      "category": "internal",
+      "message": "Apply the full repository Swift formatting check."
+    },
+    "published-chromium-157-engine": {
+      "category": "improved",
+      "message": "Updated Chromium for browsing and compatibility fixes."
+    },
+    "chromium-widevine-removal": {
+      "category": "removed",
+      "message": "Widevine is no longer included in Chromium.",
+      "replacement": "Use WebKit for protected video on supported sites.",
+      "removedIn": "0.8.156"
+    },
+    "palette-core-title-reuse": {
+      "category": "improved",
+      "message": "Less repeated work while matching Command Bar results."
+    },
+    "core-release-validation": {
+      "category": "internal",
+      "message": "Run core contracts and latency limits in the Release configuration used for distribution."
     }
   }
 }

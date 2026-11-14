@@ -43,7 +43,10 @@ final class BrowserRestoreCopiesModel {
 
     // MARK: - Initializers
 
-    init(directory: URL, timing: Timing, copies: [RecoveryCopy]? = nil, failure: String? = nil, actions: Actions = Actions()) {
+    init(
+        directory: URL, timing: Timing, copies: [RecoveryCopy]? = nil, failure: String? = nil,
+        actions: Actions = Actions()
+    ) {
         self.directory = directory
         self.timing = timing
         let listed = copies ?? BrowserRecoveryCopies.list(in: directory)
@@ -71,7 +74,8 @@ final class BrowserRestoreCopiesModel {
             do {
                 try actions.restoreNow(copy, directory)
             } catch {
-                DiagnosticLog.launch.notice("A copy of the session could not be restored: \(DiagnosticLog.describe(error))")
+                DiagnosticLog.launch.notice(
+                    "A copy of the session could not be restored: \(DiagnosticLog.describe(error))")
                 failure = String(localized: "That copy couldn't be restored. Nothing was changed.")
                 copies = BrowserRecoveryCopies.list(in: directory)
                 return false

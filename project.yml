@@ -46,6 +46,25 @@ packages:
 # SystemCapabilities blocks duplicated that, serialized in nondeterministic
 # dictionary order, and churned project.pbxproj on every generate.
 targetTemplates:
+  # Keep legal resources linked to their canonical files. Chromium's packager
+  # copies framework resources into Bundle.main alongside the existing assets.
+  LegalResources:
+    sources:
+      - path: LICENSE
+        buildPhase: resources
+      - path: NOTICE
+        buildPhase: resources
+      - path: THIRD_PARTY_NOTICES.md
+        buildPhase: resources
+      - path: TRADEMARKS.md
+        buildPhase: resources
+      - path: ThirdParty
+        type: folder
+        buildPhase: resources
+      - path: Config/ThirdPartyDependencies.json
+        buildPhase: resources
+      - path: CrestEngines/Chromium/ThirdParty/Mori-LICENSE
+        buildPhase: resources
   PortableCoreMac:
     settings:
       base:
@@ -109,6 +128,7 @@ targetTemplates:
   # isolated review framework and the normal product framework. Only the Swift
   # compilation conditions differ, so both build from this template.
   ChromiumHostFramework:
+    templates: [LegalResources]
     type: framework
     platform: macOS
     sources:
@@ -191,6 +211,7 @@ targets:
         buildPhase: resources
     scheme: {}
   OdeNativeCore:
+    templates: [LegalResources]
     type: application
     platform: macOS
     sources:
@@ -299,7 +320,7 @@ targets:
         BUNDLE_LOADER: "$(TEST_HOST)"
         SWIFT_EMIT_LOC_STRINGS: NO
   Ode:
-    templates: [PortableCoreMac]
+    templates: [PortableCoreMac, LegalResources]
     type: application
     platform: macOS
     # Scheme BuildableName is derived from productName, not the PRODUCT_NAME
@@ -410,6 +431,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: "$(ODE_BUNDLE_IDENTIFIER_PREFIX).tests"
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Ode.app/Contents/MacOS/Ode"
   OdeMobileNativeCore:
+    templates: [LegalResources]
     type: application
     platform: iOS
     # Scheme BuildableName is derived from productName, not the PRODUCT_NAME
@@ -464,7 +486,7 @@ targets:
         outputFiles:
           - "$(TARGET_BUILD_DIR)/$(FRAMEWORKS_FOLDER_PATH)/OdeCoreABI.framework/OdeCoreABI"
   OdeMobile:
-    templates: [PortableCoreMobile]
+    templates: [PortableCoreMobile, LegalResources]
     type: application
     platform: iOS
     # Scheme BuildableName is derived from productName, not the PRODUCT_NAME

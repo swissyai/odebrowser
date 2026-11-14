@@ -93,6 +93,8 @@ public sealed class PlaceTextTests {
     public void AnExactTitleHostOrHostLabelAddsItsBonusOnce() {
         Assert.Equal(1_300, new PaletteQuery("safe").Score(PlaceText.Of("Safe", "https://multisig.lumen.example/apps/open?safe=1"))?.Points);
         Assert.Equal(1_300, new PaletteQuery("safe").Score(PlaceText.Of("Safe - Wallet", "https://multisig.lumen.example/apps/open"))?.Points);
+        Assert.Equal(1_300, new PaletteQuery("strasse").Score(PlaceText.Of("Straße - Site", "https://notes.example/"))?.Points);
+        Assert.Equal(1_300, new PaletteQuery("\U00010428").Score(PlaceText.Of("\U00010400 - Site", "https://notes.example/"))?.Points);
         Assert.Equal(1_200, new PaletteQuery("notely").Score(PlaceText.Of("The workspace | Notely", "https://notely.example"))?.Points);
         Assert.Equal(1_200, new PaletteQuery("localhost").Score(PlaceText.Of("Local", "http://localhost:5173/"))?.Points);
         Assert.Equal(1_000, new PaletteQuery("talk").Score(PlaceText.Of("Community Forum", "https://talk.lumen.example/"))?.Points);

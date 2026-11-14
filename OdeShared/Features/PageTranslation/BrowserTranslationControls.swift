@@ -376,7 +376,8 @@ private struct BrowserTranslationToolbarControlStyle: ButtonStyle {
             )
             .overlay {
                 if contrast == .increased && isGrouped {
-                    RoundedRectangle(cornerRadius: OdeCornerScale.control).strokeBorder(.primary.opacity(0.3), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: OdeCornerScale.control).strokeBorder(
+                        .primary.opacity(0.3), lineWidth: 1)
                 }
             }
             .opacity(isEnabled ? 1 : 0.5)

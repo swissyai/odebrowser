@@ -13,10 +13,7 @@ struct MobileOnboardingWelcomePage: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: OdeSpacing.large) {
-                BrowserOnboardingWelcomeIllustration()
-                    .frame(maxWidth: 224)
-                    .frame(maxWidth: .infinity)
+            VStack(spacing: OdeSpacing.large) {
                 Text("Welcome to Ode")
                     .font(.largeTitle.weight(.semibold))
                     .accessibilityAddTraits(.isHeader)
@@ -48,11 +45,15 @@ struct MobileOnboardingWelcomePage: View {
                     .controlSize(.large)
                     .accessibilityIdentifier(BrowserMobileAccessibilityID.welcomeSetupWithoutCloud)
                 }
+                BrowserOnboardingWelcomeIllustration()
+                    .frame(maxWidth: 224)
             }
-            .frame(maxWidth: 520, alignment: .leading)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: 520)
             .padding(OdeSpacing.extraExtraLarge)
             .frame(maxWidth: .infinity)
         }
+        .defaultScrollAnchor(.center, for: .alignment)
         .background(OdeBrandTheme.canvas)
         .foregroundStyle(OdeBrandTheme.textDisplay)
     }

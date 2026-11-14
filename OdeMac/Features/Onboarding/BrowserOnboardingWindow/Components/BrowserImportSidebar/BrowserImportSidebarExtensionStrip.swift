@@ -30,7 +30,8 @@ struct BrowserImportSidebarExtensionStrip: View {
             tiles
                 .padding(4)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.primary.opacity(0.08), in: .rect(cornerRadius: OdeCornerScale.control, style: .continuous))
+                .background(
+                    Color.primary.opacity(0.08), in: .rect(cornerRadius: OdeCornerScale.control, style: .continuous))
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Extensions")

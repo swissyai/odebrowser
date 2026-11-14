@@ -63,8 +63,9 @@ actor BrowserFaviconImageCache {
 
     /// Whether an analysis is kept for `data` at `maximumPixelSize`.
     func hasAnalysis(for data: Data, maximumPixelSize: Int) -> Bool {
-        analyses[BrowserFaviconImageCacheKey(
-            payload: BrowserFaviconPayloadIdentity(hashing: data), maximumPixelSize: maximumPixelSize)] != nil
+        analyses[
+            BrowserFaviconImageCacheKey(
+                payload: BrowserFaviconPayloadIdentity(hashing: data), maximumPixelSize: maximumPixelSize)] != nil
     }
 
     func removeAll() {

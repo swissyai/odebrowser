@@ -9,7 +9,7 @@ keywords: [engine, Chromium, WebKit, privacy, default engine, website rules, Ope
 
 ## Why Ode has two engines, Chromium and WebKit {#engines-explained}
 
-Chromium is the engine behind Chrome. It runs Chrome extensions and is the default. WebKit is the engine behind Safari. It offers Reader, and plays protected video such as Netflix. Your tabs, Spaces and passwords are the same in both, but each keeps its own sign-ins.
+Chromium is the engine behind Chrome. It runs Chrome extensions and is the default. WebKit is the engine behind Safari. It offers Reader and protected video where a site supports Safari. Your tabs, Spaces and passwords are the same in both, but each keeps its own sign-ins.
 
 ## What each engine can do
 
@@ -18,7 +18,7 @@ Chromium is the engine behind Chrome. It runs Chrome extensions and is the defau
 | Chrome Web Store extensions | Yes | No |
 | Reader | No | Yes |
 | Ad and tracker blocking | Ode's own blocker | Ode's own blocker |
-| Protected video | Widevine. Netflix, Disney+, Max and Prime Video move to WebKit | Yes, where the site supports Safari |
+| Protected video | Opens in WebKit when supported | Yes, where the site supports Safari |
 | Third-party cookies | Allowed, except in private windows | Limited by WebKit's tracking prevention |
 | Find in Page | Shows how many matches | Shows whether there's a match |
 | Save Web Archive | .mhtml file | .webarchive file |
@@ -26,7 +26,7 @@ Chromium is the engine behind Chrome. It runs Chrome extensions and is the defau
 
 Tabs, Spaces, Split View, Peek, Boosts, Ode Passwords, site permissions, Picture in Picture and downloads work on both.
 
-Chromium starts the first time a page needs it, and then runs until you quit Ode. Ode's Chromium sends Google none of your browsing, form or account data. It contacts Google only to keep certificate checks, protected video and your extensions up to date.
+Chromium starts the first time a page needs it, and then runs until you quit Ode. Ode's Chromium sends Google none of your browsing, form or account data. Its background update services contact Google for certificate checks, download warnings and extensions.
 
 ## Choose the engine new pages open in {#default-engine}
 
@@ -49,7 +49,13 @@ Google Meet (meet.google.com), Microsoft Teams (teams.microsoft.com and teams.li
 
 ## Watch Netflix and other protected video {#protected-video}
 
-Chromium plays protected video with Widevine, which Ode downloads the first time Chromium runs. Netflix, Disney+, Max and Prime Video don't accept it, so they open in WebKit, which plays them. When another page asks for video Chromium can't play, Ode moves it to WebKit. Later visits to that site open in WebKit too. Click Move Back if you change your mind.
+Ode’s Chromium does not include Widevine. Supported protected video uses WebKit.
+
+Choose Page > Open Page in WebKit to try the current page there.
+
+Use Site Controls to keep opening that site in WebKit.
+
+Ode’s Chromium does not include Widevine. Netflix, Disney+, Max and Prime Video open in WebKit unless you have chosen another engine for the site. When another page requests protected video that Chromium cannot play, Ode can move it to WebKit after checking for unsaved changes. Later visits to that site open in WebKit too. Click Move Back if you change your mind.
 
 Playback still depends on the site supporting Safari.
 

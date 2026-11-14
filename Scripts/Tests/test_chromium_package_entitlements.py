@@ -477,6 +477,31 @@ class ChromiumPackageAssemblyTests(unittest.TestCase):
                          "signature is accepted. Distribution still requires signing and provisioning that "
                          "identity.\n")
 
+    def test_distribution_preserves_jit_for_standard_and_aperitif_renderer_and_gpu_helpers(self) -> None:
+        built = self.products(product=True)
+        helpers = built.browser / "Contents/Frameworks/Chromium Framework.framework/Versions/A/Helpers"
+        for suffix in ("Aperitif", "Aperitif Renderer", "Aperitif GPU", "Aperitif Alerts"):
+            name = f"Chromium Helper ({suffix})"
+            write_plist(helpers / f"{name}.app/Contents/Info.plist", {"CFBundleDevelopmentRegion": "en"})
+            write(helpers / f"{name}.app/Contents/MacOS/{name}", MACHO)
+
+        built.package("--product", "--distribution", "--ui", str(built.ui), "--core", str(built.core))
+
+        signatures = built.signatures()
+        self.assert_innermost_first(signatures)
+        prefix = "<root>/Out/Ode.app/Contents/Frameworks/Chromium Framework.framework/Versions/A/Helpers/"
+        jit = {"com.apple.security.cs.allow-jit": True}
+        self.assertEqual({path for path, entitlements in signatures if entitlements == jit}, {
+            prefix + "Chromium Helper (Renderer).app",
+            prefix + "Chromium Helper (GPU).app",
+            prefix + "Chromium Helper (Aperitif Renderer).app",
+            prefix + "Chromium Helper (Aperitif GPU).app",
+        })
+        by_path = dict(signatures)
+        for name in ("Chromium Helper.app", "Chromium Helper (Aperitif).app",
+                     "Chromium Helper (Aperitif Alerts).app"):
+            self.assertIsNone(by_path[prefix + name])
+
     def test_a_product_package_signed_for_development_adds_its_entitlements_to_the_engine_signature(self) -> None:
         built = self.products(product=True)
         entitlements_path = self.root / "entitlements.plist"

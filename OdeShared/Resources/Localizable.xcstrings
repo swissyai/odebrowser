@@ -8368,6 +8368,12 @@
     "Letter" : {
 
     },
+    "License unavailable. Download the notices from Source Code." : {
+      "comment" : "Shown instead of an unavailable bundled legal document."
+    },
+    "Licenses" : {
+      "comment" : "Expands the offline legal notice collection in About."
+    },
     "Life and home" : {
 
     },
@@ -14827,6 +14833,12 @@
     },
     "Source" : {
 
+    },
+    "Source Code" : {
+      "comment" : "Opens the source tag for this app's marketing version."
+    },
+    "Source Code unavailable for this version." : {
+      "comment" : "The app cannot construct a release source destination without a valid version."
     },
     "Source Space" : {
 

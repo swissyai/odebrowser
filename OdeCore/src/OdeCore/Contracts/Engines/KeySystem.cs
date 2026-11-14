@@ -6,8 +6,7 @@ namespace OdeCore.Contracts;
 public sealed class KeySystem {
     #region Variables
 
-    /// Google's Widevine, which Ode's Chromium plays once its module has
-    /// downloaded.
+    /// Google's Widevine, which Ode's Chromium does not include.
     public static readonly KeySystem Widevine = new(name: "widevine");
 
     /// Microsoft's PlayReady, which Ode's Chromium does not carry.

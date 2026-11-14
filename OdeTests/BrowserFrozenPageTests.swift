@@ -102,7 +102,8 @@ final class BrowserFrozenPageTests: XCTestCase {
             try await Task.sleep(for: .milliseconds(50))
         }
         let ask: @MainActor () async -> Void = {
-            _ = try? await webView.callAsyncJavaScript("return 0", arguments: [:], in: nil, contentWorld: .defaultClient)
+            _ = try? await webView.callAsyncJavaScript(
+                "return 0", arguments: [:], in: nil, contentWorld: .defaultClient)
         }
         let answered = expectation(description: "A responsive page answers")
         Task { @MainActor in

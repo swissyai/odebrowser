@@ -7756,7 +7756,7 @@
       ],
       "steps": [
         "Chromium is the engine behind Chrome. It runs Chrome extensions and is the default.",
-        "WebKit is the engine behind Safari. It offers Reader, and plays protected video such as Netflix.",
+        "WebKit is the engine behind Safari. It offers Reader and protected video where a site supports Safari.",
         "Your tabs, Spaces and passwords are the same in both, but each keeps its own sign-ins."
       ],
       "help": "/engines/#engines-explained",
@@ -7900,9 +7900,9 @@
         "streaming"
       ],
       "steps": [
-        "Chromium plays protected video with Widevine, which Ode downloads the first time Chromium runs.",
-        "Netflix, Disney+, Max and Prime Video don't accept it, so they open in WebKit, which plays them.",
-        "Later visits to that site open in WebKit too. Click Move Back if you change your mind."
+        "Ode’s Chromium does not include Widevine. Supported protected video uses WebKit.",
+        "Choose Page > Open Page in WebKit to try the current page there.",
+        "Use Site Controls to keep opening that site in WebKit."
       ],
       "note": "Playback still depends on the site supporting Safari.",
       "help": "/engines/#protected-video",

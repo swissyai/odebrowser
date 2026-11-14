@@ -40,8 +40,6 @@ struct BrowserOnboardingWelcomePage: View {
 
     private var column: some View {
         VStack(spacing: OdeSpacing.extraExtraLarge) {
-            BrowserOnboardingWelcomeIllustration()
-                .frame(maxWidth: 320)
             Text("Welcome to Ode")
                 .font(OdeTypography.display(40))
                 .foregroundStyle(OdeBrandTheme.textDisplay)
@@ -53,6 +51,8 @@ struct BrowserOnboardingWelcomePage: View {
                 perform: performAction,
                 setUpWithoutCloud: setUpWithoutCloud
             )
+            BrowserOnboardingWelcomeIllustration()
+                .frame(maxWidth: 320)
         }
     }
 

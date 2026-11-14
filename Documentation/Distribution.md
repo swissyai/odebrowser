@@ -273,6 +273,24 @@ checkout's own version.
 
 ## Verify a release
 
+About > Credits and Licenses exposes the bundled notices offline and links
+Source Code to `https://github.com/swissyai/odebrowser/tree/v<VERSION>`, using
+the app's marketing version. Before publishing, create that immutable tag
+from the exact release source and verify it is publicly reachable. Never move
+a released version's tag to different source.
+
+Check the app or an app ZIP against the canonical legal files in that source
+checkout, supplying the final marketing version:
+
+```bash
+python3 Scripts/verify-bundled-notices.py /absolute/release/Ode.app --version X.Y.Z
+```
+
+This checks exact notice bytes and the packaged marketing version, not source
+publication, signatures or UI acceptance. It applies to Mac and mobile apps;
+Chromium packaging preserves the host framework's legal resources in the app.
+Review the expanded Licenses area offline on each shipping platform too.
+
 Before publishing, or after mounting a published disk image, inspect the app
 with standard macOS tools:
 

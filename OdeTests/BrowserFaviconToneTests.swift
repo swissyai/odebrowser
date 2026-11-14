@@ -128,7 +128,10 @@ final class BrowserFaviconToneTests: XCTestCase {
     private func platedGlyph() throws -> CGImage {
         let context = try XCTUnwrap(context(side: 64))
         context.setFillColor(CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1))
-        context.addPath(CGPath(roundedRect: CGRect(x: 0, y: 0, width: 64, height: 64), cornerWidth: 12, cornerHeight: 12, transform: nil))
+        context.addPath(
+            CGPath(
+                roundedRect: CGRect(x: 0, y: 0, width: 64, height: 64), cornerWidth: 12, cornerHeight: 12,
+                transform: nil))
         context.fillPath()
         context.setFillColor(CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 1))
         context.fill(CGRect(x: 18, y: 18, width: 28, height: 28))

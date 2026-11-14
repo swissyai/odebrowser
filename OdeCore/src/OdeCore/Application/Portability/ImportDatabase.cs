@@ -1,4 +1,7 @@
+using System.ComponentModel;
 using System.Runtime.InteropServices;
+
+using Microsoft.Win32.SafeHandles;
 
 namespace OdeCore.Application;
 
@@ -16,6 +19,8 @@ internal static partial class ImportDatabase {
     private static readonly string[] CompanionSuffixes = ["-wal", "-journal"];
     /// `copyfile`'s flag to copy a file's data.
     private const uint CopyData = 1 << 3;
+    /// Linux's O_CLOEXEC; O_RDONLY is zero.
+    private const int LinuxReadOnlyCloseOnExec = 0x80000;
 
     #endregion
 
@@ -55,16 +60,36 @@ internal static partial class ImportDatabase {
         }
     }
 
-    /// Copies the file at `source` to `target` with the system's own copy,
-    /// which takes no lock. .NET's copy takes an advisory lock first, which a
-    /// running browser's hold on its open database refuses, so its history
-    /// would read as none.
+    /// Copies only the source's bytes, without taking a Unix advisory lock
+    /// that a running browser's hold on its database could refuse. macOS
+    /// keeps its native copy; Linux opens a read-only descriptor directly,
+    /// because managed path-based opens take a shared advisory lock there.
     private static void CopyUnlocked(string source, string target) {
-        if (copyfile(source, target, 0, CopyData) != 0) File.Copy(source, target, overwrite: true);
+        if (OperatingSystem.IsMacOS()) {
+            if (copyfile(source, target, 0, CopyData) != 0) File.Copy(source, target, overwrite: true);
+            return;
+        }
+        using var handle = OperatingSystem.IsLinux()
+            ? OpenLinuxReadOnly(source)
+            : File.OpenHandle(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var input = new FileStream(handle, FileAccess.Read);
+        using var output = new FileStream(target, FileMode.Create, FileAccess.Write, FileShare.None);
+        input.CopyTo(output);
+    }
+
+    private static SafeFileHandle OpenLinuxReadOnly(string source) {
+        // No creation, mutation or advisory locking of the source.
+        int descriptor = open(source, LinuxReadOnlyCloseOnExec);
+        if (descriptor < 0)
+            throw new IOException("Unable to open the import source.", new Win32Exception(Marshal.GetLastPInvokeError()));
+        return new SafeFileHandle(descriptor, ownsHandle: true);
     }
 
     [LibraryImport("/usr/lib/libSystem.B.dylib", EntryPoint = "copyfile", StringMarshalling = StringMarshalling.Utf8)]
     private static partial int copyfile(string from, string to, nint state, uint flags);
+
+    [LibraryImport("libc", EntryPoint = "open", SetLastError = true, StringMarshalling = StringMarshalling.Utf8)]
+    private static partial int open(string path, int flags);
 
     #endregion
 }

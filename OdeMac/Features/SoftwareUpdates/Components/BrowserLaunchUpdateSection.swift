@@ -71,7 +71,9 @@ struct BrowserLaunchUpdateSection: View {
     }
 
     /// The window's buttons for the update, without skipping it.
-    private func offered(_ buttons: BrowserSoftwareUpdatePhase.WindowButtons) -> [BrowserSoftwareUpdatePhase.WindowButton] {
+    private func offered(_ buttons: BrowserSoftwareUpdatePhase.WindowButtons) -> [BrowserSoftwareUpdatePhase
+        .WindowButton]
+    {
         (buttons.leading + buttons.trailing).filter { $0.action != .dismissExactUpdate }
     }
 }

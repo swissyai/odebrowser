@@ -30,7 +30,9 @@ enum BrowserCrashReportReaders {
                 "Finished starting: \(started ? "no" : "yes")",
                 "Safe mode: \(launch.safeMode ? "yes" : "no")",
             ]
-            if let finishedAt = launch.finishedAt { details.append("Finished starting at: \(finishedAt.ISO8601Format())") }
+            if let finishedAt = launch.finishedAt {
+                details.append("Finished starting at: \(finishedAt.ISO8601Format())")
+            }
             return BrowserCrashReport(
                 id: "launch-\(launch.id.uuidString)", kind: started ? .unfinishedStart : .unexpectedQuit,
                 occurredAt: launch.startedAt, build: launch.build,
@@ -149,12 +151,14 @@ enum BrowserCrashReportReaders {
             lines.append("Exception: \(type)\(signal.map { " (\($0))" } ?? "")")
             summary = "\(type) in \(process ?? "Ode")"
         }
-        if let termination = body["termination"] as? [String: Any], let indicator = termination["indicator"] as? String {
+        if let termination = body["termination"] as? [String: Any], let indicator = termination["indicator"] as? String
+        {
             lines.append("Termination: \(indicator)")
         }
         let images = body["usedImages"] as? [[String: Any]] ?? []
         if let threads = body["threads"] as? [[String: Any]] {
-            let faulting = body["faultingThread"] as? Int ?? threads.firstIndex { ($0["triggered"] as? Bool) == true } ?? 0
+            let faulting =
+                body["faultingThread"] as? Int ?? threads.firstIndex { ($0["triggered"] as? Bool) == true } ?? 0
             if threads.indices.contains(faulting), let frames = threads[faulting]["frames"] as? [[String: Any]] {
                 lines.append("Thread \(faulting) stack:")
                 for (index, frame) in frames.prefix(24).enumerated() {
@@ -169,7 +173,8 @@ enum BrowserCrashReportReaders {
         // The images the stack names, by identity, so the offsets can be symbolicated.
         let named = Set(lines.compactMap { $0.split(separator: " ").dropFirst(1).first.map(String.init) })
         for image in images {
-            guard let imageName = image["name"] as? String, named.contains(imageName), let uuid = image["uuid"] as? String
+            guard let imageName = image["name"] as? String, named.contains(imageName),
+                let uuid = image["uuid"] as? String
             else { continue }
             lines.append("Image \(imageName) \(uuid)")
         }

@@ -35,7 +35,9 @@
             }
             let length = socklen_t(MemoryLayout<sockaddr_un>.size)
             let bound = withUnsafePointer(to: &address) {
-                $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { Self.bind(socket, $0, length, relativeTo: folder) }
+                $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                    Self.bind(socket, $0, length, relativeTo: folder)
+                }
             }
             guard bound == 0, chmod(path, 0o600) == 0, listen(socket, 4) == 0 else {
                 close(socket)

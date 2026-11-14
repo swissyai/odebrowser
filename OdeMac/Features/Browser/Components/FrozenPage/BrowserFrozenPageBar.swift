@@ -33,13 +33,15 @@ struct BrowserFrozenPageBar: View {
         .frame(maxWidth: 620)
         .background {
             if reduceTransparency {
-                RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).fill(Color(nsColor: .windowBackgroundColor))
+                RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).fill(
+                    Color(nsColor: .windowBackgroundColor))
             } else {
                 RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).fill(.regularMaterial)
             }
         }
         .overlay {
-            RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).strokeBorder(.separator, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: OdeCornerScale.row, style: .continuous).strokeBorder(
+                .separator, lineWidth: 0.5)
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("frozen-page-bar")

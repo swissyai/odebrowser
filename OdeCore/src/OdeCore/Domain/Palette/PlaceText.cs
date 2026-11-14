@@ -36,6 +36,9 @@ public sealed class PlaceText {
     /// The title without a trailing site name, as "Safe" for "Safe - Site".
     public string Core { get; }
 
+    /// The core title folded exactly as palette terms are, for exact bonuses.
+    internal string FoldedCore { get; }
+
     /// The host in lower case without a leading `www.`, or empty for no address.
     public string Host { get; }
 
@@ -85,6 +88,7 @@ public sealed class PlaceText {
     private PlaceText(string title, Uri? uri) {
         Title = WithoutBadge(TextFold.Normalized(title));
         Core = WithoutSite(Title);
+        FoldedCore = PaletteQuery.FoldedText(Core);
         Url = uri?.OriginalString;
         Place = uri is null ? null : PaletteMemory.Place(uri.OriginalString);
         NormalizedUrl = Url is null ? null : new WebAddress(Url).Normalized;

@@ -43,10 +43,9 @@ enum BrowserEngineRegistration {
     ///   incomplete.
     /// - Whole-page translation rewrites the main document through the
     ///   engine's content scripting, as WebKit's does through its own.
-    /// - Protected media plays through Widevine once its module has downloaded.
-    ///   A page that asks for a key system the engine lacks moves to WebKit,
-    ///   and the core opens video services that refuse Chromium's Widevine
-    ///   there.
+    /// - Chromium does not include Widevine. A page requesting an unavailable
+    ///   key system can move to WebKit after the core's navigation checks.
+    ///   Known video services open there unless a website rule says otherwise.
     /// - Site permission decisions reach the engine as content settings for the
     ///   page's current site; the host has no command to stop live camera,
     ///   microphone or location use directly, so revocation relies on the engine

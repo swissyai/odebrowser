@@ -28,8 +28,11 @@ final class BrowserSpaceIconTests: XCTestCase {
     func testTheCoreKeepsALetterAndAnEmojiAsASpacesSymbol() throws {
         let store = BrowserStore(seed: .preview)
         let space = try XCTUnwrap(store.spaceModels.first)
-        for symbol in [try XCTUnwrap(BrowserIconSymbol.symbol(forLetter: "q")), BrowserIconSymbol.symbol(forEmoji: "🌸")] {
-            store.updateSpaceIdentity(space.id, name: space.settings.name, symbol: symbol, accent: space.settings.accent)
+        for symbol in [
+            try XCTUnwrap(BrowserIconSymbol.symbol(forLetter: "q")), BrowserIconSymbol.symbol(forEmoji: "🌸"),
+        ] {
+            store.updateSpaceIdentity(
+                space.id, name: space.settings.name, symbol: symbol, accent: space.settings.accent)
             XCTAssertEqual(store.spaceModel(space.id)?.settings.symbol, symbol)
         }
     }

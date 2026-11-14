@@ -24,7 +24,9 @@ final class BrowserCrashReportsTests: XCTestCase {
         return UserDefaults(suiteName: suite)!
     }
 
-    private func report(_ id: String, ago: TimeInterval = 60, kind: BrowserCrashReport.Kind = .crash) -> BrowserCrashReport {
+    private func report(_ id: String, ago: TimeInterval = 60, kind: BrowserCrashReport.Kind = .crash)
+        -> BrowserCrashReport
+    {
         BrowserCrashReport(
             id: id, kind: kind, occurredAt: now - ago, build: "0.9.4 (1)", summary: "EXC_BAD_ACCESS in Ode",
             details: "Exception: EXC_BAD_ACCESS")
@@ -34,7 +36,8 @@ final class BrowserCrashReportsTests: XCTestCase {
 
     func testTheLaunchRecordGivesAReportForEachLaunchThatEndedUncleanly() {
         func launch(_ outcome: BrowserLaunchHistory.Launch.Outcome, ago: TimeInterval) -> BrowserLaunchHistory.Launch {
-            BrowserLaunchHistory.Launch(id: UUID(), startedAt: now - ago, build: "0.9.4 (1)", outcome: outcome, safeMode: false)
+            BrowserLaunchHistory.Launch(
+                id: UUID(), startedAt: now - ago, build: "0.9.4 (1)", outcome: outcome, safeMode: false)
         }
         let unfinished = launch(.started, ago: 600)
         let crashedLater = launch(.finished, ago: 400)
@@ -45,7 +48,8 @@ final class BrowserCrashReportsTests: XCTestCase {
 
         let reports = BrowserCrashReportReaders.launches(in: history, current: current.id, now: now)
         XCTAssertEqual(reports.map(\.kind), [.unfinishedStart, .unexpectedQuit])
-        XCTAssertEqual(reports.map(\.id), ["launch-\(unfinished.id.uuidString)", "launch-\(crashedLater.id.uuidString)"])
+        XCTAssertEqual(
+            reports.map(\.id), ["launch-\(unfinished.id.uuidString)", "launch-\(crashedLater.id.uuidString)"])
     }
 
     func testOnlyLongHangsBecomeReports() {
@@ -64,7 +68,8 @@ final class BrowserCrashReportsTests: XCTestCase {
         bundleID: String = "com.odebrowser.ode", name: String = "Ode",
         path: String = "/Applications/Ode.app/Contents/MacOS/Chromium"
     ) -> Data {
-        let header = #"{"app_name":"\#(name)","bundleID":"\#(bundleID)","app_version":"0.9.4","build_version":"1","bug_type":"309","name":"\#(name)"}"#
+        let header =
+            #"{"app_name":"\#(name)","bundleID":"\#(bundleID)","app_version":"0.9.4","build_version":"1","bug_type":"309","name":"\#(name)"}"#
         let body = """
             {"procName":"\(name)","procPath":"\(path)","exception":{"type":"EXC_BAD_ACCESS","signal":"SIGSEGV","codes":"0x0000000000000001, 0x00000001045a8000"},
              "asi":{"WebKit":["Loading https://bank.example.com/account?id=42 titled My Bank Statement"]},
@@ -92,12 +97,15 @@ final class BrowserCrashReportsTests: XCTestCase {
         XCTAssertEqual(crash.build, "0.9.4 (1)")
         XCTAssertTrue(crash.details.contains("libobjc.A.dylib +81234 objc_msgSend"))
         XCTAssertTrue(crash.details.contains("Ode +2048"))
-        XCTAssertTrue(crash.details.contains("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"), "Image identities let offsets be symbolicated")
+        XCTAssertTrue(
+            crash.details.contains("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"),
+            "Image identities let offsets be symbolicated")
 
         let payload = BrowserCrashReportPayload.text(for: crash, osVersion: "26.1")
-        for leak in ["https://", "bank.example.com", "My Bank Statement", "/Users/person", "4372430848", "4294967296",
-            "0x00000001045a8000", "deadbeefdeadbeef", "threadState"]
-        {
+        for leak in [
+            "https://", "bank.example.com", "My Bank Statement", "/Users/person", "4372430848", "4294967296",
+            "0x00000001045a8000", "deadbeefdeadbeef", "threadState",
+        ] {
             XCTAssertFalse(payload.contains(leak), "The report text holds \(leak)")
         }
 
@@ -136,7 +144,8 @@ final class BrowserCrashReportsTests: XCTestCase {
                 insideBundleAt: "/Users/person/Applications/Ode.app"))
         XCTAssertFalse(
             BrowserCrashReportReaders.ran(
-                from: "/Users/USER/Applications/Ode.app/Contents/MacOS/Chromium", insideBundleAt: "/Applications/Ode.app"))
+                from: "/Users/USER/Applications/Ode.app/Contents/MacOS/Chromium",
+                insideBundleAt: "/Applications/Ode.app"))
         XCTAssertTrue(
             BrowserCrashReportReaders.isOde(
                 bundleID: "com.odebrowser.ode.dev", name: "Ode", path: nil, app: "com.odebrowser.ode.dev",
@@ -151,9 +160,10 @@ final class BrowserCrashReportsTests: XCTestCase {
             blob QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=
             """
         let redacted = BrowserCrashReportPayload.redact(text)
-        for leak in ["https://example.com", "www.example.org", "person@example.com", "/Users/person", "0x7ff8a1b2c3d4",
-            "0123456789abcdef0123456789abcdef01", "QUJDREVGR0hJSktM"]
-        {
+        for leak in [
+            "https://example.com", "www.example.org", "person@example.com", "/Users/person", "0x7ff8a1b2c3d4",
+            "0123456789abcdef0123456789abcdef01", "QUJDREVGR0hJSktM",
+        ] {
             XCTAssertFalse(redacted.contains(leak), "Redaction left \(leak)")
         }
         XCTAssertTrue(redacted.contains("/Users/<user>/Documents"))
@@ -180,7 +190,8 @@ final class BrowserCrashReportsTests: XCTestCase {
         store.collect([report("ips-a"), report("ips-b")])
         XCTAssertEqual(store.reports.map(\.id), ["ips-b"])
         // The store reads the same from disk at the next launch.
-        let reopened = BrowserCrashReports(sessionDirectory: sessionDirectory, defaults: defaults(), now: { [now] in now })
+        let reopened = BrowserCrashReports(
+            sessionDirectory: sessionDirectory, defaults: defaults(), now: { [now] in now })
         XCTAssertEqual(reopened.reports.map(\.id), ["ips-b"])
     }
 

@@ -268,13 +268,11 @@ address.
 
 ### Protected media fallback
 
-Ode's Chromium plays Widevine once its module has downloaded, but not for
-services that require Widevine's verified media path, which only Google
-Chrome's signature carries; `ProtectedMediaService` names those, and their
-sites open in WebKit unless the person chose an engine. WebKit plays FairPlay
-through the system's own content decryption, so a page whose video needs a key
-system Chromium lacks can also move to WebKit. Ode licenses nothing for this:
-it uses the platform's WebKit.
+Ode's Chromium does not include Widevine. `ProtectedMediaService` names
+services whose sites open in WebKit unless the person chose an engine.
+WebKit offers FairPlay through the platform, where the site supports it.
+A page that requests a key system Chromium lacks can also move to WebKit
+through the existing fallback below.
 
 1. A page asks for a key system Chromium cannot provide. The Chromium binding
    reports `ProtectedMediaUnavailable(page, keySystem)`.
