@@ -207,12 +207,21 @@ jobs:
           TEST_RUNNER_ODE_NATIVE_CI_DIAGNOSTICS: ${{ inputs.native_diagnostics && '1' || '0' }}
         run: |
           set -o pipefail
+          test_filters=()
+          if [[ "$ODE_NATIVE_CI_DIAGNOSTICS" == "1" ]]; then
+            test_filters=(
+              -only-testing:OdeTests/BrowserFaviconPrivacyTests
+              -only-testing:OdeTests/BrowserPagePoolTests
+              -only-testing:OdeTests/BrowserAgentExecutionTests
+            )
+          fi
           xcodebuild test-without-building \
             -project Ode.xcodeproj \
             -scheme Ode \
             -destination 'platform=macOS,arch=arm64' \
             -derivedDataPath "$RUNNER_TEMP/crest-build-derived-data" \
             -resultBundlePath "$RUNNER_TEMP/ode-native-tests.xcresult" \
+            "${test_filters[@]}" \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$RUNNER_TEMP/ode-native-tests.log"
 
       - name: Retain native results and logs even on failure

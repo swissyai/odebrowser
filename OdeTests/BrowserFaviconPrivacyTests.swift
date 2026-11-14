@@ -168,7 +168,11 @@ final class BrowserFaviconPrivacyTests: XCTestCase {
         let svg = Data(
             #"<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" fill="blue"/></svg>"#
                 .utf8)
+        // Every diagnostic operation spends the same existing 15-second
+        // fixture budget, including a backend that never calls toBlob back.
+        let deadline = Date().addingTimeInterval(15)
         for hosted in [false, true] {
+            guard Date() < deadline else { break }
             let webView = makeWebView()
             let window: NSWindow?
             if hosted {
@@ -193,27 +197,99 @@ final class BrowserFaviconPrivacyTests: XCTestCase {
                 window?.contentView = nil
                 window?.close()
             }
-            try await load(server.url(host: "parent.localhost", path: "/policy/no-referrer"), in: webView)
+            let navigation = FaviconPrivacyNavigation(trustedPort: nil)
+            navigations.append(navigation)
+            webView.navigationDelegate = navigation
+            webView.load(URLRequest(url: server.url(host: "parent.localhost", path: "/policy/no-referrer")))
+            await fulfillment(of: [navigation.finished], timeout: max(0, deadline.timeIntervalSinceNow))
+            if let error = navigation.error { throw error }
+            guard Date() < deadline else { break }
             print("ODE_NATIVE_CI favicon calibration hosted=\(hosted) attached=\(webView.window != nil)")
-            // This is the actual SVG rasterizer, not a mocked JS/image result.
-            let rasterized = await BrowserFaviconCapture.rasterizedSVGData(svg, in: webView)
-            print("ODE_NATIVE_CI favicon calibration svgPresent=\(rasterized != nil)")
-            let control = try await webView.callAsyncJavaScript(
-                """
-                const canvas = document.createElement('canvas');
-                canvas.width = 32;
-                canvas.height = 32;
-                const context = canvas.getContext('2d');
-                if (!context) return 'no-context';
-                context.fillRect(0, 0, 32, 32);
-                const result = canvas.toDataURL('image/png');
-                return result === 'data:,' ? 'empty-sentinel'
-                    : result.startsWith('data:image/png;base64,') ? 'png' : 'other';
-                """, arguments: [:], in: nil, contentWorld: .defaultClient)
-            let classes = ["no-context", "empty-sentinel", "png", "other"]
-            let category = (control as? String).flatMap { classes.contains($0) ? $0 : nil } ?? "unavailable"
-            print("ODE_NATIVE_CI favicon calibration solidCanvas=\(category)")
+            // Each option gets a fresh canvas: a second getContext call cannot
+            // change an existing context's allocation attributes.
+            for software in [false, true] {
+                let control: String? = await diagnosticResult(before: deadline) {
+                    try await webView.callAsyncJavaScript(
+                        """
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 32;
+                        canvas.height = 32;
+                        const context = software
+                            ? canvas.getContext('2d', {willReadFrequently: true}) : canvas.getContext('2d');
+                        if (!context) return 'no-context';
+                        context.fillStyle = 'rgb(17, 34, 51)';
+                        context.fillRect(0, 0, 32, 32);
+                        let pixel = 'unavailable';
+                        try {
+                            const p = context.getImageData(16, 16, 1, 1).data;
+                            pixel = p[0] === 17 && p[1] === 34 && p[2] === 51 && p[3] === 255
+                                ? 'match' : 'mismatch';
+                        } catch (_) { pixel = 'error'; }
+                        let url = 'error';
+                        try {
+                            const value = canvas.toDataURL('image/png');
+                            url = value === 'data:,' ? 'empty-sentinel'
+                                : value.startsWith('data:image/png;base64,') ? 'png' : 'other';
+                        } catch (_) {}
+                        const blob = await new Promise(resolve => {
+                            let done = false;
+                            const finish = value => {
+                                if (done) return;
+                                done = true;
+                                clearTimeout(timer);
+                                resolve(value);
+                            };
+                            const timer = setTimeout(() => finish('timeout'), Math.max(0, deadline - Date.now()));
+                            try {
+                                canvas.toBlob(value => finish(value === null ? 'null'
+                                    : value.size === 0 ? 'empty' : value.size <= 1048576 ? 'small' : 'large'), 'image/png');
+                            } catch (_) { finish('error'); }
+                        });
+                        return `${pixel}/${url}/${blob}`;
+                        """, arguments: ["software": software, "deadline": deadline.timeIntervalSince1970 * 1000],
+                        in: nil, contentWorld: .defaultClient) as? String
+                }
+                // Validate every field before logging; never echo a JS payload.
+                let fields = control?.split(separator: "/").map(String.init) ?? []
+                let pixels = ["match", "mismatch", "error", "unavailable"]
+                let urls = ["empty-sentinel", "png", "other", "error"]
+                let blobs = ["null", "empty", "small", "large", "timeout", "error"]
+                if fields.count == 3, pixels.contains(fields[0]), urls.contains(fields[1]), blobs.contains(fields[2]) {
+                    print(
+                        "ODE_NATIVE_CI favicon calibration software=\(software) pixel=\(fields[0]) "
+                            + "url=\(fields[1]) blob=\(fields[2])")
+                } else {
+                    print("ODE_NATIVE_CI favicon calibration software=\(software) result=unavailable")
+                }
+            }
+            let svgPresent: Bool? = await diagnosticResult(before: deadline) {
+                await BrowserFaviconCapture.rasterizedSVGData(svg, in: webView) != nil
+            }
+            print("ODE_NATIVE_CI favicon calibration svgPresent=\(svgPresent == true) available=\(svgPresent != nil)")
         }
+        let sharedPresent: Bool? = await diagnosticResult(before: deadline) {
+            await BrowserFaviconSVGRasterizer.png(from: svg, pixelSize: 128, tint: nil) != nil
+        }
+        print(
+            "ODE_NATIVE_CI favicon calibration sharedPresent=\(sharedPresent == true) available=\(sharedPresent != nil)"
+        )
+    }
+
+    // Native completion bounds even a stalled WebContent process. Cancellation
+    // cannot force WebKit's callback, so no further work follows it in the task.
+    private func diagnosticResult<Value>(
+        before deadline: Date, operation: @escaping @MainActor () async throws -> Value?
+    ) async -> Value? {
+        guard Date() < deadline else { return nil }
+        let finished = XCTestExpectation(description: "Canvas diagnostic completion")
+        var result: Value?
+        let task = Task { @MainActor in
+            defer { finished.fulfill() }
+            result = try? await operation()
+        }
+        defer { task.cancel() }
+        await fulfillment(of: [finished], timeout: max(0, deadline.timeIntervalSinceNow))
+        return result
     }
 
     private func makeWebView() -> WKWebView {
