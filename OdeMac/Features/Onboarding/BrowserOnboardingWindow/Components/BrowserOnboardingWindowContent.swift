@@ -66,6 +66,7 @@ struct BrowserOnboardingWindowContent: View {
         }
         .frame(minWidth: 820, minHeight: 620)
         .tint(OdeBrandTheme.accent)
+        .environment(\.odeUsesPointingHandControls, true)
         .background(BrowserOnboardingWindowConfigurator())
         .task {
             await start()

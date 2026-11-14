@@ -11,7 +11,6 @@ enum BrowserPlatformFeedbackHandoff {
     }
 
     static func copy(_ text: String) -> Bool {
-        // UIKit's explicit clipboard write has no failure result. Do not read clipboard contents back.
         UIPasteboard.general.string = text
         return true
     }

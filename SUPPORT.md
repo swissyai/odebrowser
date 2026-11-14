@@ -17,10 +17,10 @@ For questions, feedback, bug reports or requests to import from another browser
 that you prefer to send privately, email
 [feedback@odebrowser.com](mailto:feedback@odebrowser.com).
 
-In Ode, open Settings > About, then Share Feedback or Report an Issue.
-Open Email lets you review and send in your email app; Copy Report works
-with webmail. Opening email is not a delivery confirmation. Your draft
-stays in Ode until you quit.
+In Ode, type **bug** or **feedback** in the Command Bar, or open Settings >
+About > Share Feedback. Review the screenshot and optional app details, then
+choose **Send to Ode**. **Copy Text** is available if sending fails. Unsent
+drafts stay in Ode until you quit.
 
 ## Privacy and security
 

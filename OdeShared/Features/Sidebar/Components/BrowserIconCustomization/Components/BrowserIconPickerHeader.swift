@@ -24,6 +24,7 @@ struct BrowserIconPickerHeader: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .odeControlPointer()
                 .labelsHidden()
                 .frame(maxWidth: .infinity)
             }
@@ -40,6 +41,7 @@ struct BrowserIconPickerHeader: View {
                         .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
+                .odeControlPointer()
                 .foregroundStyle(.secondary)
                 .transition(.scale(scale: BrowserIconPickerLayout.resetTransitionScale).combined(with: .opacity))
                 .help(Text(resetTitle))

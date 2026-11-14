@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 
+using OdeCore.Contracts;
+
 namespace OdeCore.Domain;
 
 /// A measurement a person typed and asked for in another unit of the same
@@ -15,6 +17,8 @@ internal sealed partial class UnitConversion {
     /// answer names it, once and for any other amount.
     private sealed record Unit(string Kind, string[] Names, double Scale, double Offset, string One, string Many,
         int ChoiceOrder = 0, string? ChoiceAlternative = null, string? ChoiceQualifier = null);
+
+    private sealed record SourceUnit(Unit Unit, int Start, int Length);
 
     #endregion
 
@@ -47,7 +51,7 @@ internal sealed partial class UnitConversion {
         // These existing volume factors are US customary, not Imperial or metric cooking measures.
         new("volume", ["tsp", "teaspoon", "teaspoons", "us tsp", "us teaspoon", "us teaspoons"], 0.00492892159375, 0, "US teaspoon", "US teaspoons"),
         new("volume", ["tbsp", "tablespoon", "tablespoons", "us tbsp", "us tablespoon", "us tablespoons"], 0.01478676478125, 0, "US tablespoon", "US tablespoons"),
-        new("volume", ["fl oz", "floz", "fluid ounce", "fluid ounces", "us fl oz", "us floz", "us fluid ounce", "us fluid ounces"], 0.0295735295625, 0, "US fluid ounce", "US fluid ounces"),
+        new("volume", ["fl oz", "fl. oz", "fl. oz.", "floz", "fluid ounce", "fluid ounces", "us fl oz", "us fl. oz", "us fl. oz.", "us floz", "us fluid ounce", "us fluid ounces"], 0.0295735295625, 0, "US fluid ounce", "US fluid ounces"),
         new("volume", ["cup", "cups", "us cup", "us cups"], 0.2365882365, 0, "US cup", "US cups", ChoiceOrder: 1),
         new("volume", ["pt", "pint", "pints", "us pt", "us pint", "us pints"], 0.473176473, 0, "US pint", "US pints", ChoiceOrder: 2),
         new("volume", ["qt", "quart", "quarts", "us qt", "us quart", "us quarts"], 0.946352946, 0, "US quart", "US quarts"),
@@ -85,6 +89,12 @@ internal sealed partial class UnitConversion {
         new("duration", ["d", "day", "days"], 86_400, 0, "day", "days", ChoiceOrder: 3),
         new("duration", ["wk", "wks", "week", "weeks"], 604_800, 0, "week", "weeks", ChoiceOrder: 4),
     ];
+
+    // One longest-first catalog matcher owns complete unit spans, including qualified aliases.
+    // Apostrophe-linked word fragments are not units; surrounding quotation marks still are allowed.
+    private static readonly Regex UnitNames = new(@"(?<![\p{L}\p{N}])(?<![\p{L}\p{N}]['’])(?:"
+        + string.Join("|", Units.SelectMany(unit => unit.Names).OrderByDescending(name => name.Length).Select(Regex.Escape))
+        + @")(?![\p{L}\p{N}])(?!['’][\p{L}\p{N}])", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     #endregion
 
@@ -127,21 +137,272 @@ internal sealed partial class UnitConversion {
 
     #region Actions - Reading
 
-    /// The conversion `typed` asks for, or null when it names no amount, no
-    /// two known units of the same kind, or the same unit twice.
+    /// The conversion `typed` asks for, or null when it names no two known
+    /// units of the same kind, or the same unit twice. A bare unit ratio uses one.
     public static UnitConversion? Of(string typed) {
+        if (ReadRequest(typed) is not { } request || request.From.Kind != request.To.Kind) return null;
+        var conversion = new UnitConversion(request.Amount, request.From, request.To);
+        return double.IsFinite(conversion.Value) ? conversion : null;
+    }
+
+    /// Mass and volume require an ingredient's density, never an assumed water
+    /// equivalent. This classification produces no numeric conversion.
+    public static bool NeedsIngredient(string typed) => ReadRequest(typed) is { } request
+        && (request.From.Kind == "mass" && request.To.Kind == "volume"
+            || request.From.Kind == "volume" && request.To.Kind == "mass");
+
+    internal static PaletteCard IngredientClarification(string source) =>
+        ReadRequest(source) is { } request && (request.From.ChoiceAlternative is not null || request.To.ChoiceAlternative is not null)
+            ? PaletteInterpretation.Clarification("Do you mean weight ounces or US fluid ounces?")
+            : PaletteInterpretation.Clarification("Supply the ingredient’s weight per measure or a label ratio.");
+
+    /// Resolve source-grounded fields directly against the existing catalog, never synthesized prose.
+    internal static PaletteCard? Resolve(string source, string? amountQuote, string? fromQuote, string? toQuote, string? ingredient,
+        string? densityQuote = null) {
+        if (Regional().IsMatch(source))
+            return PaletteInterpretation.Clarification("Imperial and regional cooking measures aren’t supported.");
+        var sourceUnits = SourceUnits(source);
+        var from = QuotedUnit(sourceUnits, fromQuote);
+        var to = QuotedUnit(sourceUnits, toQuote);
+        if (from is null || to is null || from == to && sourceUnits.Count(unit => unit.Unit == from) < 2) return null;
+        if (from.Kind == to.Kind) return ResolveAmount(source, amountQuote, from, to, sourceUnits);
+        // Same-dimension arithmetic does not use material. Supplied density binds
+        // applicability through the complete typed syntax, not a model's material field.
+        if (densityQuote is not null) return ResolveDensity(source, amountQuote, from, to, densityQuote)
+            ?? ResolveDimensions(from, to, PaletteInterpretation.Quoted(source, ingredient) ? ingredient : null);
+        if (ingredient is not null && !PaletteInterpretation.Quoted(source, ingredient)) return null;
+        return ResolveDimensions(from, to, ingredient);
+    }
+
+    private static PaletteCard? ResolveDimensions(Unit from, Unit to, string? ingredient) {
+        if (from.Kind is not ("mass" or "volume") || to.Kind is not ("mass" or "volume")) return null;
+        if (from.ChoiceAlternative is not null || to.ChoiceAlternative is not null)
+            return PaletteInterpretation.Clarification("Do you mean weight ounces or US fluid ounces?");
+        return PaletteInterpretation.Clarification(ingredient is null
+            ? "Supply the ingredient’s weight per measure or a label ratio."
+            : $"Supply the weight per measure for {ingredient}.");
+    }
+
+    /// A supplied ratio is executable only in a complete conversion + label statement.
+    /// Applicability is limited to an unqualified label for the request's single material;
+    /// arbitrary label prose, corrections and denominator qualifiers require clarification.
+    /// No model-normalized factors, material databases or implicit water equivalence.
+    private static PaletteCard? ResolveDensity(string source, string? amountQuote, Unit from, Unit to, string quote) {
+        if (from.Kind is not ("mass" or "volume") || to.Kind is not ("mass" or "volume") || from.Kind == to.Kind
+            || from.ChoiceAlternative is not null || to.ChoiceAlternative is not null
+            || ReadDensity(source, quote) is not { } density) return null;
+        string? request = DensityRequest(source, quote, from, to);
+        if (request is null) return PaletteInterpretation.Clarification(
+            "Use one matching label ratio.");
+        double? amount = DirectedAmount(request, amountQuote, from, to, SourceUnits(request));
+        if (amount is null) return null;
+        double value = from.Kind == "mass" ? amount.Value * from.Scale / density / to.Scale
+            : amount.Value * from.Scale * density / to.Scale;
+        if (!double.IsFinite(value)) return null;
+        return PaletteInterpretation.Card(PaletteCardKind.Conversion, $"{Format(value)} {Named(to, value)}",
+            $"{Format(amount.Value)} {Named(from, amount.Value)} = · Using your supplied density: {quote}", Format(value));
+    }
+
+    /// Every character belongs either to the bounded request or to its entire ratio.
+    /// A material is one explicit name, not free-form applicability prose. Named labels
+    /// (even apparently matching ones) and extra clauses are deliberately unsupported.
+    private static string? DensityRequest(string source, string quote, Unit from, Unit to) {
+        if (source.Length > 320 || source.Any(char.IsControl)) return null;
+        var match = SuppliedDensity().Match(source);
+        return match.Success && match.Groups["ratio"].Value.Equals(quote, StringComparison.OrdinalIgnoreCase)
+            && Find(match.Groups["from"].Value.ToLowerInvariant()) == from
+            && Find(match.Groups["to"].Value.ToLowerInvariant()) == to
+            ? match.Groups["request"].Value : null;
+    }
+
+    [GeneratedRegex(@"\A\s*(?<request>(?:convert\s+)?[-+]?\d+(?:[ .,]\d+)*\s+(?<from>[a-z. ]+?)(?:\s+of\s+[\p{L}]+)?\s+(?:to|into|in|as)\s+(?<to>[a-z. ]+?))\s*;\s*(?:(?:(?:the\s+)?(?:package|label)\s+says|density:)\s+)?(?<ratio>[^;\r\n]+?)\s*\z",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex SuppliedDensity();
+
+    private static double? ReadDensity(string source, string quote) {
+        if (!PaletteInterpretation.Quoted(source, quote)) return null;
+        int start = source.IndexOf(quote, StringComparison.OrdinalIgnoreCase);
+        if (start < 0 || source.IndexOf(quote, start + quote.Length, StringComparison.OrdinalIgnoreCase) >= 0) return null;
+        var ratioUnits = SourceUnits(quote);
+        if (ratioUnits.Count != 2 || ratioUnits[0].Unit.Kind != "mass" || ratioUnits[1].Unit.Kind != "volume"
+            || ratioUnits[0].Unit.ChoiceAlternative is not null) return null;
+        var weight = ratioUnits[0];
+        var volume = ratioUnits[1];
+        if (PaletteInterpretation.NumberBefore(quote, weight.Start) is not { Start: 0 } number || number.Value <= 0
+            || PaletteInterpretation.QuotedNumber(source, number.Quote, quote) != number.Value
+            || !quote[(weight.Start + weight.Length)..volume.Start].Trim().Equals("per", StringComparison.OrdinalIgnoreCase)
+            || quote[(volume.Start + volume.Length)..].Trim().Length != 0) return null;
+        double density = number.Value * weight.Unit.Scale / volume.Unit.Scale;
+        return double.IsFinite(density) && density > 0 ? density : null;
+    }
+
+    private static PaletteCard? ResolveAmount(string source, string? amountQuote, Unit from, Unit to,
+        IReadOnlyList<SourceUnit> sourceUnits) {
+        if (amountQuote is null && (from.Offset != 0 || to.Offset != 0))
+            return PaletteInterpretation.Clarification("What temperature are you converting?");
+        double? amount = DirectedAmount(source, amountQuote, from, to, sourceUnits);
+        if (amount is null) return null;
+        var conversion = new UnitConversion(amount.Value, from, to);
+        return double.IsFinite(conversion.Value)
+            ? PaletteInterpretation.Card(PaletteCardKind.Conversion, conversion.Answered, $"{conversion.Asked} =", conversion.Answer) : null;
+    }
+
+    /// A model may use a catalog alias, but that exact unit must also be present in the source.
+    private static Unit? QuotedUnit(IReadOnlyList<SourceUnit> sourceUnits, string? proposed) {
+        if (proposed is null || proposed.Length > 80 || Find(proposed.ToLowerInvariant()) is not { } unit) return null;
+        return sourceUnits.Any(occurrence => occurrence.Unit == unit) ? unit : null;
+    }
+
+    private static IReadOnlyList<SourceUnit> SourceUnits(string source) {
+        string text = source.ToLowerInvariant();
+        return UnitNames.Matches(text).Where(match => !UnitQualifier().IsMatch(text[..match.Index]))
+            .Select(match => new SourceUnit(Find(match.Value)!, match.Index, match.Length)).ToArray();
+    }
+
+    // A qualifier not consumed by the full catalog alias cannot be silently discarded.
+    [GeneratedRegex(@"\b(?:fluid|nautical|square|cubic|troy|survey|metric|us)\s+$", RegexOptions.CultureInvariant)]
+    private static partial Regex UnitQualifier();
+
+    /// A single whole-source quantity must adjoin its source unit, and a directed
+    /// clause must name the target. Unit membership alone never authorizes direction.
+    private static double? DirectedAmount(string source, string? quote, Unit from, Unit to, IReadOnlyList<SourceUnit> units) {
+        var quantities = units.Select(unit => (Unit: unit, Number: PaletteInterpretation.NumberBefore(source, unit.Start)))
+            .Where(quantity => quantity.Number is not null).ToArray();
+        if (quantities.Length != 1 || quantities[0].Unit.Unit != from) return null;
+        var origin = quantities[0].Unit;
+        var number = quantities[0].Number!.Value;
+        if (!WholeQuantityPrefix(source[..number.Start])) return null;
+        int end = origin.Start + origin.Length;
+        if (TargetFirstRequest(source, number.Start, end, origin, to, units))
+            return QuotedQuantity(source, quote, from, to, number, end);
+        var targets = units.Where(unit => unit.Start >= end && DirectedUnit().IsMatch(source[end..unit.Start])).ToArray();
+        if (targets.Length != 1 || targets[0].Unit != to) return null;
+        var target = targets[0];
+        if (!WholeQuantityPrefix(source[end..target.Start])
+            || !WholeConversionClause(source, number.Start, end, target, from.Kind != to.Kind)) return null;
+        int directionStart = end + DirectedUnit().Match(source[end..target.Start]).Index;
+        // The catalog also recognizes the connector "in" as inches. Only that
+        // exact connector occurrence may sit between the two requested units.
+        if (units.Any(unit => unit != origin && unit != target
+            && !(unit.Start == directionStart && source.Substring(unit.Start, unit.Length).Equals("in", StringComparison.OrdinalIgnoreCase))))
+            return null;
+        return QuotedQuantity(source, quote, from, to, number, end);
+    }
+
+    /// Collapse only the verified quantity and target spans. Every other character
+    /// must belong to the bounded request grammar, including text after the target.
+    /// Unsupported arithmetic and free-form instructions abstain rather than silently
+    /// converting a subexpression. Density requests already own a single material name.
+    private static bool WholeConversionClause(string source, int numberStart, int end, SourceUnit target, bool density) {
+        if (source.Length > 320 || source.Any(char.IsControl)) return false;
+        string relation = source[end..target.Start];
+        if (density) relation = DensityMaterial().Replace(relation, " ");
+        if (MeasurementRelation().IsMatch(relation)) relation = " to ";
+        string opening = MeasurementOpening().Replace(source[..numberStart], "Convert ");
+        string clause = opening + "\u0001" + relation + "\u0002" + source[(target.Start + target.Length)..];
+        return ConversionClause().IsMatch(PrecisionMetadata().Replace(clause, " "));
+    }
+
+    // These neutral scaffolds retain the verified quantity and both units. They
+    // cannot consume an arithmetic modifier or a second instruction.
+    [GeneratedRegex(@"\A\s*(?:I(?:['’]m|\s+am)\s+(?:measuring|reading)|(?:the|my)\s+(?:[\p{L}]+\s+){0,2}(?:room|thermometer|sensor)\s+(?:reads|is\s+reading))\s+\z",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex MeasurementOpening();
+
+    [GeneratedRegex(@"\A\s*[;,]\s*(?:(?:tell|show)\s+me\s+the\s+equivalent\s+(?:weight|distance|temperature)\s+(?:in|as)|(?:express|convert)\s+that\s+(?:in|to|as))\s+\z",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex MeasurementRelation();
+
+    [GeneratedRegex(@"\A\s*of\s+[\p{L}]+\s+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex DensityMaterial();
+
+    [GeneratedRegex(@"\A[\s,]*(?:please\s+)?(?:(?:can|could|would)\s+you\s+)?(?:(?:convert|express|change|turn)\s+|(?:what['’]s|what\s+is|how\s+much\s+is)\s+|I\s+have\s+)?(?:my\s+|[\p{L}]+['’]s\s+)?\x01(?:\s+(?:route|worth))?\s*(?:(?:in|into|to|as)\s+|[;,.?]\s*how\s+many\s+)\x02[\s,]*(?:(?:is\s+that|for\s+me)\s*)?(?:please\s*)?[?.!]?\s*\z",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ConversionClause();
+
+    /// Prior numeric components cannot be discarded in favor of the final literal.
+    /// Precision metadata is not part of the source amount, wherever it is written.
+    private static bool WholeQuantityPrefix(string prefix) {
+        string quantityPrefix = PrecisionMetadata().Replace(prefix, " ");
+        return !PaletteInterpretation.HasNumber(quantityPrefix) && !CompoundQuantityEnding().IsMatch(quantityPrefix);
+    }
+
+    [GeneratedRegex(@"\b(?:rounded?\s+to|to)\s+\d+\s+(?:decimal\s+places?|decimals?|significant\s+(?:figures?|digits?))\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex PrecisionMetadata();
+
+    [GeneratedRegex(@"(?:[%*/^×÷=]|\b(?:of|off|plus|minus|times|over|squared|cubed))\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CompoundQuantityEnding();
+
+    /// A target-first relational request must own the complete clause, not just
+    /// mention two units. The quantity still binds to its adjoining source unit.
+    private static bool TargetFirstRequest(string source, int numberStart, int end, SourceUnit origin, Unit to,
+        IReadOnlyList<SourceUnit> units) {
+        if (units.Count != 2 || units[1] != origin || units[0].Unit != to) return false;
+        var target = units[0];
+        return TargetRequestOpening().IsMatch(source[..target.Start])
+            && TargetRequestRelation().IsMatch(source[(target.Start + target.Length)..numberStart])
+            && RequestEnding().IsMatch(source[end..]);
+    }
+
+    [GeneratedRegex(@"\A\s*(?:I\s+need|give\s+me|show\s+me)\s+\z", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex TargetRequestOpening();
+
+    [GeneratedRegex(@"\A\s+for\s+\z", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex TargetRequestRelation();
+
+    [GeneratedRegex(@"\A\s*(?:please\s*)?[?.!]?\s*\z", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex RequestEnding();
+
+    private static double? QuotedQuantity(string source, string? quote, Unit from, Unit to,
+        (string Quote, double Value, int Start) number, int end) {
+        bool article = number.Quote.Equals("a", StringComparison.OrdinalIgnoreCase)
+            || number.Quote.Equals("an", StringComparison.OrdinalIgnoreCase);
+        if (article && (quote is null || quote == "1") && from.Offset == 0 && to.Offset == 0) return 1;
+        string quantity = source[number.Start..end];
+        return quote is not null && (quote.Equals(number.Quote, StringComparison.OrdinalIgnoreCase)
+            || quote.Equals(quantity, StringComparison.OrdinalIgnoreCase)) ? number.Value : null;
+    }
+
+    [GeneratedRegex(@"(?:\b(?:in|into|to|as)\s+|[;,.?]\s*how\s+many\s+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex DirectedUnit();
+
+    /// A complete two-unit temperature direction with no amount needs clarification,
+    /// even when curated conversion help leads Return. Never synthesize temperature one.
+    internal static bool NeedsTemperatureAmount(string source) {
+        if (PaletteInterpretation.HasNumber(source) || Regional().IsMatch(source)) return false;
+        var units = SourceUnits(source);
+        return units.Count == 2 && units.All(unit => unit.Unit.Kind == "temperature")
+            && DirectedUnit().IsMatch(source[(units[0].Start + units[0].Length)..units[1].Start]);
+    }
+
+    internal static bool IsBareMeasurement(string source) {
+        var match = BareMeasurement().Match(source.Trim().ToLowerInvariant());
+        return match.Success && ReadAmount(match.Groups["amount"].Value) is not null && Find(match.Groups["unit"].Value) is not null;
+    }
+
+    [GeneratedRegex(@"^(?<amount>[-+]?\d+(?:[ .,]\d+)*)\s*(?<unit>[a-z°²0-9 ]+)$", RegexOptions.CultureInvariant)]
+    private static partial Regex BareMeasurement();
+
+    internal static bool MentionsUnit(string source) => ReadRequest(source) is not null || UnitNames.Matches(source).Any(match =>
+        match.Length > 1 && !match.Value.Equals("in", StringComparison.OrdinalIgnoreCase));
+
+    [GeneratedRegex(@"\b(?:imperial|british|uk|australian|metric\s+(?:cup|spoon|teaspoon|tablespoon))\b",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex Regional();
+
+    private static (double Amount, Unit From, Unit To)? ReadRequest(string typed) {
         ArgumentNullException.ThrowIfNull(typed);
         string text = typed.Trim().ToLowerInvariant();
         if (text.Length is 0 or > MaximumLength) return null;
-        var match = Asking().Match(text);
-        if (!match.Success) match = HowMany().Match(text);
-        if (!match.Success) return null;
-        if (ReadAmount(match) is not { } amount) return null;
-        if (Find(match.Groups["from"].Value) is not { } from || Find(match.Groups["to"].Value) is not { } to || from == to
-            || from.Kind != to.Kind)
+        var match = HowMany().Match(text);
+        bool direct = !match.Success;
+        if (direct) match = Asking().Match(text);
+        if (!match.Success || ReadAmount(match) is not { } amount) return null;
+        if (Find(match.Groups["from"].Value) is not { } from || Find(match.Groups["to"].Value) is not { } to || from == to)
             return null;
-        var conversion = new UnitConversion(amount, from, to);
-        return double.IsFinite(conversion.Value) ? conversion : null;
+        // An offset temperature is not a unit ratio; require its actual amount.
+        if (direct && !match.Groups["amount"].Success && (from.Offset != 0 || to.Offset != 0)) return null;
+        return (amount, from, to);
     }
 
     /// The amount in either conversion grammar; an article means one.
@@ -153,7 +414,7 @@ internal sealed partial class UnitConversion {
     /// any other run of digits, or after a lone zero, is a decimal comma, as
     /// "0,5" and "3,14"; a point is only ever the decimal point, so "1.000"
     /// is one.
-    private static double? ReadAmount(string written) {
+    internal static double? ReadAmount(string written) {
         string sign = written.Length > 0 && written[0] is '-' or '+' ? written[..1] : "";
         string number = written[sign.Length..];
         int point = number.IndexOf('.');
@@ -203,12 +464,12 @@ internal sealed partial class UnitConversion {
     /// The amount is digits with any run of space, comma or point groups,
     /// which `ReadAmount` reads; a unit never starts with a digit, so a group
     /// never takes the start of one.
-    [GeneratedRegex(@"^(?:convert\s+)?(?<amount>[-+]?\d+(?:[ .,]\d+)*)\s*(?<from>[a-z°""'/²0-9 ]+?)\s+(?:in|to|into|as)\s+(?<to>[a-z°""'/²0-9 ]+?)\s*\??$",
+    [GeneratedRegex(@"^(?:convert\s+)?(?:(?<amount>[-+]?\d+(?:[ .,]\d+)*)\s*)?(?<from>[a-z°""'/²0-9 ]+?)\s+(?:in|to|into|as)\s+(?<to>[a-z°""'/²0-9 ]+?)\s*\??$",
         RegexOptions.CultureInvariant)]
     private static partial Regex Asking();
 
-    /// "how many ounces in a pound" or "how many cups are in 2 gallons".
-    [GeneratedRegex(@"^how many\s+(?<to>[a-z°""'/²0-9 ]+?)\s+(?:are\s+|is\s+)?in\s+(?:(?<amount>[-+]?\d+(?:[ .,]\d+)*)\s*|an?\s+|one\s+)(?<from>[a-z°""'/²0-9 ]+?)\s*\??$",
+    /// "how many ounces in pound", "how many ounces in a pound" or "how many cups are in 2 gallons".
+    [GeneratedRegex(@"^how many\s+(?<to>[a-z°""'/²0-9 ]+?)\s+(?:are\s+|is\s+)?in\s+(?:(?<amount>[-+]?\d+(?:[ .,]\d+)*)\s*|an?\s+|one\s+)?(?<from>[a-z°""'/²0-9 ]+?)\s*\??$",
         RegexOptions.CultureInvariant)]
     private static partial Regex HowMany();
 

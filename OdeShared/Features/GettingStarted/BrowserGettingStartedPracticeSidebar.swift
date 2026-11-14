@@ -8,6 +8,7 @@ struct BrowserGettingStartedPracticeSidebar: View {
     let capabilities: BrowserInteractionCapabilities
     var showsHeader = true
     var backgroundBranding: SpaceBranding? = nil
+    var showsEmptyPinnedSection = true
 
     // MARK: - Actions - Presentation
 
@@ -43,7 +44,9 @@ struct BrowserGettingStartedPracticeSidebar: View {
                     }.padding(.horizontal, 10).padding(.top, 12)
                 }
                 if let context = practice.listContext(capabilities: capabilities) {
-                    BrowserPinnedTabsDropSection(context: context)
+                    if showsEmptyPinnedSection || !space.shownPins.isEmpty {
+                        BrowserPinnedTabsDropSection(context: context)
+                    }
                     Text("Saved").font(.caption.weight(.semibold)).foregroundStyle(.secondary).padding(
                         .horizontal, 14)
                     BrowserSidebarTabList(

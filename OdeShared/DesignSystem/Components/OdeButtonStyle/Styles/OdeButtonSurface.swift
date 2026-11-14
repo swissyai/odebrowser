@@ -15,6 +15,7 @@ struct OdeButtonSurface: View {
                 isEnabled: isEnabled
             )
             .onHover { isHovering = $0 && isEnabled }
+            .odeControlPointer()
     }
 
     @ViewBuilder

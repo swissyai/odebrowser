@@ -57,7 +57,7 @@ struct BrowserOnboardingImportPage: View {
                             .frame(maxWidth: 420, alignment: .trailing)
                             .accessibilityIdentifier("onboarding-import-error")
                         }
-                        Button("Set up manually", action: beginManualSetup)
+                        Button("Continue without importing", action: beginManualSetup)
                             .buttonStyle(.odeTertiary)
                             .accessibilityIdentifier("onboarding-import-skip")
                         BrowserOnboardingContinueButton(action: continueImport)

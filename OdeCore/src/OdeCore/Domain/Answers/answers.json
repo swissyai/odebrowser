@@ -8475,8 +8475,11 @@
       "status": "live",
       "kind": "task",
       "topic": "app",
-      "title": "Send feedback or report a problem",
+      "title": "Report a problem",
       "questions": [
+        "bug",
+        "feedback",
+        "report bug",
         "send feedback",
         "report a bug",
         "contact support",
@@ -8497,14 +8500,13 @@
         "problem"
       ],
       "steps": [
-        "Choose Ode > Settings, then click About.",
-        "Click Share Feedback or Report an Issue and write your report.",
-        "Choose Open Email to review and send in your email app, or Copy Report to use webmail."
+        "Write your report and review the screenshot.",
+        "Choose Send to Ode, or Copy Text to use another app."
       ],
       "action": {
-        "settings": "about"
+        "app": "feedback"
       },
-      "note": "App details are optional and off by default; opening email does not confirm delivery, and your draft stays in Ode until you quit.",
+      "note": "Only the report, attached screenshot, and selected app details go to Ode. A failed send keeps your draft.",
       "help": "/install-and-update-mac/#send-feedback",
       "related": [
         "crash-reports"

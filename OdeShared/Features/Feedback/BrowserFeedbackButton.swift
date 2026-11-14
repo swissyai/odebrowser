@@ -1,6 +1,10 @@
 import SwiftUI
 
-/// The presenting surface owns only its sheet, not the session draft or its parent's dismissal.
+extension EnvironmentValues {
+    @Entry var browserFeedbackCaptureAllowed = false
+}
+
+/// The draft outlives the native presentation and its source settings surface.
 struct BrowserFeedbackButton: View {
     // MARK: - Variables
 
@@ -8,20 +12,19 @@ struct BrowserFeedbackButton: View {
     let systemImage: String
     var topic: String? = nil
     var draft: BrowserFeedbackDraft = .shared
-    @State private var isPresented = false
+    @Environment(\.browserFeedbackCaptureAllowed) private var allowsCapture
+    @State private var present: ((BrowserFeedbackDraft, Bool) -> Void)?
 
     var body: some View {
         Button {
             draft.prepare(topic: topic)
-            isPresented = true
+            present?(draft, allowsCapture)
         } label: {
             Label(title, systemImage: systemImage)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(.rect)
         }
         .buttonStyle(.odeTertiary)
-        .sheet(isPresented: $isPresented) {
-            BrowserFeedbackComposer(draft: draft)
-        }
+        .background { BrowserPlatformFeedbackSource(action: $present).frame(width: 0, height: 0) }
     }
 }

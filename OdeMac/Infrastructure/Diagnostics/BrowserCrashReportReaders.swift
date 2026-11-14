@@ -63,6 +63,7 @@ enum BrowserCrashReportReaders {
     /// path whether it is this copy's.
     static func crashes(
         in directory: URL = diagnosticReports, now: Date,
+        launches: [BrowserLaunchHistory.Launch]? = nil, isolated: Bool = false,
         belongs: (_ bundleID: String?, _ name: String?, _ path: String?) -> Bool = {
             isOde(bundleID: $0, name: $1, path: $2)
         }
@@ -77,7 +78,9 @@ enum BrowserCrashReportReaders {
                 let modified = values.contentModificationDate, now.timeIntervalSince(modified) <= window,
                 let data = try? Data(contentsOf: url, options: .mappedIfSafe)
             else { return nil }
-            return crash(fromIPS: data, named: url.lastPathComponent, modified: modified, belongs: belongs)
+            return crash(
+                fromIPS: data, named: url.lastPathComponent, modified: modified, launches: launches, isolated: isolated,
+                belongs: belongs)
         }
         .sorted { $0.occurredAt > $1.occurredAt }
     }
@@ -123,6 +126,7 @@ enum BrowserCrashReportReaders {
     /// JSON. Answers nil for a file that is not a crash of this copy's.
     static func crash(
         fromIPS data: Data, named name: String, modified: Date,
+        launches: [BrowserLaunchHistory.Launch]? = nil, isolated: Bool = false,
         belongs: (_ bundleID: String?, _ name: String?, _ path: String?) -> Bool = {
             isOde(bundleID: $0, name: $1, path: $2)
         }
@@ -138,11 +142,18 @@ enum BrowserCrashReportReaders {
         guard belongs(bundleID, process, body?["procPath"] as? String) else { return nil }
         let build = [header["app_version"] as? String, (header["build_version"] as? String).map { "(\($0))" }]
             .compactMap { $0 }.joined(separator: " ")
+        if let launches, !ownsProcess(body, build: build, launches: launches, isolated: isolated) { return nil }
         guard let body else {
             return BrowserCrashReport(
                 id: "ips-\(name)", kind: .crash, occurredAt: modified, build: build.isEmpty ? "unknown" : build,
                 summary: "\(process ?? "Ode") crashed", details: "Process: \(process ?? "unknown")")
         }
+        return report(body: body, process: process, name: name, modified: modified, build: build)
+    }
+
+    private static func report(
+        body: [String: Any], process: String?, name: String, modified: Date, build: String
+    ) -> BrowserCrashReport {
         var lines = ["Process: \(body["procName"] as? String ?? process ?? "unknown")"]
         var summary = "\(process ?? "Ode") crashed"
         if let exception = body["exception"] as? [String: Any] {
@@ -181,5 +192,50 @@ enum BrowserCrashReportReaders {
         return BrowserCrashReport(
             id: "ips-\(name)", kind: .crash, occurredAt: modified, build: build.isEmpty ? "unknown" : build,
             summary: summary, details: lines.joined(separator: "\n"))
+    }
+
+    private enum OwnershipSkip: String {
+        case noLaunchHistory, missingProcessID, missingProcessStart, missingBuild, invalidProcessStart
+        case processIDMismatch, buildMismatch, missingRecordedStart, processStartMismatch
+    }
+
+    private static func skipped(_ reason: OwnershipSkip) -> Bool {
+        DiagnosticLog.launch.notice("Skipped one unattributed OS crash report: \(reason.rawValue)")
+        return false
+    }
+
+    /// A precise path still identifies a normal installed copy across updates,
+    /// including helpers. Redacted paths and isolated profiles need the main
+    /// process generation recorded by that profile; uncertain reports stay in
+    /// macOS's log and existing local copies remain available for inspection.
+    private static func ownsProcess(
+        _ body: [String: Any]?, build: String, launches: [BrowserLaunchHistory.Launch], isolated: Bool
+    ) -> Bool {
+        if !isolated, let path = body?["procPath"] as? String,
+            !path.split(separator: "/").contains("*")
+        {
+            return true
+        }
+        guard !launches.isEmpty else { return skipped(.noLaunchHistory) }
+        guard let pid = body?["pid"] as? Int else { return skipped(.missingProcessID) }
+        guard let start = body?["procLaunch"] as? String else { return skipped(.missingProcessStart) }
+        guard !build.isEmpty else { return skipped(.missingBuild) }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSSSS Z"
+        guard let started = formatter.date(from: start)?.timeIntervalSince1970 else {
+            return skipped(.invalidProcessStart)
+        }
+        let samePID = launches.filter { $0.processID == pid }
+        guard !samePID.isEmpty else { return skipped(.processIDMismatch) }
+        let sameBuild = samePID.filter { $0.build == build }
+        guard !sameBuild.isEmpty else { return skipped(.buildMismatch) }
+        let recordedStarts = sameBuild.compactMap(\.processStartedAt)
+        guard !recordedStarts.isEmpty else { return skipped(.missingRecordedStart) }
+        // DateFormatter resolves milliseconds; the kernel records microseconds.
+        guard recordedStarts.contains(where: { abs($0 - started) < 0.002 }) else {
+            return skipped(.processStartMismatch)
+        }
+        return true
     }
 }

@@ -62,6 +62,7 @@ struct BrowserSourceImportPinnedGrid: View {
                     .opacity(duplicate || included ? 1 : 0.38)
                 }
                 .buttonStyle(.plain)
+                .odeControlPointer()
                 .accessibilityLabel(tab.title)
                 .accessibilityValue(accessibilityValue(for: tab))
             }

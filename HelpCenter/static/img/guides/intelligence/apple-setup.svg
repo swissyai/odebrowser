@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="400" viewBox="0 0 480 400" role="img" aria-labelledby="title desc">
+  <title id="title">Set up Apple’s on-device model for Ode</title>
+  <desc id="desc">An original setup diagram for OS 26, not a system screenshot. Open Apple Intelligence and Siri in Mac System Settings or iPhone and iPad Settings. Wait for Apple’s model, then turn on Answers in the command bar in Ode’s Search settings.</desc>
+  <!-- Paper, ink and blue match OdeBrandTheme and OdeBrandPalette. -->
+  <rect width="480" height="400" fill="#F6F5F0"/>
+  <g stroke="#0A0A0A" stroke-opacity=".18">
+    <path d="M48 158h400M48 270h400"/>
+  </g>
+  <g fill="none" stroke="#3050F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M24 42v114m-5-5 5 5 5-5M24 194v74m-5-5 5 5 5-5"/>
+    <path d="m18 312 5 5 9-11"/>
+  </g>
+  <g fill="#0A0A0A">
+    <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="26" font-weight="600">
+      <text x="48" y="48">Enable Apple Intelligence</text>
+      <text x="48" y="200">Wait for Apple’s model</text>
+      <text x="48" y="314">Turn on answers in Ode</text>
+    </g>
+    <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="20">
+      <text x="48" y="80">Mac: System Settings</text>
+      <text x="48" y="108">iPhone and iPad: Settings</text>
+      <text x="48" y="136">→ Apple Intelligence &amp; Siri</text>
+      <text x="48" y="232">Ode shows Available when ready</text>
+      <text x="48" y="346">Ode Settings → Search</text>
+      <text x="48" y="374">Answers in the command bar</text>
+    </g>
+  </g>
+</svg>

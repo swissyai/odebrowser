@@ -10,5 +10,6 @@ struct OdeSpaceAddChipStyle: ButtonStyle {
             isPressed: configuration.isPressed,
             label: configuration.label
         )
+        .odeControlPointer()
     }
 }

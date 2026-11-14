@@ -4,7 +4,6 @@ struct BrowserOnboardingWelcomeCallToAction: View {
     // MARK: - Variables
 
     let action: BrowserOnboardingWelcomeAction
-    let cloudStatusDetail: String?
     let perform: () -> Void
     let setUpWithoutCloud: () -> Void
 
@@ -31,10 +30,8 @@ struct BrowserOnboardingWelcomeCallToAction: View {
             )
             .accessibilityIdentifier("onboarding-welcome-continue")
 
-            if let status = action.waitsOnCloud
-                ? String(localized: "Checking iCloud for an existing setup…") : cloudStatusDetail
-            {
-                Text(status)
+            if action.waitsOnCloud {
+                Text("Checking iCloud for an existing setup…")
                     .font(OdeTypography.sans(12, weight: .medium))
                     .foregroundStyle(OdeBrandTheme.textSecondary)
             }

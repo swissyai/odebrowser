@@ -50,7 +50,12 @@ public static class NativeSessionMaintenance {
     /// Spaces' groups, keeps a Space that is being deleted exactly as it was,
     /// and adds a Space when none would remain.
     internal static SessionState Repair(SessionState source, DateTimeOffset now, SpaceState? emptySpace, IIdSource ids,
-        out IReadOnlyList<TabOrigin> origins) {
+        out IReadOnlyList<TabOrigin> origins) => Repair(source, now, emptySpace, ids, out origins, out _);
+
+    /// Also answers where each input Space ended up, since grouping can move
+    /// it after repair gave colliding identities new values.
+    internal static SessionState Repair(SessionState source, DateTimeOffset now, SpaceState? emptySpace, IIdSource ids,
+        out IReadOnlyList<TabOrigin> origins, out IReadOnlyList<int> spacePositions) {
         var pending = source.SpaceDeletions.Select(deletion => deletion.SpaceId).ToHashSet();
         var spaces = source.Spaces.ToList();
         if (spaces.Count == 0 || spaces.All(space => pending.Contains(space.Id))) spaces.Add(SessionRepair.Empty(emptySpace, ids, now));
@@ -59,11 +64,13 @@ public static class NativeSessionMaintenance {
         IReadOnlyList<SpaceState> repaired = [.. spaces.Select((space, spaceIndex) =>
             pending.Contains(space.Id) ? repair.Kept(space, spaceIndex) : repair.Repaired(space, spaceIndex))];
         origins = repair.Origins;
+        spacePositions = [.. Enumerable.Range(0, spaces.Count)];
         // Each group gathers where its primary is, so the asset references
         // follow the Spaces to their places.
         var grouped = SpaceGroup.Regrouped(repaired, pending);
         if (!ReferenceEquals(grouped, repaired)) {
             var places = grouped.Select((space, index) => (space.Id, index)).ToDictionary(pair => pair.Id, pair => pair.index);
+            spacePositions = [.. repaired.Select(space => places[space.Id])];
             origins = [.. origins.Select(origin => origin with { SpaceIndex = places[repaired[origin.SpaceIndex].Id] })];
             repaired = grouped;
         }

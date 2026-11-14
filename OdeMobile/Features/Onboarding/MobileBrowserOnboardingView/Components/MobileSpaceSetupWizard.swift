@@ -39,14 +39,14 @@ struct MobileSpaceSetupWizard: View {
                     .id(draft.spaceID)
                     footer.padding(20)
                 } else {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: OdeSpacing.extraExtraLarge) {
+                    VStack(spacing: 0) {
+                        ScrollView {
                             BrowserOnboardingTabLesson(branding: branding)
-                            footer
+                                .frame(maxWidth: 560)
+                                .padding(20)
+                                .frame(maxWidth: .infinity)
                         }
-                        .frame(maxWidth: 560)
-                        .padding(20)
-                        .frame(maxWidth: .infinity)
+                        footer.padding(20)
                     }
                 }
             } else {

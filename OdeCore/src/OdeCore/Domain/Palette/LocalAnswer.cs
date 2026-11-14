@@ -9,7 +9,7 @@ namespace OdeCore.Domain;
 /// the first that answers, an outright answer keeps a written answer from
 /// leading, and arithmetic is never sent away for suggestions.
 internal sealed record LocalAnswer(Calculation? Calculation, UnitConversion? Conversion, IReadOnlyList<UnitConversion> Choices,
-    ZoneClock? Clock) {
+    ZoneClock? Clock, bool NeedsIngredient = false) {
     #region Static Variables
 
     private static readonly LocalAnswer None = new(null, null, [], null);
@@ -18,9 +18,9 @@ internal sealed record LocalAnswer(Calculation? Calculation, UnitConversion? Con
 
     #region Variables
 
-    /// The text asks for arithmetic, an exact conversion or a time, which a
-    /// card answers outright; conversion choices only offer a guess.
-    public bool AnswersOutright => Calculation is not null || Conversion is not null || Clock is not null;
+    /// A local card handles the text, including a required clarification;
+    /// conversion choices only offer a guess. No model should answer it again.
+    public bool AnswersOutright => Calculation is not null || Conversion is not null || Clock is not null || NeedsIngredient;
 
     #endregion
 
@@ -31,6 +31,7 @@ internal sealed record LocalAnswer(Calculation? Calculation, UnitConversion? Con
         if (Arithmetic(context, text) is { } calculation) return new(calculation, null, [], null);
         if (!context.Preferences.Offers(PaletteSource.Conversions)) return None;
         if (UnitConversion.Of(text) is { } conversion) return new(null, conversion, [], null);
+        if (UnitConversion.NeedsIngredient(text)) return new(null, null, [], null, NeedsIngredient: true);
         return new(null, null, UnitConversion.Choices(text), ZoneClock.Of(text, context.Now, context.Zone));
     }
 

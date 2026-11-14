@@ -185,6 +185,26 @@ final class BrowserCommandPaletteTranslationTests: XCTestCase {
         XCTAssertEqual(copied, ["service output 👋"])
     }
 
+    func testTabCopiesReadyTranslationFromSearchWithoutChangingSelection() async throws {
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], perform: { _ in }, copy: { copied.append($0) })
+        let model = makeModel(commands: commands) { lookup in
+            PaletteTranslationResult(lookup: lookup, sourceLanguage: "en", text: "service output", status: .translated)
+        }
+        defer { model.stop() }
+        model.isFieldFocused = true
+        model.query = "translate hello to French"
+        await model.waitForPendingResults()
+        let candidate = try XCTUnwrap(model.tabCopyCandidate)
+        model.pressTab()
+        XCTAssertEqual(copied, ["service output"])
+        XCTAssertEqual(model.selectedResultIndex, 0)
+        XCTAssertTrue(model.isCopied(candidate))
+        model.query = "translate goodbye to French"
+        XCTAssertNil(model.copiedCardID)
+    }
+
     // MARK: - Actions - Fixtures
 
     private func pendingResults(of model: BrowserCommandPaletteModel) async -> Task<Void, Never> {

@@ -45,6 +45,7 @@ private struct OdeChromeButtonSurface: ViewModifier {
             )
             .frame(width: controlSize?.width, height: controlSize?.height)
             .contentShape(.rect)
+            .odeControlPointer()
             .odeHoverSurface(
                 isSelected: false,
                 cornerRadius: cornerRadius,

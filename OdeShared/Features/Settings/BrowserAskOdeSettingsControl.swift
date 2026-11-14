@@ -22,7 +22,7 @@ struct BrowserAskOdeSettingsControl: View {
         OdeSettingsGroup(
             "Ode", settings: [answers.resettable("Answers in the command bar")],
             footnote:
-                "Uses only what you type, on this device. Search suggestions use your search service. Answers can be wrong."
+                "Apple’s on-device model uses only what you type. Search suggestions use your search service."
         ) {
             OdeSettingRow("Answers in the command bar", setting: answers.resettable("Answers in the command bar")) {
                 Toggle("Answers in the command bar", isOn: answers.binding)
@@ -37,6 +37,9 @@ struct BrowserAskOdeSettingsControl: View {
                 Text(availability.message)
                     .foregroundStyle(.secondary)
             }
+            Link(
+                "Set up Apple Intelligence",
+                destination: ProductIdentity.website.appending(path: "guides/intelligence/"))
         }
     }
 }

@@ -5,24 +5,9 @@ struct BrowserOnboardingWelcomePage: View {
     // MARK: - Variables
 
     let action: BrowserOnboardingWelcomeAction
-    let hasCompletedSetup: Bool
-    let hasDisposableSeedState: Bool
-    let cloudUnavailableInBuild: Bool
     let continueSetup: () -> Void
     let setUpWithoutCloud: () -> Void
     let openOde: () -> Void
-
-    private var cloudStatusDetail: String? {
-        if hasCompletedSetup || !hasDisposableSeedState { return nil }
-        if cloudUnavailableInBuild {
-            return String(
-                localized: "iCloud sync isn’t available in this build. You can still set up and browse on this Mac.")
-        }
-        if action.reportsCloudUnavailable {
-            return String(localized: "iCloud sync couldn’t be reached. You can set up this Mac without it.")
-        }
-        return nil
-    }
 
     // MARK: - Actions - Presentation
 
@@ -47,7 +32,6 @@ struct BrowserOnboardingWelcomePage: View {
                 .accessibilityAddTraits(.isHeader)
             BrowserOnboardingWelcomeCallToAction(
                 action: action,
-                cloudStatusDetail: cloudStatusDetail,
                 perform: performAction,
                 setUpWithoutCloud: setUpWithoutCloud
             )

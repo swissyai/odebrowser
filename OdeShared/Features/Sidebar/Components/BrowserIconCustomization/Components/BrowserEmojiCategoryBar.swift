@@ -23,6 +23,7 @@ struct BrowserEmojiCategoryBar: View {
                                 .contentShape(.rect)
                         }
                         .buttonStyle(.plain)
+                        .odeControlPointer()
                         .foregroundStyle(
                             category == option
                                 ? Color.accentColor : Color.secondary

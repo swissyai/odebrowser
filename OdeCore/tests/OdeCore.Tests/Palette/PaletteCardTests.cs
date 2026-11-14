@@ -54,6 +54,12 @@ public sealed partial class BrowserContractsTests {
     [InlineData("72 f to c", "22.22 degrees Celsius", "72 degrees Fahrenheit =", "22.22")]
     [InlineData("convert 2 cups to ml", "473.2 milliliters", "2 US cups =", "473.2")]
     [InlineData("how many ounces in a pound", "16 ounces", "1 pound =", "16")]
+    [InlineData("how many ounces in pound", "16 ounces", "1 pound =", "16")]
+    [InlineData("how many ounces in 2pounds", "32 ounces", "2 pounds =", "32")]
+    [InlineData("16 oz in pounds", "1 pound", "16 ounces =", "1")]
+    [InlineData("ounces to pounds", "0.0625 pounds", "1 ounce =", "0.0625")]
+    [InlineData("grams to kilograms", "0.001 kilograms", "1 gram =", "0.001")]
+    [InlineData("tsp to ml", "4.929 milliliters", "1 US teaspoon =", "4.929")]
     [InlineData("how many oz in a pound?", "16 ounces", "1 pound =", "16")]
     [InlineData("how many fluid ounces in a US cup", "8 US fluid ounces", "1 US cup =", "8")]
     [InlineData("how many fluid ounces in a cup", "8 US fluid ounces", "1 US cup =", "8")]
@@ -62,13 +68,17 @@ public sealed partial class BrowserContractsTests {
     [InlineData("1.5 gb to mb", "1500 megabytes", "1.5 gigabytes =", "1500")]
     [InlineData("1,000 km in miles", "621.4 miles", "1000 kilometers =", "621.4")]
     public void AConversionShowsAsACardBelowTheSearch(string text, string title, string subtitle, string value) {
-        var (session, space) = PaletteSession([]);
-        using var device = new TestDevice(session);
-        var answer = device.Query(Asking(device.Open(space), text));
+        var (device, window) = SuggestingPalette([]);
+        using var ownedDevice = device;
+        EnablePrivateAnswers(device);
+        var answer = device.Query(Asking(window, text));
 
         Assert.Equal(PaletteRowKind.Search, answer.Groups[0].Rows[0].Kind);
         var card = CardOf(answer);
         Assert.Equal((PaletteCardKind.Conversion, title, subtitle, value), (card.Kind, card.Title, card.Subtitle, card.Value));
+        Assert.Null(answer.GenerativeLookup);
+        Assert.Null(answer.SuggestionAddress);
+        Assert.Null(answer.WebLookup);
     }
 
     /// Digits grouped in threes by a comma or a space are one amount; a comma
@@ -103,6 +113,21 @@ public sealed partial class BrowserContractsTests {
     public void AnAmountWhoseGroupsDoNotReadAsksNoConversion(string typed) => Assert.Null(UnitConversion.Of(typed));
 
     [Theory]
+    [InlineData("ounces to poundcake")]
+    [InlineData("grams to teaspoons recipe")]
+    [InlineData("5 grams of chicken to tsp")]
+    [InlineData("5 grams chicken to tsp")]
+    [InlineData("grams to tsp of chicken")]
+    [InlineData("grams to grams")]
+    [InlineData("grams to")]
+    [InlineData("how many ounces in")]
+    [InlineData("how many ounces in po")]
+    [InlineData("how many ounces in pound cake")]
+    [InlineData("how many ounces in 1,00,0 pounds")]
+    [InlineData("1,00,0 grams to tsp")]
+    [InlineData("grams to km")]
+    [InlineData("how many people in pound")]
+    [InlineData("https://example.org/grams to tsp")]
     [InlineData("1 in 3 people")]
     [InlineData("5 km")]
     [InlineData("iphone 15 to 16")]
@@ -119,6 +144,69 @@ public sealed partial class BrowserContractsTests {
         var (session, space) = PaletteSession([]);
         using var device = new TestDevice(session);
         Assert.DoesNotContain(device.Query(Asking(device.Open(space), text)).Groups, group => group.Section == PaletteSection.Card);
+    }
+
+    [Theory]
+    [InlineData("grams to tsp")]
+    [InlineData("5 grams to tsp")]
+    [InlineData("ask ode 5 grams to tsp")]
+    [InlineData("5 tsp to grams")]
+    [InlineData("how many oz in a cup")]
+    [InlineData("how many oz in a US cup")]
+    public void MassAndVolumeAllowPrivateEnrichmentWithoutInventingValuesOrRequestingExternalServices(string text) {
+        var (device, window) = SuggestingPalette([]);
+        using (device) {
+            Assert.False(PalettePreferences.Default.Offers(PaletteSource.AskOde));
+            Assert.Null(device.Query(Asking(window, text)).GenerativeLookup);
+            EnablePrivateAnswers(device);
+            var question = Asking(window, text) with { Remote = ["unwanted external suggestion"] };
+            var answer = device.Query(question);
+            var card = CardOf(answer);
+
+            Assert.Equal(PaletteRowKind.Search, answer.Groups[0].Rows[0].Kind);
+            Assert.Equal(PaletteCardKind.Clarification, card.Kind);
+            Assert.False(card.Kind.CopiesValue);
+            Assert.False(card.Kind.LooksUpTerm);
+            Assert.Null(card.Value);
+            Assert.Null(card.Address);
+            Assert.Null(card.Term);
+            var lookup = Assert.IsType<PaletteGenerativeLookup>(answer.GenerativeLookup);
+            Assert.Equal(GenerativeAnswerLookup.IsExplicit(text), lookup.IsExplicitRequest);
+            Assert.True(answer.KeepsQueryPrivate);
+            Assert.Null(answer.SuggestionAddress);
+            Assert.Null(answer.WebLookup);
+            Assert.Null(answer.DefinitionTerm);
+            Assert.DoesNotContain(answer.Groups, group => group.Section == PaletteSection.SearchSuggestions);
+            Assert.Null(UnitConversion.Of(text));
+
+            string from = text.Contains("oz", StringComparison.Ordinal) ? "cup"
+                : text.Contains("5 tsp", StringComparison.Ordinal) ? "tsp" : "grams";
+            string to = from == "cup" ? "oz" : from == "tsp" ? "grams" : "tsp";
+            var interpretation = new PaletteInterpretation(PaletteInterpretationKind.Conversion, null, null, from, to, null);
+            foreach (var result in new[] {
+                new PaletteGenerativeResult(lookup, "999", PaletteGenerativeStatus.Answered),
+                new PaletteGenerativeResult(lookup, null, PaletteGenerativeStatus.Answered, interpretation)
+            }) {
+                var enriched = device.Query(question with { Generative = result });
+                Assert.Equal(PaletteCardKind.Clarification, CardOf(enriched).Kind);
+                Assert.Null(CardOf(enriched).Value);
+                Assert.True(enriched.KeepsQueryPrivate);
+                Assert.Null(enriched.SuggestionAddress);
+                Assert.Null(enriched.WebLookup);
+                Assert.Null(enriched.DefinitionTerm);
+                Assert.DoesNotContain(enriched.Groups, group => group.Section == PaletteSection.SearchSuggestions);
+            }
+
+            var preferences = device.Authority.Current.AppPreferences!;
+            device.Send(new SetAppPreferences(device.Workspace, preferences with {
+                Palette = preferences.Palette with {
+                    Sources = [.. preferences.Palette.Sources.Select(choice => choice.Source == PaletteSource.Conversions
+                        ? choice with { IsEnabled = false } : choice)]
+                }
+            }));
+            Assert.DoesNotContain(device.Query(Asking(window, text)).Groups,
+                group => group.Rows.Any(row => row.Card?.Kind == PaletteCardKind.Clarification));
+        }
     }
 
     [Theory]

@@ -14,7 +14,8 @@ struct BrowserCommandPaletteAnswerControl: Equatable {
         isOffered: { card, palette in palette.canPerformAnswerAction(of: card) },
         perform: { card, palette in palette.performAnswerAction(of: card) })
     static let readMore = BrowserCommandPaletteAnswerControl(
-        name: "readMore", title: "Read More", hint: "Opens the guide in a new tab", isOffered: { _, _ in true },
+        name: "readMore", title: "Read More", hint: "Opens the guide in a new tab",
+        isOffered: { card, palette in !palette.isDirectFeedbackAction(card) },
         perform: { card, palette in palette.openGuide(of: card) ? .performed : .unsupported })
 
     static let all = [doIt, readMore]

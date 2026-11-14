@@ -2,10 +2,15 @@ namespace OdeCore.Contracts;
 
 /// Typed text only, selected by the core for a private on-device preview.
 /// Never contains page, tab, history or credential context.
-public sealed record PaletteGenerativeLookup(string Text);
+public sealed record PaletteGenerativeLookup(string Text, bool IsExplicitRequest = false,
+    PaletteGenerativeRoute Route = PaletteGenerativeRoute.Nonnumeric, PaletteCalculationOperation? PercentageOperation = null);
+
+/// Core-owned generation shape, selected before the one on-device model call.
+public enum PaletteGenerativeRoute { Nonnumeric, Calculation, Conversion }
 
 /// Transient service output, never persisted, learned or synchronized.
-public sealed record PaletteGenerativeResult(PaletteGenerativeLookup Lookup, string? Text, PaletteGenerativeStatus Status);
+public sealed record PaletteGenerativeResult(PaletteGenerativeLookup Lookup, string? Text, PaletteGenerativeStatus Status,
+    PaletteInterpretation? Interpretation = null);
 
 public sealed class PaletteGenerativeStatus {
     #region Static Variables

@@ -105,6 +105,10 @@ final class BrowserOnboardingPracticeTests: XCTestCase {
             preferences.searchSuggestionsEnabled = true
             practice.browser.updateBrowsingPreferences(preferences, in: space.id)
         }
+        var remoteControl = enabled
+        remoteControl.palette = remoteControl.palette.offering(.askOde, false)
+        try preferenceOwner.core.send(
+            SetAppPreferences(workspaceID: preferenceOwner.family.workspaceID, preferences: remoteControl))
         let control = try preferenceOwner.core.query(
             PaletteSuggestions(
                 windowID: preferenceOwner.windowID, text: "Ada Lovelace", commands: [], settingsPages: [], remote: [],
@@ -112,6 +116,8 @@ final class BrowserOnboardingPracticeTests: XCTestCase {
                 spaceID: nil, translation: nil, generative: nil))
         XCTAssertNotNil(control.suggestionAddress)
         XCTAssertNotNil(control.webLookup)
+        try preferenceOwner.core.send(
+            SetAppPreferences(workspaceID: preferenceOwner.family.workspaceID, preferences: enabled))
         let access = BrowserSpaceAccessController()
         let root = BrowserRootModel(
             browser: practice.browser, pages: practice.pages, chrome: practice.chrome, spaceAccess: access,

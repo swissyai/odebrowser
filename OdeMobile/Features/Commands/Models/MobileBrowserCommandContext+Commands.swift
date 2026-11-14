@@ -21,11 +21,17 @@ extension MobileBrowserCommandContext {
     /// iPadOS does not let a reader rebind these yet, so the launcher shows the
     /// command names without chords.
     @MainActor
-    var paletteRegistry: BrowserCommandPaletteCommandRegistry {
+    func paletteRegistry(feedback: (() -> Void)? = nil) -> BrowserCommandPaletteCommandRegistry {
         BrowserCommandPaletteCommandRegistry(
             commands: MobileBrowserCommand.all.filter { isOffered($0.command) && $0.isAvailable(self) }.map(\.command),
             dispatch: performFromPalette,
             canPerform: canPerformFromPalette,
+            applicationActions: feedback == nil ? [] : [BrowserFeedbackDraft.applicationActionName],
+            runApplicationAction: { name in
+                guard name == BrowserFeedbackDraft.applicationActionName, let feedback else { return false }
+                feedback()
+                return true
+            },
             switchSpace: selectSpace,
             reopenArchivedTab: reopenArchivedTab,
             copy: { UIPasteboard.general.string = $0 }

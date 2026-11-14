@@ -30,6 +30,98 @@ struct BrowserRootShell: View, BrowserChromeAnimating {
     // MARK: - Actions - Presentation
 
     var body: some View {
+        shellLayers
+            .overlayPreferenceValue(BrowserRootPageBoundsKey.self) { anchor in
+                GeometryReader { proxy in
+                    BrowserFocusPauseLayer(
+                        model: model, pageRect: anchor.map { proxy[$0] } ?? CGRect(origin: .zero, size: proxy.size))
+                }
+            }
+            .overlayPreferenceValue(BrowserRootPageBoundsKey.self) { anchor in
+                GeometryReader { proxy in
+                    let rect = anchor.map { proxy[$0] } ?? CGRect(origin: .zero, size: proxy.size)
+                    BrowserRootCommandPaletteLayer(
+                        model: model,
+                        shortcuts: shortcuts,
+                        spaceSettingsPresentation: spaceSettingsPresentation,
+                        commandSurfaceNamespace: commandSurfaceNamespace,
+                        contentInsets: BrowserChromeAppearance.contentInsets(
+                            for: rect, in: proxy.size, direction: layoutDirection
+                        )
+                    )
+                }
+            }
+            // One per-window host answers for every row and tile in this shell,
+            // so the sidebar reads it from here rather than being handed a value
+            // per tab through the tree between them.
+            .environment(\.browserFeedbackCaptureAllowed, !model.browser.isPrivateBrowsing)
+            .environment(downloadFeedback)
+            .environment(model.chrome.tabPreviewHover)
+            .environment(\.spacePagerPresentation, spacePagerPresentation)
+            .animation(chromeAnimation(OdeMotion.collection), value: sidebarOnRight)
+            .onChange(of: appearance.tabLayout, initial: true) { _, layout in
+                model.chrome.tabLayout = layout
+            }
+            .onChange(of: appearance.sidebarStyle, initial: true) { _, style in
+                model.chrome.sidebarStyle = style
+                model.chrome.iconSidebarHover.dismiss()
+            }
+            .animation(chromeAnimation(OdeMotion.sidebarMorph), value: appearance.sidebarStyle)
+            .animation(
+                chromeAnimation(
+                    model.isSidebarApproachingDock
+                        ? OdeMotion.sidebarDockAttachment
+                        : OdeMotion.sidebarMorph
+                ),
+                value: model.chrome.columnVisibility
+            )
+            .animation(
+                chromeAnimation(
+                    model.isSidebarApproachingDock
+                        ? OdeMotion.sidebarDockAttachment
+                        : model.isSidebarMorphing
+                            ? OdeMotion.sidebarMorph
+                            : OdeMotion.floatingPane
+                ),
+                value: model.isFloatingSidebarPresented
+            )
+            .animation(
+                chromeAnimation(OdeMotion.sidebarDockApproach),
+                value: model.isSidebarApproachingDock
+            )
+            .animation(
+                BrowserCommandSurfaceMorph.commandPaletteAnimation(reduceMotion: reduceMotion),
+                value: model.isCommandPaletteShown
+            )
+            .onChange(
+                of: model.chrome.utilityPresentation.isSidebarInteractionActive
+            ) { _, isActive in
+                model.sidebarInteractionChanged(
+                    isActive,
+                    reduceMotion: reduceMotion
+                )
+            }
+            .modifier(BrowserRootPermissionObserver(model: model, reduceMotion: reduceMotion))
+            .modifier(BrowserRootFullscreenExit(pages: model.pages, chrome: model.chrome))
+            .transaction { transaction in
+                if reduceMotion {
+                    transaction.disablesAnimations = true
+                }
+            }
+            .ignoresSafeArea(.container, edges: .top)
+            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+            .onChange(of: revealsSidebarOverFullscreenPage, initial: true) { _, reveals in
+                model.fullscreenSidebarRevealChanged(reveals)
+            }
+            .onChange(of: transientBrowsing.orphanedPeeks(in: model.browser), initial: true) {
+                transientBrowsing.reconcilePeeks(in: model.browser)
+            }
+            .onChange(of: transientBrowsing.peekRequests, initial: true) {
+                model.pages.retainPeekPages(for: transientBrowsing.peekRequests)
+            }
+    }
+
+    private var shellLayers: some View {
         ZStack(alignment: .leading) {
             BrowserRootFullscreenContent(
                 pages: model.pages,
@@ -75,93 +167,6 @@ struct BrowserRootShell: View, BrowserChromeAnimating {
             // Notices show over a fullscreen page too, so one posted there
             // is never lost.
             BrowserNoticeLayer(notices: model.chrome.notices)
-        }
-        .overlayPreferenceValue(BrowserRootPageBoundsKey.self) { anchor in
-            GeometryReader { proxy in
-                BrowserFocusPauseLayer(
-                    model: model, pageRect: anchor.map { proxy[$0] } ?? CGRect(origin: .zero, size: proxy.size))
-            }
-        }
-        .overlayPreferenceValue(BrowserRootPageBoundsKey.self) { anchor in
-            GeometryReader { proxy in
-                let rect = anchor.map { proxy[$0] } ?? CGRect(origin: .zero, size: proxy.size)
-                BrowserRootCommandPaletteLayer(
-                    model: model,
-                    shortcuts: shortcuts,
-                    spaceSettingsPresentation: spaceSettingsPresentation,
-                    commandSurfaceNamespace: commandSurfaceNamespace,
-                    contentInsets: BrowserChromeAppearance.contentInsets(
-                        for: rect, in: proxy.size, direction: layoutDirection
-                    )
-                )
-            }
-        }
-        // One per-window host answers for every row and tile in this shell,
-        // so the sidebar reads it from here rather than being handed a value
-        // per tab through the tree between them.
-        .environment(downloadFeedback)
-        .environment(model.chrome.tabPreviewHover)
-        .environment(\.spacePagerPresentation, spacePagerPresentation)
-        .animation(chromeAnimation(OdeMotion.collection), value: sidebarOnRight)
-        .onChange(of: appearance.tabLayout, initial: true) { _, layout in
-            model.chrome.tabLayout = layout
-        }
-        .onChange(of: appearance.sidebarStyle, initial: true) { _, style in
-            model.chrome.sidebarStyle = style
-            model.chrome.iconSidebarHover.dismiss()
-        }
-        .animation(chromeAnimation(OdeMotion.sidebarMorph), value: appearance.sidebarStyle)
-        .animation(
-            chromeAnimation(
-                model.isSidebarApproachingDock
-                    ? OdeMotion.sidebarDockAttachment
-                    : OdeMotion.sidebarMorph
-            ),
-            value: model.chrome.columnVisibility
-        )
-        .animation(
-            chromeAnimation(
-                model.isSidebarApproachingDock
-                    ? OdeMotion.sidebarDockAttachment
-                    : model.isSidebarMorphing
-                        ? OdeMotion.sidebarMorph
-                        : OdeMotion.floatingPane
-            ),
-            value: model.isFloatingSidebarPresented
-        )
-        .animation(
-            chromeAnimation(OdeMotion.sidebarDockApproach),
-            value: model.isSidebarApproachingDock
-        )
-        .animation(
-            BrowserCommandSurfaceMorph.commandPaletteAnimation(reduceMotion: reduceMotion),
-            value: model.isCommandPaletteShown
-        )
-        .onChange(
-            of: model.chrome.utilityPresentation.isSidebarInteractionActive
-        ) { _, isActive in
-            model.sidebarInteractionChanged(
-                isActive,
-                reduceMotion: reduceMotion
-            )
-        }
-        .modifier(BrowserRootPermissionObserver(model: model, reduceMotion: reduceMotion))
-        .modifier(BrowserRootFullscreenExit(pages: model.pages, chrome: model.chrome))
-        .transaction { transaction in
-            if reduceMotion {
-                transaction.disablesAnimations = true
-            }
-        }
-        .ignoresSafeArea(.container, edges: .top)
-        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-        .onChange(of: revealsSidebarOverFullscreenPage, initial: true) { _, reveals in
-            model.fullscreenSidebarRevealChanged(reveals)
-        }
-        .onChange(of: transientBrowsing.orphanedPeeks(in: model.browser), initial: true) {
-            transientBrowsing.reconcilePeeks(in: model.browser)
-        }
-        .onChange(of: transientBrowsing.peekRequests, initial: true) {
-            model.pages.retainPeekPages(for: transientBrowsing.peekRequests)
         }
     }
 

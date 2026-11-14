@@ -126,22 +126,7 @@ struct BrowserOnboardingReviewPage: View {
                     .frame(maxWidth: 420, alignment: .trailing)
             }
             if setupReview.source == .arc {
-                Toggle(
-                    "Bring Arc sign-ins into new Spaces",
-                    isOn: Binding(get: { flow.bringsSignIns }, set: { flow.setBringsSignIns($0) })
-                )
-                .toggleStyle(.checkbox)
-                .font(OdeTypography.sans(12, weight: .medium))
-                .disabled(!flow.supportsSignInCarry)
-                Text(
-                    flow.supportsSignIns
-                        ? String(
-                            localized:
-                                "Sign-ins aren't merged into existing Spaces. Some sites may still ask you to sign in.")
-                        : String(localized: "Sign-in import isn't available in this build.")
-                )
-                .font(OdeTypography.sans(12, weight: .medium))
-                .foregroundStyle(OdeBrandTheme.textDisplay.opacity(0.7))
+                signInImportChoice
             }
             if !setupReview.extensionInstalls.isEmpty {
                 Text(
@@ -161,6 +146,7 @@ struct BrowserOnboardingReviewPage: View {
                         flow.showsEmptyReviewSpaces.toggle()
                     }
                     .buttonStyle(.link)
+                    .odeControlPointer()
                     .font(OdeTypography.sans(12, weight: .medium))
                     .accessibilityIdentifier("onboarding-review-empty-spaces")
                 }
@@ -179,12 +165,34 @@ struct BrowserOnboardingReviewPage: View {
                             set: { flow.setBringsPasswords($0) })
                     )
                     .toggleStyle(.checkbox)
+                    .odeControlPointer()
                     .font(OdeTypography.sans(12, weight: .medium))
                     .fixedSize()
                     .accessibilityIdentifier("onboarding-review-passwords")
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private var signInImportChoice: some View {
+        Toggle(
+            "Bring Arc sign-ins into new Spaces",
+            isOn: Binding(get: { flow.bringsSignIns }, set: { flow.setBringsSignIns($0) })
+        )
+        .toggleStyle(.checkbox)
+        .odeControlPointer()
+        .font(OdeTypography.sans(12, weight: .medium))
+        .disabled(!flow.supportsSignInCarry)
+        Text(
+            flow.supportsSignIns
+                ? String(
+                    localized:
+                        "Sign-ins aren't merged into existing Spaces. Some sites may still ask you to sign in.")
+                : String(localized: "Sign-in import isn't available in this build.")
+        )
+        .font(OdeTypography.sans(12, weight: .medium))
+        .foregroundStyle(OdeBrandTheme.textDisplay.opacity(0.7))
     }
 
     /// Why the review brings no passwords, when the browser's could not be
@@ -313,6 +321,7 @@ private struct BrowserOnboardingReviewSpaceStepper: View {
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .odeControlPointer()
         .animation(OdeMotion.onboardingProgress.unlessReducingMotion(reduceMotion), value: selectedSpaceID)
         .help(item.sourceSpace.settings.name)
         .accessibilityLabel(item.sourceSpace.settings.name)

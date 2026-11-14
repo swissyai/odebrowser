@@ -21,6 +21,7 @@ struct BrowserOnboardingImportOutcomesButton: View {
                         Text("Import Results").font(.headline)
                         Spacer()
                         Button("Refresh", action: flow.reloadImportOutcomes)
+                            .odeControlPointer()
                     }
                     if let failure = flow.outcomeReadFailure {
                         Text(failure).foregroundStyle(SpaceRoleStyle.dangerText)

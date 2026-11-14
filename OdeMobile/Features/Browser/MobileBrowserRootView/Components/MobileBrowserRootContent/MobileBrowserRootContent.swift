@@ -18,6 +18,7 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
     @Environment(\.verticalSizeClass) var verticalSizeClass
     @Environment(\.scenePhase) private var scenePhase
     @State private var spacePagerPresentation = SpacePagerPresentation()
+    @State private var presentFeedback: ((BrowserFeedbackDraft, Bool) -> Void)?
     @State var isAddressEditing = false
     @State var addressFocusRequest = 0
     @State var commandPaletteMode: BrowserCommandPaletteMode?
@@ -213,7 +214,7 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
                         emptySelectionSourceAvailability: model.freshQueryAvailability,
                         isCommandPalettePresented:
                             commandPaletteMode != nil,
-                        commands: commandContext.paletteRegistry,
+                        commands: commandContext.paletteRegistry(feedback: openFeedback),
                         isCompact: true,
                         obscuresSystemSafeAreas:
                             presentation.usesEdgeToEdgeWebViewport(
@@ -318,7 +319,7 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
                         adjoinsSidebar:
                             navigation.regularSidebarIsDocked
                             && layout.reservesSidebarWidth,
-                        commands: commandContext.paletteRegistry
+                        commands: commandContext.paletteRegistry(feedback: openFeedback)
                     )
                     .overlay {
                         MobileTransientBrowsingOverlay(
@@ -349,7 +350,7 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
                     browser: browser,
                     space: browser.shownSpace,
                     selectedTabID: browser.shownTab?.id,
-                    commands: mobileBrowserCommandContext.paletteRegistry,
+                    commands: mobileBrowserCommandContext.paletteRegistry(feedback: openFeedback),
                     isSourceAvailable: model.paletteSourceAvailability,
                     selectTab: model.selectPaletteTab,
                     openURL: { source, url, mode, opening in
@@ -366,6 +367,7 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
             }
         )
         .background(MobileBrowserRootWindowObserver(model: model))
+        .background { BrowserPlatformFeedbackSource(action: $presentFeedback).frame(width: 0, height: 0) }
         .environment(model)
         .environment(\.spacePagerPresentation, spacePagerPresentation)
         .focusedSceneValue(
@@ -446,6 +448,14 @@ struct MobileBrowserRootContent: View, BrowserChromeAnimating {
             )
         ) { _ in
             keyboardEndFrame = .null
+        }
+    }
+
+    private func openFeedback() {
+        dismissCommandPalette()
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            presentFeedback?(.shared, !browser.isPrivateBrowsing)
         }
     }
 }

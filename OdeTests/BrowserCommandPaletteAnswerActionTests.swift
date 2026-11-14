@@ -180,6 +180,41 @@ final class BrowserCommandPaletteAnswerActionTests: XCTestCase {
         XCTAssertEqual(opened, ["general", "privacy", "settings"])
     }
 
+    func testDirectFeedbackKeepsTabOnNativeActionWithoutAnInvisibleGuideTarget() async throws {
+        for query in ["bug", "report bug", "feedback"] {
+            var dispatches = 0
+            var guides = 0
+            let registry = BrowserCommandPaletteCommandRegistry(
+                commands: [], applicationActions: [BrowserFeedbackDraft.applicationActionName],
+                runApplicationAction: { _ in
+                    dispatches += 1
+                    return true
+                })
+            let model = makeModel(
+                action: AnswerAction(applicationAction: BrowserFeedbackDraft.applicationActionName), registry: registry,
+                query: query, openGuide: { guides += 1 }, dismiss: {})
+            await model.waitForPendingResults()
+            let item = try XCTUnwrap(model.items.first { $0.row.answer != nil })
+            let card = try XCTUnwrap(item.row.answer)
+            XCTAssertEqual(BrowserCommandPaletteAnswerControl.offered(for: card, in: model), [.doIt])
+            model.pressTab()
+            model.pressReturn()
+            XCTAssertEqual(dispatches, 1)
+            XCTAssertEqual(guides, 0)
+            model.stop()
+        }
+        let registry = BrowserCommandPaletteCommandRegistry(
+            commands: [], applicationActions: [BrowserFeedbackDraft.applicationActionName],
+            runApplicationAction: { _ in true })
+        let help = makeModel(
+            action: AnswerAction(applicationAction: BrowserFeedbackDraft.applicationActionName), registry: registry,
+            query: "how do I report a bug", dismiss: {})
+        defer { help.stop() }
+        await help.waitForPendingResults()
+        let card = try XCTUnwrap(help.items.first?.row.answer)
+        XCTAssertEqual(BrowserCommandPaletteAnswerControl.offered(for: card, in: help), [.doIt, .readMore])
+    }
+
     func testStaleAnswerItemCannotDispatchAfterEditing() async throws {
         var dispatches = 0
         let registry = BrowserCommandPaletteCommandRegistry(
@@ -357,7 +392,7 @@ final class BrowserCommandPaletteAnswerActionTests: XCTestCase {
 
     private func makeModel(
         action: AnswerAction, registry: BrowserCommandPaletteCommandRegistry,
-        browser: BrowserStore? = nil, rowKind: PaletteRowKind = .answer,
+        browser: BrowserStore? = nil, rowKind: PaletteRowKind = .answer, query: String = "action fixture",
         sourceAvailable: @escaping () -> Bool = { true },
         openGuide: @escaping () -> Void = {}, dismiss: @escaping () -> Void
     ) -> BrowserCommandPaletteModel {
@@ -383,7 +418,7 @@ final class BrowserCommandPaletteAnswerActionTests: XCTestCase {
                 openGuide()
                 return true
             }, dismiss: dismiss)
-        model.query = "action fixture"
+        model.query = query
         return model
     }
 }

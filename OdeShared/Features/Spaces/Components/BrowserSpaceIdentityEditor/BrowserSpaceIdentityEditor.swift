@@ -28,6 +28,7 @@ struct BrowserSpaceIdentityEditor: View {
                     }
                 } label: {
                     Text("More options").frame(minHeight: OdeLayout.minimumHitTarget)
+                        .odeControlPointer()
                 }
             } else {
                 grainToggle
@@ -69,6 +70,7 @@ struct BrowserSpaceIdentityEditor: View {
 
     private var grainToggle: some View {
         Toggle("Grain", isOn: grain)
+            .odeControlPointer()
             .help("A fine grain over the Space's color, around the page and behind the sidebar")
             .accessibilityIdentifier("space-identity-grain")
     }

@@ -4,6 +4,9 @@
     "" : {
 
     },
+    " and %lld more" : {
+
+    },
     "·" : {
       "localizations" : {
         "ar" : {
@@ -253,6 +256,16 @@
         }
       }
     },
+    "%@ in %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ in %2$@"
+          }
+        }
+      }
+    },
     "%@ in %lld minutes" : {
       "comment" : "Accessibility label of a calendar tab's badge."
     },
@@ -275,6 +288,12 @@
           }
         }
       }
+    },
+    "%@ is available" : {
+
+    },
+    "%@ is paused" : {
+
     },
     "%@ is reserved by Ode for %@." : {
       "localizations" : {
@@ -426,6 +445,9 @@
         }
       }
     },
+    "%@ The Space was kept so you can try again." : {
+
+    },
     "%@ wants to open %@" : {
       "comment" : "The bar on a page whose agent asks to open a site the person hasn't allowed it."
     },
@@ -445,6 +467,16 @@
         }
       }
     },
+    "%@, %@, %lld new downloads" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, %3$lld new downloads"
+          }
+        }
+      }
+    },
     "%@, %lld of %lld" : {
 
     },
@@ -459,6 +491,16 @@
     },
     "%@, Shared" : {
       "comment" : "Accessibility value of a pinned tab another page shares; the value is its loaded state."
+    },
+    "%@, version %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, version %2$@"
+          }
+        }
+      }
     },
     "%@: %@" : {
       "localizations" : {
@@ -475,6 +517,17 @@
     },
     "%@. Press Tab to enter a query." : {
 
+    },
+    "%@'s passwords couldn't be read. Other selected data can still be imported; to retry passwords, quit %@ and import again." : {
+      "comment" : "Setup's review footer when the source browser's passwords could not be read.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@'s passwords couldn't be read. Other selected data can still be imported; to retry passwords, quit %2$@ and import again."
+          }
+        }
+      }
     },
     "%@/s" : {
 
@@ -616,6 +669,16 @@
     "%lld additional rejected rows are included in the final count." : {
 
     },
+    "%lld cookies copied; %lld expired and %lld unreadable cookies left out. Sites may still require sign-in." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld cookies copied; %2$lld expired and %3$lld unreadable cookies left out. Sites may still require sign-in."
+          }
+        }
+      }
+    },
     "%lld days ago" : {
       "localizations" : {
         "ar" : {
@@ -744,6 +807,12 @@
         }
       }
     },
+    "%lld existing sign-in databases were kept unchanged." : {
+
+    },
+    "%lld folders" : {
+      "comment" : "Folders a Space brings."
+    },
     "%lld Hidden" : {
 
     },
@@ -752,6 +821,9 @@
     },
     "%lld identical duplicates will be skipped." : {
 
+    },
+    "%lld import notices" : {
+      "comment" : "Number of import notices, not the number of data items omitted. Details explain each notice."
     },
     "%lld items selected" : {
 
@@ -768,6 +840,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld done"
           }
         }
       }
@@ -903,6 +985,25 @@
         }
       }
     },
+    "%lld passwords weren't imported. Existing passwords were kept." : {
+
+    },
+    "%lld pending, %lld installed, %lld failed, %lld removed destinations" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld pending, %2$lld installed, %3$lld failed, %4$lld removed destinations"
+          }
+        }
+      }
+    },
+    "%lld pinned" : {
+      "comment" : "Pinned tabs a Space brings."
+    },
+    "%lld pinned tabs move to a saved folder" : {
+      "comment" : "Shown under the tab count while reviewing a browser import."
+    },
     "%lld points" : {
       "localizations" : {
         "ar" : {
@@ -932,11 +1033,24 @@
         }
       }
     },
+    "%lld Spaces had no readable source sign-in database." : {
+
+    },
     "%lld symbols" : {
 
     },
     "%lld tabs" : {
-
+      "comment" : "Tab count shown while reviewing a browser import.\nTabs an imported Space brings."
+    },
+    "%lld tabs from %lld source Spaces; %lld passwords imported." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld tabs from %2$lld source Spaces; %3$lld passwords imported."
+          }
+        }
+      }
     },
     "%lld tabs selected" : {
       "comment" : "Selected tab count in the browser-import review.",
@@ -1616,6 +1730,12 @@
     "⌃⌘← / → focuses the previous or next card." : {
 
     },
+    "⌘S hides or shows the sidebar in Ode." : {
+
+    },
+    "⌘T finds tabs, searches and gives quick answers." : {
+
+    },
     "01 — Appearance" : {
       "localizations" : {
         "ar" : {
@@ -1629,10 +1749,19 @@
     "1 Day" : {
 
     },
+    "1 folder" : {
+      "comment" : "The one folder a Space brings."
+    },
+    "1 hour" : {
+
+    },
     "1 identical duplicate will be skipped." : {
 
     },
     "1 item selected" : {
+
+    },
+    "1 password" : {
 
     },
     "1 saved password can’t be read" : {
@@ -1649,6 +1778,7 @@
       }
     },
     "1 tab" : {
+      "comment" : "The one tab an imported Space brings.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1673,13 +1803,28 @@
     "02 — Your Spaces" : {
 
     },
+    "3 hours" : {
+
+    },
+    "5 minutes" : {
+
+    },
+    "15 minutes" : {
+
+    },
     "30 Days" : {
+
+    },
+    "30 minutes" : {
 
     },
     "90 Days" : {
 
     },
     "A field in this password file is too large to import safely." : {
+
+    },
+    "A fine grain over the Space's color, around the page and behind the sidebar" : {
 
     },
     "A firewall, filter, or device policy may also be responsible." : {
@@ -1776,6 +1921,9 @@
 
     },
     "A Space can hold up to %lld pinned tabs. Unpin tabs or select fewer tabs." : {
+
+    },
+    "A Space for everything" : {
 
     },
     "A Space has more pinned tabs than it can hold." : {
@@ -1904,6 +2052,9 @@
     "Ad Blocking" : {
 
     },
+    "Ad blocking is off." : {
+
+    },
     "Ad blocking settings stay on this device." : {
 
     },
@@ -1958,7 +2109,6 @@
 
     },
     "Add site" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2036,6 +2186,9 @@
 
     },
     "Address field preview" : {
+
+    },
+    "Address position" : {
 
     },
     "Address, %@" : {
@@ -2187,6 +2340,9 @@
         }
       }
     },
+    "agents MCP Claude Code Codex automation coding agents" : {
+
+    },
     "Agents never reach a private window, and see only the name of a locked Space." : {
 
     },
@@ -2226,6 +2382,9 @@
     },
     "All day" : {
       "comment" : "When a calendar event that lasts the day runs."
+    },
+    "All seven done" : {
+
     },
     "All Statuses" : {
 
@@ -2366,6 +2525,9 @@
     "Also show" : {
 
     },
+    "Always Allow" : {
+
+    },
     "Always List Results" : {
 
     },
@@ -2439,6 +2601,9 @@
     "Answers" : {
 
     },
+    "Answers arithmetic such as 24 * 7 below the search. Select the answer and press Return to copy it." : {
+
+    },
     "Answers arithmetic such as 24 * 7. Return copies the answer." : {
 
     },
@@ -2449,6 +2614,9 @@
 
     },
     "Antique Gold" : {
+
+    },
+    "App details" : {
 
     },
     "App details include only the version, build, and OS shown above. No browsing data or attachments." : {
@@ -2482,6 +2650,12 @@
     "Apple’s native web engine, with system integration and protected media playback." : {
 
     },
+    "Apple’s on-device model couldn’t answer this request." : {
+
+    },
+    "Apple’s on-device model is busy. Try again." : {
+
+    },
     "Apple’s on-device model is ready." : {
 
     },
@@ -2489,6 +2663,12 @@
 
     },
     "Apple’s on-device model isn’t available." : {
+
+    },
+    "Apple’s on-device model isn’t ready. Try again later." : {
+
+    },
+    "Apple’s on-device model uses only what you type. Search suggestions use your search service." : {
 
     },
     "Applies to %@" : {
@@ -2594,7 +2774,7 @@
       }
     },
     "Ask %@" : {
-
+      "comment" : "A palette row that asks an AI assistant."
     },
     "Ask after First" : {
 
@@ -2608,6 +2788,9 @@
           }
         }
       }
+    },
+    "Ask ChatGPT, Claude or Perplexity from the Command Bar" : {
+
     },
     "Ask each time" : {
       "localizations" : {
@@ -2798,6 +2981,9 @@
         }
       }
     },
+    "autocomplete completion typing URL" : {
+
+    },
     "Automatic" : {
 
     },
@@ -2807,13 +2993,28 @@
     "Automatic Downloads" : {
 
     },
+    "Automatic export" : {
+
+    },
+    "automatic export backup daily copy" : {
+
+    },
     "Automatic Pop-ups" : {
 
     },
     "Automatic pop-ups are blocked. Allow them for this site, then retry the action on the page." : {
 
     },
+    "Automatic screenshots are off in private browsing or when window privacy is unknown." : {
+
+    },
     "Automatic translation is unavailable. Tap Translate to try manually." : {
+
+    },
+    "Automatic update checks are off" : {
+
+    },
+    "Automatic Updates" : {
 
     },
     "Automatically cleaned" : {
@@ -2949,7 +3150,16 @@
     "Back to %@" : {
 
     },
+    "Back to Playing Tab" : {
+
+    },
     "Back to review" : {
+
+    },
+    "Back to Tab" : {
+
+    },
+    "Back to tabs" : {
 
     },
     "Background" : {
@@ -2975,7 +3185,6 @@
 
     },
     "Bands" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2996,7 +3205,6 @@
       }
     },
     "Banners" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3035,7 +3243,6 @@
       }
     },
     "Beetle" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3082,7 +3289,6 @@
 
     },
     "Bend" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3095,8 +3301,10 @@
     "Best Match" : {
 
     },
+    "beta nightly development stable channel" : {
+
+    },
     "Bird" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3125,6 +3333,9 @@
     "Block ads and trackers" : {
       "extractionState" : "stale"
     },
+    "Block ads and trackers on this site" : {
+
+    },
     "Block Element" : {
 
     },
@@ -3133,6 +3344,23 @@
     },
     "Block known trackers" : {
 
+    },
+    "Blocked %lld loads from %lld sites" : {
+      "comment" : "How much content blocking stopped on the page, with the number of loads and of sites.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Blocked %1$lld loads from %2$lld sites"
+          }
+        }
+      }
+    },
+    "Blocked %lld loads from 1 site" : {
+      "comment" : "Content blocking stopped several loads, all from one site."
+    },
+    "Blocked 1 load" : {
+      "comment" : "Content blocking stopped one load on the page."
     },
     "Blocked by Default" : {
 
@@ -3170,7 +3398,6 @@
 
     },
     "Book" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3216,6 +3443,9 @@
         }
       }
     },
+    "border frame ring borderless edge" : {
+
+    },
     "Bordered" : {
 
     },
@@ -3223,7 +3453,6 @@
 
     },
     "Bordure" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3265,6 +3494,44 @@
     },
     "Bring All to Front" : {
 
+    },
+    "Bring Arc sign-ins into new Spaces" : {
+
+    },
+    "Bring its tabs" : {
+
+    },
+    "Bring passwords for %@" : {
+
+    },
+    "Bring saved passwords" : {
+
+    },
+    "Bring this Space" : {
+
+    },
+    "Bring your tabs" : {
+
+    },
+    "Bringing %@ from %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bringing %1$@ from %2$@"
+          }
+        }
+      }
+    },
+    "Bringing %lld passwords and %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bringing %1$lld passwords and %2$@"
+          }
+        }
+      }
     },
     "Browser" : {
       "extractionState" : "stale",
@@ -3318,6 +3585,9 @@
     "Browsing and startup" : {
 
     },
+    "Build %@" : {
+
+    },
     "Building your review…" : {
 
     },
@@ -3348,6 +3618,9 @@
     "camera microphone site access history cookies data website cache clear browsing" : {
 
     },
+    "camera video calls permission access" : {
+
+    },
     "Cancel" : {
       "localizations" : {
         "ar" : {
@@ -3371,6 +3644,9 @@
     "Cancel Translation" : {
 
     },
+    "Cancelled before applying." : {
+
+    },
     "Canton" : {
       "extractionState" : "manual"
     },
@@ -3390,6 +3666,9 @@
 
     },
     "Capture Window" : {
+
+    },
+    "Captures only this Ode window." : {
 
     },
     "Castle" : {
@@ -3446,6 +3725,9 @@
           }
         }
       }
+    },
+    "Changes only this example." : {
+
     },
     "Channels" : {
 
@@ -3632,6 +3914,9 @@
     "Check your internet connection and try again." : {
 
     },
+    "Check your report and try again." : {
+
+    },
     "Checkered" : {
       "extractionState" : "manual"
     },
@@ -3672,6 +3957,12 @@
 
     },
     "Checking iCloud for an existing Ode setup…" : {
+
+    },
+    "Checking iCloud for an existing setup…" : {
+
+    },
+    "Checking Ode %@…" : {
 
     },
     "Checking passkey access" : {
@@ -3728,7 +4019,6 @@
       "extractionState" : "manual"
     },
     "Chevron" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3739,7 +4029,6 @@
       }
     },
     "Chief" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3750,6 +4039,9 @@
       }
     },
     "Choose a browser session to build an import review." : {
+
+    },
+    "Choose a browser to build an import review." : {
 
     },
     "Choose a name, an icon, and a color. Add more Spaces whenever you need them." : {
@@ -3817,6 +4109,9 @@
 
     },
     "Choose which copy to keep" : {
+
+    },
+    "Choose…" : {
 
     },
     "Chosen Space" : {
@@ -3992,13 +4287,25 @@
     "Click a shortcut, then press the new keys." : {
 
     },
+    "Click a side to choose which page the keyboard and address bar use." : {
+
+    },
+    "Click anything to leave it out." : {
+
+    },
     "Click anything you don’t want" : {
+
+    },
+    "Click Done. Ode saves it and applies it every time you visit the site in this Space." : {
 
     },
     "Click either card. Its border shows which page receives your keyboard commands." : {
 
     },
     "Click elements on the page to hide them" : {
+
+    },
+    "Click New Tab in the sidebar, or press Command-T." : {
 
     },
     "Click the favicon to return to the saved URL" : {
@@ -4047,6 +4354,9 @@
         }
       }
     },
+    "Close a tab in this Space to find it here later." : {
+
+    },
     "close archive current tab window" : {
       "localizations" : {
         "ar" : {
@@ -4066,6 +4376,9 @@
           }
         }
       }
+    },
+    "Close Duplicates" : {
+
     },
     "Close Find" : {
       "extractionState" : "stale",
@@ -4264,7 +4577,6 @@
       }
     },
     "Color" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4337,7 +4649,6 @@
 
     },
     "Compass" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4466,6 +4777,9 @@
     "Continue with ChatGPT to use your plan." : {
 
     },
+    "Continue without importing" : {
+
+    },
     "Contrast" : {
 
     },
@@ -4480,6 +4794,15 @@
       }
     },
     "Control your browsing data" : {
+
+    },
+    "Conversion" : {
+
+    },
+    "Conversions" : {
+
+    },
+    "Converts units, such as 5 km in miles, and tells the time elsewhere, such as time in Tokyo. Return copies the answer." : {
 
     },
     "Cookies" : {
@@ -4511,6 +4834,9 @@
 
     },
     "Copy Address" : {
+
+    },
+    "Copy answer" : {
 
     },
     "Copy as Markdown" : {
@@ -4584,6 +4910,15 @@
     "Copy Setup" : {
 
     },
+    "Copy Text" : {
+
+    },
+    "Copy Text includes the recipient and full report text." : {
+
+    },
+    "Copy Text includes the recipient and full report text. Screenshots are attached only through email." : {
+
+    },
     "Copy URL" : {
 
     },
@@ -4651,6 +4986,12 @@
         }
       }
     },
+    "Couldn’t confirm receipt. Retry or Copy Text." : {
+
+    },
+    "Couldn’t confirm receipt. Retrying may send a duplicate." : {
+
+    },
     "Couldn’t connect. Use Copy Setup instead." : {
 
     },
@@ -4660,10 +5001,19 @@
     "Couldn’t Delete Space" : {
 
     },
+    "Couldn’t download this extension." : {
+
+    },
     "Couldn’t identify the source language. Try “translate phrase from language to language”." : {
 
     },
+    "Couldn’t open email with the screenshot. Copy Text copies text only. Remove the screenshot to try an email link." : {
+
+    },
     "Couldn’t open email. Use Copy Report." : {
+
+    },
+    "Couldn’t open email. Use Copy Text." : {
 
     },
     "Couldn’t open language downloads." : {
@@ -4678,6 +5028,18 @@
           }
         }
       }
+    },
+    "Couldn’t prepare the screenshot. Remove it or retake." : {
+
+    },
+    "Couldn’t prepare the screenshot. Your report is kept; try Retake." : {
+
+    },
+    "Couldn’t save screenshot. Try again." : {
+
+    },
+    "Couldn’t send. Retry or Copy Text." : {
+
     },
     "Couldn’t update" : {
 
@@ -4694,6 +5056,9 @@
           }
         }
       }
+    },
+    "crash hang report diagnostics" : {
+
     },
     "Create folders and nested folders" : {
 
@@ -4891,7 +5256,6 @@
 
     },
     "Crescent" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4908,7 +5272,6 @@
 
     },
     "Cross" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4944,7 +5307,6 @@
       }
     },
     "Crown" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5040,6 +5402,9 @@
     "Daily builds. May be less reliable." : {
 
     },
+    "Daily Limit" : {
+
+    },
     "Dangerous Site" : {
 
     },
@@ -5060,7 +5425,7 @@
       }
     },
     "Default (%@)" : {
-
+      "comment" : "A Space follows the device's default search, named in parentheses."
     },
     "Default (Ask after First)" : {
 
@@ -5069,10 +5434,10 @@
 
     },
     "Default (Off)" : {
-
+      "comment" : "A Space follows the default search suggestions, which are off."
     },
     "Default (On)" : {
-
+      "comment" : "A Space follows the default search suggestions, which are on."
     },
     "Default browser" : {
       "localizations" : {
@@ -5105,6 +5470,9 @@
           }
         }
       }
+    },
+    "Defines words from the Mac's dictionary, such as define ephemeral. Nothing leaves your Mac." : {
+
     },
     "delete" : {
       "localizations" : {
@@ -5344,7 +5712,6 @@
       }
     },
     "Developer" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5396,7 +5763,6 @@
       }
     },
     "Diagonal" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5405,6 +5771,9 @@
           }
         }
       }
+    },
+    "Dictionary" : {
+
     },
     "Dim the page behind Peek" : {
 
@@ -5505,7 +5874,6 @@
       "extractionState" : "manual"
     },
     "Double Ring" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5548,6 +5916,9 @@
     "Download Actions" : {
 
     },
+    "Download an earlier version and restart into it" : {
+
+    },
     "Download and install" : {
       "localizations" : {
         "en" : {
@@ -5586,6 +5957,9 @@
           }
         }
       }
+    },
+    "Download future updates automatically. Updates already prepared can still install when you quit. Update checks stay unchanged." : {
+
     },
     "Download Languages" : {
 
@@ -5649,6 +6023,9 @@
     "Downloading" : {
 
     },
+    "Downloading Ode %@…" : {
+
+    },
     "Downloading update" : {
       "localizations" : {
         "en" : {
@@ -5701,6 +6078,9 @@
     "Drag a rectangle to copy that part of the page" : {
 
     },
+    "Drag a tab from the sidebar onto the page you're looking at." : {
+
+    },
     "Drag another tab here" : {
 
     },
@@ -5726,7 +6106,6 @@
 
     },
     "Dragon" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5748,7 +6127,6 @@
       }
     },
     "Drop" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5804,6 +6182,9 @@
         }
       }
     },
+    "Duplicates" : {
+
+    },
     "Each device keeps its own default search. Search suggestions send what you type to the search engine." : {
 
     },
@@ -5817,6 +6198,9 @@
 
     },
     "Each Space of %@’s group shows its own pinned tabs." : {
+
+    },
+    "Each takes a few seconds, right in this window. Ode checks them off as you do them." : {
 
     },
     "Eagle" : {
@@ -5920,6 +6304,15 @@
     "Email app opened" : {
 
     },
+    "Email links include text only. Save the screenshot to attach it." : {
+
+    },
+    "Email opened for review" : {
+
+    },
+    "Email request handed off" : {
+
+    },
     "Embedded password form from %@" : {
       "localizations" : {
         "ar" : {
@@ -5956,6 +6349,9 @@
 
     },
     "Enable search shortcut for %@" : {
+
+    },
+    "Enable suggestions" : {
 
     },
     "Enabled" : {
@@ -6014,6 +6410,9 @@
     "Error code" : {
 
     },
+    "Error domain" : {
+
+    },
     "Error Domain" : {
       "localizations" : {
         "ar" : {
@@ -6023,6 +6422,9 @@
           }
         }
       }
+    },
+    "Error number" : {
+
     },
     "Error Number" : {
       "localizations" : {
@@ -6066,6 +6468,9 @@
     "Every Space of %@’s group shows %@’s pinned tabs." : {
 
     },
+    "Everyday moves" : {
+
+    },
     "Everyday Use" : {
       "localizations" : {
         "ar" : {
@@ -6082,10 +6487,16 @@
     "Exact Words" : {
 
     },
+    "Example Command Bar query" : {
+
+    },
     "Example folder" : {
 
     },
     "Example page" : {
+
+    },
+    "Example Spaces" : {
 
     },
     "example.com" : {
@@ -6167,6 +6578,9 @@
         }
       }
     },
+    "Export automatically" : {
+
+    },
     "Export Bookmarks as HTML…" : {
       "localizations" : {
         "ar" : {
@@ -6186,6 +6600,9 @@
           }
         }
       }
+    },
+    "Export Now" : {
+
     },
     "Export Passwords as Plaintext?" : {
       "localizations" : {
@@ -6227,7 +6644,13 @@
         }
       }
     },
+    "Exporting…" : {
+
+    },
     "Exports never include passwords, cookies, website data or extensions." : {
+
+    },
+    "Exports wait until every Space is unlocked." : {
 
     },
     "Extension Settings" : {
@@ -6267,6 +6690,9 @@
       }
     },
     "extensions add-ons Chrome Web Store install remove" : {
+
+    },
+    "Extensions can’t be changed in a private window." : {
 
     },
     "extensions permissions Chromium Chrome Web Store install copies Spaces" : {
@@ -6327,8 +6753,13 @@
     "Feedback and support" : {
 
     },
+    "Feedback received" : {
+
+    },
+    "Feedback received. Your edits are kept." : {
+
+    },
     "Fess" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6353,6 +6784,12 @@
 
     },
     "Files & Folders" : {
+
+    },
+    "files folders download folder permission access" : {
+
+    },
+    "Fills the address without opening it." : {
 
     },
     "Fills the address without opening it. Press Tab or Right Arrow to accept." : {
@@ -6410,6 +6847,12 @@
     "Find" : {
 
     },
+    "Find a tab" : {
+
+    },
+    "Find an example tab" : {
+
+    },
     "Find in Page" : {
       "localizations" : {
         "ar" : {
@@ -6424,6 +6867,9 @@
 
     },
     "Find Previous" : {
+
+    },
+    "Find tabs, search and get quick answers." : {
 
     },
     "Find…" : {
@@ -6445,6 +6891,12 @@
         }
       }
     },
+    "Finishes setup. The examples are optional." : {
+
+    },
+    "Finishes setup. Trying the example is optional." : {
+
+    },
     "Fire" : {
 
     },
@@ -6462,7 +6914,6 @@
 
     },
     "Fish" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6475,11 +6926,13 @@
     "Fit Space icons to sidebar" : {
 
     },
+    "Five More Minutes" : {
+
+    },
     "Flags" : {
 
     },
     "Flame" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6507,7 +6960,6 @@
 
     },
     "Flower" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6516,6 +6968,12 @@
           }
         }
       }
+    },
+    "focus background new tab open links" : {
+
+    },
+    "focus distraction distractions feed feeds recommendations shorts hide quiet youtube reddit instagram twitter x" : {
+
     },
     "Focus follows pointer" : {
 
@@ -6529,6 +6987,12 @@
           }
         }
       }
+    },
+    "Focus off" : {
+
+    },
+    "Focus on: feeds hidden on YouTube, Reddit, X and Instagram" : {
+
     },
     "Focus Previous Split Card" : {
       "localizations" : {
@@ -6644,6 +7108,9 @@
     "Forget" : {
 
     },
+    "forget reset learned results" : {
+
+    },
     "Forgetting an agent disconnects it. Ode asks again the next time it connects." : {
       "localizations" : {
         "en" : {
@@ -6731,7 +7198,6 @@
       }
     },
     "Frond" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6769,6 +7235,9 @@
     "Getting Started opens next with practice for tabs, folders, and Split View." : {
 
     },
+    "Getting Started opens next." : {
+
+    },
     "Getting Started with Ode" : {
       "localizations" : {
         "ar" : {
@@ -6784,6 +7253,9 @@
           }
         }
       }
+    },
+    "Give each part of your day its own tabs and identity." : {
+
     },
     "Glow" : {
 
@@ -6801,6 +7273,15 @@
         }
       }
     },
+    "Go back to an earlier version" : {
+
+    },
+    "Go back to an earlier version…" : {
+
+    },
+    "Go back to Ode %@" : {
+
+    },
     "Go to Shared Tab" : {
       "comment" : "Shows the tab this tab's page shares."
     },
@@ -6809,6 +7290,12 @@
     },
     "Go to the other tab" : {
       "comment" : "Tooltip on a sharing bar's message that shows the tab at the other end."
+    },
+    "Goes back to the tab that plays" : {
+
+    },
+    "Going back to an earlier version needs a copy of Ode signed for release." : {
+
     },
     "Gold" : {
 
@@ -6827,6 +7314,9 @@
       }
     },
     "Gradient angle" : {
+
+    },
+    "Grain" : {
 
     },
     "graphics acceleration" : {
@@ -6862,6 +7352,9 @@
     "Group History" : {
 
     },
+    "Grouping tabs…" : {
+
+    },
     "Gules" : {
 
     },
@@ -6869,7 +7362,6 @@
 
     },
     "Hammer" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6880,7 +7372,6 @@
       }
     },
     "Hare" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6896,6 +7387,9 @@
     "Help" : {
 
     },
+    "Heraldic" : {
+
+    },
     "Heraldry" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6908,7 +7402,6 @@
       }
     },
     "Hexagon" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6942,6 +7435,9 @@
           }
         }
       }
+    },
+    "Hide Empty Spaces" : {
+
     },
     "Hide nested tabs" : {
 
@@ -6992,6 +7488,9 @@
       "comment" : "Help and accessibility label of the button that hides the sidebar's finished recent downloads."
     },
     "hide remove ads annoyance picker filter" : {
+
+    },
+    "Hide sidebar" : {
 
     },
     "Hide Sidebar" : {
@@ -7065,6 +7564,9 @@
     "history entries" : {
 
     },
+    "History exported." : {
+
+    },
     "History in other Spaces is not affected." : {
       "localizations" : {
         "ar" : {
@@ -7099,7 +7601,6 @@
       }
     },
     "Horizontal" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -7109,8 +7610,10 @@
         }
       }
     },
+    "horizontal tabs top tab bar placement layout" : {
+
+    },
     "Horn" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -7132,7 +7635,6 @@
       }
     },
     "Hound" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -7223,6 +7725,12 @@
     "iCloud Sync" : {
 
     },
+    "iCloud sync couldn’t be reached. You can set up this Mac without it." : {
+
+    },
+    "iCloud sync isn’t available in this build. You can still set up and browse on this Mac." : {
+
+    },
     "iCloud synchronization on" : {
       "localizations" : {
         "ar" : {
@@ -7275,6 +7783,9 @@
         }
       }
     },
+    "If macOS asks, use your Mac's login password. Allow grants access now; Always Allow can also grant future access. Deny leaves the key locked." : {
+
+    },
     "If the address is correct, check your DNS or VPN settings." : {
       "localizations" : {
         "ar" : {
@@ -7296,7 +7807,7 @@
       }
     },
     "Import" : {
-
+      "comment" : "Button that imports the reviewed data from the final browser."
     },
     "IMPORT" : {
 
@@ -7321,6 +7832,12 @@
     "Import and export" : {
 
     },
+    "Import applied, but its result couldn't be saved. Check your Spaces before retrying." : {
+
+    },
+    "import Arc Chrome Safari Firefox Brave Edge Zen Dia move switch" : {
+
+    },
     "Import Browser Data…" : {
       "localizations" : {
         "ar" : {
@@ -7330,6 +7847,12 @@
           }
         }
       }
+    },
+    "Import cancelled." : {
+
+    },
+    "Import didn't complete. Check your Spaces before retrying." : {
+
     },
     "import export backup portability data records" : {
       "localizations" : {
@@ -7341,13 +7864,22 @@
         }
       }
     },
+    "import export backup portability data records automatic export folder" : {
+
+    },
     "Import from %@" : {
+
+    },
+    "Import from Another Browser" : {
 
     },
     "Import from Another Browser…" : {
 
     },
     "Import No Longer Available" : {
+
+    },
+    "Import notices" : {
 
     },
     "Import on Mac" : {
@@ -7360,6 +7892,12 @@
 
     },
     "Import Passwords…" : {
+
+    },
+    "Import Results" : {
+
+    },
+    "Import results couldn't be read. Try again." : {
 
     },
     "Import Reviewed Data" : {
@@ -7404,6 +7942,9 @@
           }
         }
       }
+    },
+    "Import Without Passwords or Sign-ins" : {
+
     },
     "Import, export, and runtime" : {
       "localizations" : {
@@ -7783,6 +8324,28 @@
         }
       }
     },
+    "Imported %lld reviewed tabs and %lld passwords from %lld source Spaces." : {
+      "comment" : "Browser-import completion summary. Counts are imported tabs, imported passwords, then reviewed source Spaces.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Imported %1$lld reviewed tabs and %2$lld passwords from %3$lld source Spaces."
+          }
+        }
+      }
+    },
+    "Imported %lld reviewed tabs from %lld source Spaces." : {
+      "comment" : "Browser-import completion summary. The first count is imported tabs; the second is reviewed source Spaces.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Imported %1$lld reviewed tabs from %2$lld source Spaces."
+          }
+        }
+      }
+    },
     "Imported %lld Spaces, %lld tabs, and %lld history entries." : {
       "localizations" : {
         "ar" : {
@@ -7826,6 +8389,9 @@
     "Imported password" : {
 
     },
+    "Imported with items left out or unconfirmed." : {
+
+    },
     "Imported Zen Space %lld" : {
       "localizations" : {
         "ar" : {
@@ -7845,6 +8411,12 @@
           }
         }
       }
+    },
+    "Imported. Extensions are still pending." : {
+
+    },
+    "Importing from %@" : {
+
     },
     "Importing from another browser needs Ode for Mac. Imported Spaces sync here with iCloud." : {
       "localizations" : {
@@ -7899,6 +8471,9 @@
     },
     "Include this Space" : {
       "extractionState" : "stale"
+    },
+    "Include version, build, and OS" : {
+
     },
     "Included" : {
 
@@ -7962,6 +8537,12 @@
     "Install in other Spaces…" : {
 
     },
+    "install update download" : {
+
+    },
+    "Installation canceled." : {
+
+    },
     "Installed" : {
 
     },
@@ -7987,6 +8568,12 @@
     "Interactive sidebar preview" : {
 
     },
+    "Interrupted or still in progress. Check your Spaces before retrying; some data may already have been applied." : {
+
+    },
+    "Into" : {
+
+    },
     "Into Ode" : {
       "localizations" : {
         "en" : {
@@ -7998,7 +8585,6 @@
       }
     },
     "Iron" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8102,13 +8688,25 @@
     "Its tabs stay in this section, and any nested folders move up one level." : {
 
     },
+    "JavaScript scripts" : {
+
+    },
     "Jump to Selection" : {
 
     },
     "Keep" : {
 
     },
+    "Keep a favorite close" : {
+
+    },
+    "Keep a tab for later" : {
+
+    },
     "Keep Browsing" : {
+
+    },
+    "Keep current layout" : {
 
     },
     "Keep current password" : {
@@ -8150,10 +8748,19 @@
         }
       }
     },
+    "Keep useful tabs together" : {
+
+    },
     "Keep work and personal tabs in separate Spaces." : {
 
     },
     "Keep work, personal browsing, and projects in separate Spaces." : {
+
+    },
+    "Keep work, personal browsing, and projects organized." : {
+
+    },
+    "Keep your tabs nearby. Hide them when you want more room." : {
 
     },
     "Keeps the Group" : {
@@ -8170,7 +8777,6 @@
       }
     },
     "Key" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8199,6 +8805,9 @@
           }
         }
       }
+    },
+    "Keys %@" : {
+
     },
     "Keywords" : {
 
@@ -8267,6 +8876,9 @@
         }
       }
     },
+    "Last exported %@." : {
+
+    },
     "Last Hour" : {
 
     },
@@ -8294,7 +8906,6 @@
 
     },
     "Laurel" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8308,7 +8919,6 @@
 
     },
     "Leaf" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8347,6 +8957,19 @@
         }
       }
     },
+    "Left out: %@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Left out: %1$@%2$@"
+          }
+        }
+      }
+    },
+    "Left sidebar" : {
+
+    },
     "Let “%@” delete history?" : {
 
     },
@@ -8368,6 +8991,9 @@
     "Letter" : {
 
     },
+    "Library" : {
+
+    },
     "License unavailable. Download the notices from Source Code." : {
       "comment" : "Shown instead of an unavailable bundled legal document."
     },
@@ -8384,7 +9010,6 @@
 
     },
     "Lightning" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8420,8 +9045,10 @@
         }
       }
     },
+    "links from other apps external links default Quick Window" : {
+
+    },
     "Lion" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8470,6 +9097,9 @@
     "Loading Peek" : {
 
     },
+    "Loading stage" : {
+
+    },
     "Loading Stage" : {
       "localizations" : {
         "ar" : {
@@ -8489,6 +9119,9 @@
     "Local pages are localhost, private network addresses, .local, .test and files." : {
 
     },
+    "Local practice" : {
+
+    },
     "Local records" : {
       "localizations" : {
         "ar" : {
@@ -8500,6 +9133,9 @@
       }
     },
     "Location" : {
+
+    },
+    "location geolocation permission access" : {
 
     },
     "Lock" : {
@@ -8530,11 +9166,13 @@
     "look and feel theme accent color transparency page zoom percentage sidebar left right borderless window fullscreen layout interface animation motion page cards folder highlights counts borders preview density spacing padding scale icons tabs on top top tabs horizontal tabs tab bar compact comfortable hover edge" : {
 
     },
+    "look and feel theme accent color transparency page zoom percentage sidebar left right borderless window fullscreen layout interface animation motion page cards folder highlights counts borders preview density spacing padding scale icons tabs on top top tabs horizontal tabs tab bar compact comfortable hover edge tree tabs nested tabs nest indent space size fit automatic" : {
+
+    },
     "Looks through other browsers’ data on this Mac" : {
 
     },
     "Lozenge" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8546,6 +9184,9 @@
     },
     "Lozenges" : {
       "extractionState" : "manual"
+    },
+    "macOS couldn’t capture this Ode window. No desktop access was requested. Your report is kept; try Retake." : {
+
     },
     "macOS has not returned a location decision. Respond to its prompt, or open System Settings > Privacy & Security > Location Services to allow Ode." : {
       "localizations" : {
@@ -8563,6 +9204,12 @@
     "Make Default" : {
 
     },
+    "make default links open with" : {
+
+    },
+    "Make it yours" : {
+
+    },
     "Make Lower Case" : {
 
     },
@@ -8575,6 +9222,9 @@
           }
         }
       }
+    },
+    "Make room for the page" : {
+
     },
     "Make Sub-Space" : {
 
@@ -8677,7 +9327,6 @@
       }
     },
     "Match found" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8700,7 +9349,6 @@
 
     },
     "Meadow" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8710,17 +9358,23 @@
         }
       }
     },
+    "Media" : {
+      "comment" : "A playing tab's name when the tab has none."
+    },
     "Meeting notes" : {
 
     },
     "Microphone" : {
 
     },
+    "microphone audio recording permission access" : {
+
+    },
     "Midnight" : {
 
     },
     "Minimize" : {
-
+      "comment" : "Accessibility label for a sharing bar's minimize button."
     },
     "Model" : {
 
@@ -8732,6 +9386,9 @@
 
     },
     "Moderate" : {
+
+    },
+    "Modern" : {
 
     },
     "Monogram" : {
@@ -8764,6 +9421,9 @@
     "More Languages" : {
 
     },
+    "More options" : {
+
+    },
     "Moss" : {
 
     },
@@ -8790,7 +9450,6 @@
 
     },
     "Mountain" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8817,6 +9476,9 @@
 
     },
     "Move Left" : {
+
+    },
+    "Move Ode to the Applications folder to go back to an earlier version." : {
 
     },
     "Move Ode to your Applications folder to connect agents." : {
@@ -8948,6 +9610,9 @@
         }
       }
     },
+    "name icon symbol emoji letter color colors theme background sidebar gradient accent" : {
+
+    },
     "Name your Space" : {
 
     },
@@ -8966,6 +9631,9 @@
           }
         }
       }
+    },
+    "Navigation" : {
+
     },
     "Navy" : {
 
@@ -9152,6 +9820,9 @@
         }
       }
     },
+    "new window Space start" : {
+
+    },
     "New York" : {
 
     },
@@ -9180,6 +9851,9 @@
           }
         }
       }
+    },
+    "next match search again" : {
+
     },
     "Next Space" : {
       "localizations" : {
@@ -9239,6 +9913,9 @@
     "No agents yet" : {
 
     },
+    "No archived tabs" : {
+
+    },
     "No Archived Tabs" : {
       "localizations" : {
         "ar" : {
@@ -9282,6 +9959,9 @@
         }
       }
     },
+    "No downloads yet" : {
+
+    },
     "No Earlier Pages" : {
 
     },
@@ -9319,6 +9999,9 @@
         }
       }
     },
+    "No history yet" : {
+
+    },
     "No items match the selected filter." : {
       "localizations" : {
         "ar" : {
@@ -9336,7 +10019,6 @@
 
     },
     "No match" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9353,6 +10035,9 @@
 
     },
     "No Matching Feature Flags" : {
+
+    },
+    "No matching tabs." : {
 
     },
     "No more events" : {
@@ -9428,6 +10113,9 @@
     "No saved permissions" : {
 
     },
+    "No shortcut assigned" : {
+
+    },
     "No Sites Found" : {
 
     },
@@ -9492,6 +10180,9 @@
 
     },
     "Not configured" : {
+
+    },
+    "Not exported yet." : {
 
     },
     "Not included" : {
@@ -9582,10 +10273,22 @@
     "Notes why each result is there, such as “Often visited” or “Already open”." : {
 
     },
+    "Nothing blocked on this page so far." : {
+
+    },
+    "Nothing is sent until you send from your email app." : {
+
+    },
     "Nothing to Review" : {
 
     },
+    "Nothing to Tidy" : {
+
+    },
     "Notifications" : {
+
+    },
+    "notifications alerts permission access" : {
 
     },
     "Notifications are allowed, but banners are off in System Settings." : {
@@ -9597,8 +10300,10 @@
     "Now Playing" : {
 
     },
+    "Now Playing, %@" : {
+
+    },
     "Oak" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9627,8 +10332,26 @@
         }
       }
     },
+    "Ode %@" : {
+
+    },
     "Ode %@ (%@)\nOS %@" : {
       "comment" : "Optional feedback context shown before inclusion: app version, build, OS version. No identifiers or browsing data."
+    },
+    "Ode %@ can't open the Spaces and tabs this version saved. It will ask you to update before it opens them. Nothing is deleted." : {
+
+    },
+    "Ode %@ could not be checked." : {
+
+    },
+    "Ode %@ is no longer available." : {
+
+    },
+    "Ode %@ is not signed and notarized like this copy, so Ode won't install it." : {
+
+    },
+    "Ode %@ is ready" : {
+
     },
     "Ode %@ sidebar after import" : {
       "localizations" : {
@@ -9639,6 +10362,9 @@
           }
         }
       }
+    },
+    "Ode %@ uses an older web engine. Some sites may sign you out until you update again." : {
+
     },
     "Ode Browser" : {
       "localizations" : {
@@ -9702,10 +10428,19 @@
         }
       }
     },
+    "Ode can't replace itself in %@. Install it where your account can change it." : {
+
+    },
     "Ode can’t show or fill them. This cannot be undone." : {
 
     },
+    "Ode can't start this from here. Follow the steps in a window with a page open." : {
+
+    },
     "Ode cannot hold more import data for review. Finish or cancel pending imports, or select fewer profiles." : {
+
+    },
+    "Ode checks for updates automatically" : {
 
     },
     "Ode closed without being asked" : {
@@ -9728,6 +10463,9 @@
         }
       }
     },
+    "Ode could not prepare the earlier version (%@)." : {
+
+    },
     "Ode could not read %@ data there. Try Allow Access again, or choose the %@ data folder if it moved." : {
       "comment" : "Browser-import error. Both variables are the source browser name.",
       "localizations" : {
@@ -9744,6 +10482,9 @@
           }
         }
       }
+    },
+    "Ode could not read this browser’s Keychain key. Allow access, or import without passwords and sign-ins." : {
+
     },
     "Ode could not read this file." : {
       "localizations" : {
@@ -9802,6 +10543,9 @@
           }
         }
       }
+    },
+    "Ode could not write to the export folder." : {
+
     },
     "Ode couldn’t apply the latest changes from iCloud." : {
       "localizations" : {
@@ -9898,6 +10642,9 @@
       }
     },
     "Ode couldn’t finish the import or restore the original Keychain inventory. Review this Space before trying again." : {
+
+    },
+    "Ode couldn’t finish. Try again." : {
 
     },
     "Ode couldn’t import these passwords. This Space’s passwords are unchanged." : {
@@ -10130,6 +10877,12 @@
         }
       }
     },
+    "Ode has no room to download into." : {
+
+    },
+    "Ode has no update feed to read." : {
+
+    },
     "Ode Help" : {
 
     },
@@ -10210,6 +10963,12 @@
         }
       }
     },
+    "Ode isn’t affiliated with or endorsed by Crest or Paul Davis." : {
+
+    },
+    "Ode isn’t blocking anything on this site." : {
+
+    },
     "Ode locates the browser data folder and asks for one-time read access" : {
       "localizations" : {
         "en" : {
@@ -10229,6 +10988,9 @@
           }
         }
       }
+    },
+    "Ode needs %@'s Keychain key for the saved passwords you selected and, from Arc only, any selected sign-ins into new Spaces." : {
+
     },
     "Ode needs at least one Space." : {
       "localizations" : {
@@ -10284,6 +11046,9 @@
           }
         }
       }
+    },
+    "Ode quits, puts Ode %@ in its place and opens again." : {
+
     },
     "Ode reads its data when you continue, which may ask for access" : {
       "localizations" : {
@@ -10402,6 +11167,9 @@
         }
       }
     },
+    "Ode stayed open, so it is still %@. Go back when you are ready." : {
+
+    },
     "Ode still isn't starting" : {
       "localizations" : {
         "en" : {
@@ -10451,6 +11219,12 @@
           }
         }
       }
+    },
+    "Ode Update Available" : {
+
+    },
+    "Ode wants to use your confidential information stored in “%@ Safe Storage” in your keychain." : {
+
     },
     "Ode will download all synced Spaces and browser content and merge them with this device. Newer changes and synced deletions will be applied. Content found only on this device will be kept unless it was explicitly deleted on another device." : {
       "localizations" : {
@@ -10524,6 +11298,9 @@
         }
       }
     },
+    "Ode writes your Spaces, tabs, bookmarks and history to your chosen folder every day, and again within an hour of a change to your Spaces, pinned tabs or folders. Other apps can read the files: JSON, HTML bookmarks and JSON Lines. The last 7 exports are kept. Passwords and cookies are never written." : {
+
+    },
     "odebrowser.com" : {
 
     },
@@ -10595,7 +11372,6 @@
 
     },
     "One" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -10669,6 +11445,9 @@
       }
     },
     "Open Email" : {
+
+    },
+    "Open Email Link" : {
 
     },
     "Open Emoji Picker" : {
@@ -10758,6 +11537,9 @@
     "Open in Current Space" : {
 
     },
+    "Open in New Space" : {
+
+    },
     "Open in New Tab" : {
 
     },
@@ -10774,6 +11556,9 @@
 
     },
     "Open Last Active Tab" : {
+
+    },
+    "Open Library" : {
 
     },
     "Open Link in" : {
@@ -10795,6 +11580,9 @@
           }
         }
       }
+    },
+    "Open Link in New Quick Window" : {
+
     },
     "Open Link in Peek" : {
 
@@ -10902,6 +11690,18 @@
     "Open tabs cleared" : {
 
     },
+    "Open the Command Bar" : {
+
+    },
+    "Open the Command Bar and type a site's shortcut, such as yt for YouTube or w for Wikipedia." : {
+
+    },
+    "Open the Command Bar and type the assistant's name, such as chatgpt, claude or perplexity." : {
+
+    },
+    "Open the site and choose Page > Boost This Site." : {
+
+    },
     "Open This Page in" : {
       "localizations" : {
         "ar" : {
@@ -10911,6 +11711,9 @@
           }
         }
       }
+    },
+    "Open Top Result" : {
+
     },
     "Open Translate…" : {
 
@@ -10994,6 +11797,9 @@
     "Opens in" : {
 
     },
+    "Opens Ode without applying unfinished setup choices. Imported data is kept." : {
+
+    },
     "Opens the address field for editing" : {
       "localizations" : {
         "ar" : {
@@ -11014,6 +11820,9 @@
         }
       }
     },
+    "Opens the feedback report" : {
+
+    },
     "Opens the guide in a new tab" : {
 
     },
@@ -11033,10 +11842,22 @@
     "Option-click" : {
 
     },
+    "Option-click a link, or right-click it and choose Open Link in Peek." : {
+
+    },
     "Optional" : {
 
     },
     "Or" : {
+
+    },
+    "Or click the Space's icon at the bottom of the sidebar." : {
+
+    },
+    "Or right-click a tab in the sidebar and choose Split with Current Tab." : {
+
+    },
+    "Or swipe left or right with two fingers over the sidebar." : {
 
     },
     "Orange" : {
@@ -11156,7 +11977,6 @@
 
     },
     "Pale" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11198,6 +12018,9 @@
     "Passkeys can appear in every Space." : {
 
     },
+    "passkeys sign in system providers permission access" : {
+
+    },
     "Password" : {
       "localizations" : {
         "ar" : {
@@ -11224,6 +12047,16 @@
     "Password Import Finished" : {
 
     },
+    "Password import finished: %lld imported, %lld skipped, %lld rejected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Password import finished: %1$lld imported, %2$lld skipped, %3$lld rejected"
+          }
+        }
+      }
+    },
     "Password to keep" : {
 
     },
@@ -11249,6 +12082,9 @@
           }
         }
       }
+    },
+    "Passwords couldn't be read. Close the source browser and import again to retry." : {
+
     },
     "passwords credentials autofill iCloud Keychain import export" : {
 
@@ -11285,6 +12121,9 @@
       }
     },
     "Passwords remain encrypted in this Space’s Keychain and never appear in logs, notifications, or diagnostics." : {
+
+    },
+    "Passwords stay in %@" : {
 
     },
     "Past Month" : {
@@ -11333,7 +12172,6 @@
 
     },
     "Pattern" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11353,7 +12191,6 @@
 
     },
     "Paw" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11401,6 +12238,9 @@
 
     },
     "Peek Unavailable" : {
+
+    },
+    "Pending extensions wait for their Spaces to be unlocked and a browser window to be available. Refresh to check their results." : {
 
     },
     "Pending uploads" : {
@@ -11483,6 +12323,9 @@
 
     },
     "Phone" : {
+
+    },
+    "Pick your look" : {
 
     },
     "Picture in Picture when switching tabs" : {
@@ -11603,11 +12446,16 @@
     "Pinned tabs live at the top and are for your everyday apps. Right-click Gmail and choose Pin Tab, or use the button below." : {
 
     },
+    "Pinned. Gmail is now at the top." : {
+
+    },
     "Pins" : {
 
     },
+    "PiP video floating player" : {
+
+    },
     "Plain" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11626,6 +12474,9 @@
     "Play and culture" : {
 
     },
+    "Playing" : {
+
+    },
     "Playing Audio" : {
       "comment" : "A tab's mark while its page plays sound."
     },
@@ -11642,6 +12493,9 @@
 
     },
     "Popular" : {
+
+    },
+    "Position" : {
 
     },
     "Practice" : {
@@ -11697,6 +12551,9 @@
         }
       }
     },
+    "Preparing history…" : {
+
+    },
     "Preparing translation…" : {
 
     },
@@ -11726,10 +12583,31 @@
     "Press %@ Again to %@" : {
 
     },
+    "Press Control-1 to Control-9 to jump to a Space by its place, as in Arc." : {
+
+    },
+    "Press Escape to close it, or click Open In… to keep it as a tab." : {
+
+    },
+    "Press Return." : {
+
+    },
     "Press Tab to %@" : {
 
     },
     "Press Tab, enter your query, then press Return." : {
+
+    },
+    "Press Tab." : {
+
+    },
+    "Press Tab. The site's name appears beside the field." : {
+
+    },
+    "Preview a link without leaving the page" : {
+
+    },
+    "Preview of %@ in an Ode window" : {
 
     },
     "Preview open" : {
@@ -11757,6 +12635,9 @@
     "Preview Unavailable" : {
 
     },
+    "Previews recognized questions and rewrites using Apple’s on-device model, without sending or learning them. Ordinary search suggestions still use your search service. Answers may be inaccurate or out of date." : {
+
+    },
     "Previous" : {
 
     },
@@ -11770,6 +12651,12 @@
           }
         }
       }
+    },
+    "previous match search again back" : {
+
+    },
+    "Previous screenshot kept." : {
+
     },
     "Previous Space" : {
       "localizations" : {
@@ -11870,6 +12757,9 @@
         }
       }
     },
+    "Private · On device" : {
+
+    },
     "Private Browsing" : {
       "localizations" : {
         "ar" : {
@@ -11879,6 +12769,9 @@
           }
         }
       }
+    },
+    "private search engine incognito" : {
+
     },
     "Private Space" : {
       "localizations" : {
@@ -11922,8 +12815,17 @@
     "Profiles, bookmarks, and open tabs" : {
       "comment" : "What importing from another browser brings. Keep product names as they are."
     },
+    "Profiles, bookmarks, open tabs, and history" : {
+      "comment" : "What importing from another browser brings. Keep product names as they are."
+    },
     "Profiles, bookmarks, open tabs, and passwords" : {
       "comment" : "What importing from another browser brings. Keep product names as they are."
+    },
+    "Profiles, bookmarks, open tabs, history, and passwords" : {
+      "comment" : "What importing from another browser brings. Keep product names as they are."
+    },
+    "Progress" : {
+
     },
     "Protected video, with WebKit fallback" : {
 
@@ -11951,7 +12853,6 @@
 
     },
     "Put new sites in" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11971,7 +12872,6 @@
 
     },
     "Quartered" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -12084,6 +12984,9 @@
     "Read from each tab's own page and kept only on this Mac." : {
 
     },
+    "Read it in the Peek over your page." : {
+
+    },
     "Read More" : {
 
     },
@@ -12128,6 +13031,12 @@
       }
     },
     "Reading list" : {
+
+    },
+    "Reading passwords from %@" : {
+
+    },
+    "Reading the update feed…" : {
 
     },
     "Reading this Space’s Keychain…" : {
@@ -12709,7 +13618,16 @@
     "Report an Issue" : {
 
     },
+    "Report is too large. Remove the screenshot or Copy Text." : {
+
+    },
+    "Report is too long. Shorten it or Copy Text." : {
+
+    },
     "Report too long for an email link. Use Copy Report." : {
+
+    },
+    "Report too long for an email link. Use Copy Text." : {
 
     },
     "Reports never include the pages you visit. Nothing leaves this Mac unless you send it." : {
@@ -12827,6 +13745,9 @@
     "Reset every WebKit feature flag?" : {
 
     },
+    "Reset example" : {
+
+    },
     "Reset Icon" : {
 
     },
@@ -12843,7 +13764,13 @@
     "Reset Order" : {
 
     },
+    "Reset Permissions" : {
+
+    },
     "Reset practice" : {
+
+    },
+    "Reset site permissions?" : {
 
     },
     "Reset to Default" : {
@@ -12895,10 +13822,16 @@
         }
       }
     },
+    "Restart and Update" : {
+
+    },
     "Restart Cursor afterwards." : {
 
     },
     "Restart Goose afterwards. Goose Desktop also takes the link." : {
+
+    },
+    "restart idle relaunch update" : {
 
     },
     "Restart normally" : {
@@ -12922,6 +13855,12 @@
       }
     },
     "Restart setup from the welcome screen" : {
+
+    },
+    "Restart to finish the update first" : {
+
+    },
+    "Restart to update" : {
 
     },
     "Restart to update when this Mac is idle" : {
@@ -13042,7 +13981,25 @@
     "Restricted by macOS" : {
 
     },
+    "Restyle a website with a Boost" : {
+
+    },
     "Results" : {
+
+    },
+    "results best match command bar palette" : {
+
+    },
+    "results command bar palette" : {
+
+    },
+    "results command bar palette blended sections" : {
+
+    },
+    "results often visited already open" : {
+
+    },
+    "results ranking command bar palette" : {
 
     },
     "Results shown" : {
@@ -13052,6 +14009,9 @@
 
     },
     "Resume last location" : {
+
+    },
+    "Retake" : {
 
     },
     "Retries the failed address" : {
@@ -13086,6 +14046,15 @@
           }
         }
       }
+    },
+    "Return copies the answer." : {
+
+    },
+    "Return opens the article." : {
+
+    },
+    "Return opens the word in Dictionary." : {
+
     },
     "Return retries translation." : {
 
@@ -13138,6 +14107,9 @@
     "Review & Customize Setup…" : {
 
     },
+    "Review %@" : {
+
+    },
     "Review Access and Compatibility" : {
 
     },
@@ -13160,6 +14132,9 @@
 
     },
     "Review Passwords" : {
+
+    },
+    "Review the screenshot for private information before sharing." : {
 
     },
     "Review this Space’s content and network settings." : {
@@ -13185,6 +14160,9 @@
         }
       }
     },
+    "Reviewed data imported." : {
+
+    },
     "right arrow" : {
       "localizations" : {
         "ar" : {
@@ -13195,11 +14173,16 @@
         }
       }
     },
+    "right side left side position" : {
+
+    },
+    "Right sidebar" : {
+
+    },
     "Ring" : {
       "extractionState" : "manual"
     },
     "Rising Sun" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13210,7 +14193,6 @@
       }
     },
     "River" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13221,6 +14203,9 @@
       }
     },
     "River Red" : {
+
+    },
+    "rollback roll back downgrade older previous version" : {
 
     },
     "Rose" : {
@@ -13376,7 +14361,6 @@
 
     },
     "Sailboat" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13387,7 +14371,6 @@
       }
     },
     "Saltire" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13490,7 +14473,13 @@
         }
       }
     },
+    "Save Screenshot" : {
+
+    },
     "Save Setup" : {
+
+    },
+    "Save tabs you return to. Switch Spaces for a fresh set." : {
 
     },
     "Save this tab" : {
@@ -13548,6 +14537,9 @@
           }
         }
       }
+    },
+    "Saved for next time" : {
+
     },
     "Saved in %@" : {
       "localizations" : {
@@ -13618,6 +14610,9 @@
     "Saved tabs stay below your pins until you delete them. Save A weekend away and watch it move above the line." : {
 
     },
+    "Saved. It stays until you remove it." : {
+
+    },
     "Saves this permission in the current Space. Retry the action on the site afterward" : {
 
     },
@@ -13665,7 +14660,28 @@
     "Screen Sharing" : {
 
     },
+    "Screenshot" : {
+
+    },
+    "Screenshot attached to this report" : {
+
+    },
+    "Screenshot is too large. Remove it or retake." : {
+
+    },
+    "Screenshot of this Ode window" : {
+
+    },
+    "Screenshot saved" : {
+
+    },
     "screenshot snapshot region selection image clipboard" : {
+
+    },
+    "Screenshot unavailable for this window. Automatic screenshots are off in private browsing." : {
+
+    },
+    "Screenshot unavailable while another sheet is open. You can still write your report." : {
 
     },
     "Scripts run with the page’s own access to the site." : {
@@ -13686,7 +14702,6 @@
       }
     },
     "Seal" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13700,7 +14715,7 @@
 
     },
     "Search %@" : {
-
+      "comment" : "A palette row that searches a search engine or website."
     },
     "Search %@…" : {
 
@@ -13736,6 +14751,9 @@
       }
     },
     "Search Engine" : {
+
+    },
+    "search engine Google DuckDuckGo Bing Kagi Ecosia Brave" : {
 
     },
     "search engine Google suggestions command palette address bar results order top hit blended sections complete addresses inline autocomplete learn choices clear site searches shortcuts Tab YouTube Wikipedia scopes calculator paste and go reasons" : {
@@ -13872,11 +14890,13 @@
     "Search with %@" : {
 
     },
+    "Search YouTube, Wikipedia or another site from the Command Bar" : {
+
+    },
     "Search…" : {
 
     },
     "Searching" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13912,6 +14932,9 @@
           }
         }
       }
+    },
+    "See two tabs side by side with Split View" : {
+
     },
     "Select" : {
 
@@ -14006,6 +15029,9 @@
         }
       }
     },
+    "Selected extensions download and install after you open Ode, with their requested default permissions. They aren't installed yet." : {
+
+    },
     "Selected for tab actions" : {
 
     },
@@ -14045,6 +15071,18 @@
         }
       }
     },
+    "Send to Ode" : {
+
+    },
+    "Sending stopped. Retrying may send a duplicate." : {
+
+    },
+    "Sending stopped. Your draft is kept." : {
+
+    },
+    "Sending…" : {
+
+    },
     "Sent %@" : {
       "localizations" : {
         "en" : {
@@ -14083,6 +15121,9 @@
     "Separate shortcuts with commas." : {
 
     },
+    "Separate Spaces" : {
+
+    },
     "Serif" : {
       "extractionState" : "manual"
     },
@@ -14108,6 +15149,12 @@
       }
     },
     "Services" : {
+
+    },
+    "Set up Apple Intelligence" : {
+
+    },
+    "Set up manually" : {
 
     },
     "Set Up Without iCloud" : {
@@ -14159,6 +15206,9 @@
 
     },
     "Setup progress" : {
+
+    },
+    "Seven things to try" : {
 
     },
     "SF Symbol" : {
@@ -14230,7 +15280,6 @@
       "extractionState" : "manual"
     },
     "Shell" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -14241,7 +15290,6 @@
       }
     },
     "Shield" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -14265,6 +15313,9 @@
 
     },
     "Shift-click" : {
+
+    },
+    "Shift-Return: %@" : {
 
     },
     "Shortcut %@" : {
@@ -14298,6 +15349,9 @@
     "Show" : {
 
     },
+    "Show %lld Empty Spaces" : {
+
+    },
     "Show %lld more in Downloads" : {
       "comment" : "Accessibility label of the sidebar's count of more recent downloads."
     },
@@ -14308,7 +15362,7 @@
 
     },
     "Show Activity" : {
-
+      "comment" : "Opens what agents did in Settings."
     },
     "Show All" : {
 
@@ -14390,6 +15444,9 @@
       }
     },
     "Show match reasons" : {
+
+    },
+    "Show Me" : {
 
     },
     "Show More History" : {
@@ -14560,6 +15617,9 @@
     "Show…" : {
 
     },
+    "Shows a short Wikipedia summary when you type a topic's exact name, such as Albert Einstein. What you type goes to Wikipedia, never in a private window." : {
+
+    },
     "Shows all downloads" : {
       "comment" : "Accessibility hint of the heading of the sidebar's recent downloads."
     },
@@ -14593,6 +15653,12 @@
     "sidebar right left side position move flip swap" : {
 
     },
+    "sidebar vertical tabs left placement layout" : {
+
+    },
+    "sidebar vertical tabs right placement layout" : {
+
+    },
     "Sidebar widgets" : {
 
     },
@@ -14603,6 +15669,30 @@
 
     },
     "Sign Out" : {
+
+    },
+    "Sign-in cookies stay in the destination's local browser profile. Imported passwords may sync with iCloud if that Space enables password sync." : {
+
+    },
+    "Sign-in copying failed for %lld Spaces. Other imported data was kept." : {
+
+    },
+    "Sign-in import is only supported from Arc into new Spaces." : {
+
+    },
+    "Sign-in import isn't available in this build." : {
+
+    },
+    "Sign-ins aren't merged into existing Spaces. Some sites may still ask you to sign in." : {
+
+    },
+    "Sign-ins for %lld Spaces couldn't be unlocked or stored by this build." : {
+
+    },
+    "Sign-ins were left out by choice." : {
+
+    },
+    "Sign-ins weren't merged into %lld existing Spaces." : {
 
     },
     "Signed by %@." : {
@@ -14653,10 +15743,19 @@
     "Site Permissions" : {
 
     },
+    "site search shortcut provider" : {
+
+    },
     "Site Settings" : {
 
     },
     "Site’s Font" : {
+
+    },
+    "Sites will ask again before using the camera, microphone or location in this Space and the others in its group." : {
+
+    },
+    "Sites will ask again before using the camera, microphone or location in this Space." : {
 
     },
     "Sites with Blocking Off" : {
@@ -14666,6 +15765,9 @@
 
     },
     "Skip Import" : {
+
+    },
+    "Skip setup" : {
 
     },
     "Skip Space" : {
@@ -14696,6 +15798,12 @@
     "Slate" : {
 
     },
+    "Sleeping tabs" : {
+
+    },
+    "sleeping tabs sleep memory unload" : {
+
+    },
     "Small" : {
 
     },
@@ -14721,7 +15829,6 @@
 
     },
     "Snowflake" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -14764,7 +15871,6 @@
 
     },
     "Solid" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -14788,6 +15894,12 @@
 
     },
     "Some data couldn’t be removed" : {
+
+    },
+    "Some destination Spaces were removed before installation." : {
+
+    },
+    "Some extension installs failed. Check Extensions before retrying." : {
 
     },
     "Some history could not be read. Successfully read history is still included." : {
@@ -14962,14 +16074,19 @@
     "Spaces, Essentials, pinned tabs, folders, open tabs, and colors" : {
       "comment" : "What importing from another browser brings. Keep product names as they are."
     },
+    "Spaces, Essentials, pinned tabs, folders, open tabs, colors, and history" : {
+      "comment" : "What importing from another browser brings. Keep product names as they are."
+    },
     "Spaces, tabs and history" : {
 
     },
     "Spaces, tabs, folders, colors, icons, and passwords" : {
       "comment" : "What importing from another browser brings. Keep product names as they are."
     },
+    "Spaces, tabs, folders, colors, icons, archive, history, and passwords" : {
+      "comment" : "What importing from another browser brings. Keep product names as they are."
+    },
     "Sparkles" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -14980,6 +16097,9 @@
       }
     },
     "Speech" : {
+
+    },
+    "spell spellcheck typing mistakes" : {
 
     },
     "Spelling and Grammar" : {
@@ -14996,7 +16116,6 @@
       }
     },
     "Split" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15206,7 +16325,6 @@
       }
     },
     "Star" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15249,6 +16367,9 @@
     "Start on new tab" : {
 
     },
+    "Start Over" : {
+
+    },
     "Start Page" : {
       "localizations" : {
         "ar" : {
@@ -15260,6 +16381,9 @@
       }
     },
     "Start Speaking" : {
+
+    },
+    "Start with the Command Bar" : {
 
     },
     "Startup" : {
@@ -15288,6 +16412,9 @@
         }
       }
     },
+    "startup launch open start page restore last session windows" : {
+
+    },
     "State for %@" : {
 
     },
@@ -15310,13 +16437,30 @@
     "Steel" : {
 
     },
+    "Step %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Step %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "Step %lld of 3" : {
 
     },
     "Step %lld: %@" : {
 
     },
+    "Still bringing your Spaces over from %@." : {
+
+    },
+    "Still waiting for %@'s passwords. macOS may be asking you first." : {
+
+    },
     "Stop" : {
+      "comment" : "Stops the agent using a tab.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15459,7 +16603,6 @@
 
     },
     "Storm" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15532,6 +16675,9 @@
     "Substitutions" : {
 
     },
+    "suggest autocomplete" : {
+
+    },
     "Suggested for “%@”" : {
 
     },
@@ -15553,8 +16699,10 @@
     "Suggests folders for review; can tidy titles when pinning or saving. With ChatGPT, titles and tab names are sent to OpenAI using your plan." : {
 
     },
+    "Suggests folders for the current tabs" : {
+
+    },
     "Sun" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15565,7 +16713,6 @@
       }
     },
     "Sunburst" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15623,6 +16770,9 @@
           }
         }
       }
+    },
+    "Switch to another Space" : {
+
     },
     "Switch to Space" : {
 
@@ -15818,6 +16968,9 @@
     "Tab" : {
 
     },
+    "Tab copies the answer." : {
+
+    },
     "Tab Icon" : {
 
     },
@@ -15830,6 +16983,12 @@
           }
         }
       }
+    },
+    "Tab organization" : {
+
+    },
+    "Tab organization Enable suggestions Ode Intelligence AI model ChatGPT Apple Intelligence on-device local model language model tidy titles tabs folders" : {
+
     },
     "Tab organization model" : {
 
@@ -15869,6 +17028,7 @@
 
     },
     "Tabs" : {
+      "comment" : "Accessibility label for the list of tabs a page can share.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15881,6 +17041,9 @@
     "Tabs & folders" : {
 
     },
+    "Tabs across the top" : {
+
+    },
     "Tabs and folders" : {
 
     },
@@ -15888,6 +17051,9 @@
 
     },
     "Tabs below the line close automatically on your Space’s cleanup schedule. Open the Space’s ••• menu and choose Clean Up Current Tabs to archive them now. Pinned and saved tabs stay." : {
+
+    },
+    "tabs on top top tabs horizontal tab bar vertical tabs sidebar layout" : {
 
     },
     "Tap for options. Touch and hold to translate now." : {
@@ -15903,6 +17069,9 @@
 
     },
     "Teal" : {
+
+    },
+    "Technical details" : {
 
     },
     "Technical Details" : {
@@ -15931,6 +17100,9 @@
 
     },
     "TEST" : {
+
+    },
+    "Test feed on this Mac" : {
 
     },
     "Test fixture" : {
@@ -15972,6 +17144,9 @@
         }
       }
     },
+    "That extension is no longer installed." : {
+
+    },
     "That model isn’t running here. Found %@." : {
 
     },
@@ -16006,6 +17181,9 @@
         }
       }
     },
+    "The answer is not available to copy." : {
+
+    },
     "The app is missing access to Ode’s CloudKit container." : {
       "localizations" : {
         "en" : {
@@ -16015,6 +17193,9 @@
           }
         }
       }
+    },
+    "The Command Bar can answer anything else. Type a question, such as how do I lock a Space." : {
+
     },
     "The connection to %@ ended before the page finished loading." : {
       "localizations" : {
@@ -16118,6 +17299,15 @@
     "The download folder is unavailable. Choose another folder in Space settings." : {
 
     },
+    "The download is not Ode %@." : {
+
+    },
+    "The download of Ode %@ holds no app." : {
+
+    },
+    "The download of Ode %@ is not signed with Ode's key." : {
+
+    },
     "The download stopped because of a network problem." : {
 
     },
@@ -16139,7 +17329,16 @@
     "The file couldn’t be saved in its folder." : {
 
     },
+    "The import result couldn't be saved. Check your Spaces before retrying." : {
+
+    },
     "The Keychain couldn’t save your ChatGPT sign-in (%lld)." : {
+
+    },
+    "The Keychain key couldn't be read. Try again, change your choices, or import without passwords and sign-ins." : {
+
+    },
+    "The model didn’t suggest any groups." : {
 
     },
     "The model server answered with status %lld." : {
@@ -16149,6 +17348,9 @@
 
     },
     "The model server’s answer couldn’t be read." : {
+
+    },
+    "The model’s answer couldn’t be read as groups." : {
 
     },
     "The original filename used invisible or direction-changing characters that can disguise its real extension." : {
@@ -16226,10 +17428,19 @@
     "The report has counts only: no URLs, titles or passwords." : {
 
     },
+    "The reviewed import couldn't be applied." : {
+
+    },
+    "The reviewed import couldn't be started." : {
+
+    },
     "The row does not match the detected columns." : {
 
     },
     "The selected items changed. Select them again before continuing." : {
+
+    },
+    "The selected passwords or sign-ins couldn't be prepared." : {
 
     },
     "The server couldn’t provide the file." : {
@@ -16249,6 +17460,9 @@
 
     },
     "The site is not a valid web address." : {
+
+    },
+    "The source Keychain key couldn't be read. Your reviewed choices were kept." : {
 
     },
     "The Space is locked or no longer active. Unlock it and select the tabs again." : {
@@ -16272,6 +17486,15 @@
           }
         }
       }
+    },
+    "The update feed is not signed with Ode's key." : {
+
+    },
+    "The update feed is unavailable." : {
+
+    },
+    "The update feed lists no earlier version this Mac can run." : {
+
     },
     "The web content process stopped repeatedly. Your tab and address are safe." : {
       "localizations" : {
@@ -16299,16 +17522,25 @@
         }
       }
     },
+    "There aren’t enough open tabs to group." : {
+
+    },
     "There isn’t enough disk space to save the file." : {
 
     },
     "These credentials are valid and will be imported. Review the security limitation before continuing." : {
 
     },
+    "These example tabs are temporary. Your tabs stay unchanged." : {
+
+    },
     "These filters are too long to keep." : {
 
     },
     "These items cannot be placed here. Choose another destination." : {
+
+    },
+    "These moves happen in your own window. A Split View or a Boost you make stays until you remove it." : {
 
     },
     "These rows are excluded from the import. Correct the source file to import them later." : {
@@ -16318,6 +17550,9 @@
 
     },
     "Thin" : {
+
+    },
+    "Thinking on device…" : {
 
     },
     "This action requires webpage tabs. Deselect built-in pages first." : {
@@ -16407,6 +17642,12 @@
     "This clears the history %@ and its Sub-Spaces share." : {
 
     },
+    "This copy of Ode has no update key." : {
+
+    },
+    "This copy of Ode is not signed for release." : {
+
+    },
     "This credential belongs to the embedded %@ frame, not %@." : {
       "localizations" : {
         "ar" : {
@@ -16446,6 +17687,12 @@
 
     },
     "This download was blocked by a safety or organization policy." : {
+
+    },
+    "This extension couldn’t be verified or installed." : {
+
+    },
+    "This extension is managed for you and can’t be changed." : {
 
     },
     "This extension will be installed in %@. Select any additional Spaces below." : {
@@ -16591,6 +17838,9 @@
           }
         }
       }
+    },
+    "This Ode window isn’t available for capture. Your report is kept; try Retake." : {
+
     },
     "This page cannot be exported." : {
 
@@ -16867,7 +18117,6 @@
 
     },
     "Three" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -16881,6 +18130,12 @@
 
     },
     "Throttle keeps background tabs working and uses more power. Applies to new tabs." : {
+
+    },
+    "Tidy" : {
+
+    },
+    "Tidy Open Tabs" : {
 
     },
     "Tidy Title" : {
@@ -16911,6 +18166,9 @@
 
     },
     "To" : {
+
+    },
+    "To focus by hovering, choose Ode > Settings, click Tabs and turn on Focus follows pointer. Shortcuts can also be changed in Settings." : {
 
     },
     "To focus by hovering, turn on Focus follows pointer in Settings → Tabs. Shortcuts can also be changed in Settings." : {
@@ -16952,6 +18210,9 @@
         }
       }
     },
+    "toggle recent switch tabs oldest back" : {
+
+    },
     "Toggle Sidebar" : {
       "localizations" : {
         "ar" : {
@@ -16978,6 +18239,9 @@
         }
       }
     },
+    "Too many attempts. Try again later." : {
+
+    },
     "Top" : {
 
     },
@@ -16994,10 +18258,16 @@
         }
       }
     },
+    "Top Result" : {
+
+    },
     "top tabs horizontal tab bar tab strip vertical tabs sidebar layout position move" : {
 
     },
     "Topic (optional)" : {
+
+    },
+    "Topic is too long. Shorten it." : {
 
     },
     "Touch and hold for options to reorder Spaces" : {
@@ -17007,7 +18277,6 @@
 
     },
     "Tower" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -17016,6 +18285,9 @@
           }
         }
       }
+    },
+    "Trail notes" : {
+
     },
     "Transformations" : {
 
@@ -17103,7 +18375,6 @@
 
     },
     "Tree" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -17144,6 +18415,12 @@
           }
         }
       }
+    },
+    "Try 23c in f or 12 × 4." : {
+
+    },
+    "Try a calculation or conversion" : {
+
     },
     "Try Again" : {
       "localizations" : {
@@ -17188,6 +18465,9 @@
         }
       }
     },
+    "Try pinning" : {
+
+    },
     "Try quitting again" : {
       "localizations" : {
         "en" : {
@@ -17207,6 +18487,9 @@
           }
         }
       }
+    },
+    "Try saving" : {
+
     },
     "Try Split View" : {
 
@@ -17243,6 +18526,15 @@
     "Turn blocking off from a site’s menu." : {
 
     },
+    "Turn Focus Off" : {
+
+    },
+    "Turn Focus On" : {
+
+    },
+    "Turn Focus On or Off" : {
+
+    },
     "Turn Off Blocking on %@" : {
 
     },
@@ -17261,6 +18553,9 @@
       }
     },
     "Turn on Apple Intelligence in System Settings to use Apple’s on-device model." : {
+
+    },
+    "Turn on Apple Intelligence in System Settings to use Ode’s on-device answers." : {
 
     },
     "Turn On Balanced Content Blocking in This Space" : {
@@ -17284,6 +18579,9 @@
 
     },
     "Turn on Import Space to include it." : {
+
+    },
+    "Turn on intelligence in Settings to tidy tabs." : {
 
     },
     "Turn on Location Services for this Mac, then allow Ode." : {
@@ -17315,8 +18613,10 @@
         }
       }
     },
+    "Turning this off stops future automatic downloads. Updates already prepared can still install when you quit." : {
+
+    },
     "Two" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -17360,13 +18660,25 @@
     "Type a provider’s name or shortcut and press Tab." : {
 
     },
+    "Type an address, a search, or the name of a tab, setting or command." : {
+
+    },
     "Type Shortcut" : {
+
+    },
+    "Type your question and press Return. It opens on the assistant's own site." : {
+
+    },
+    "Type your search and press Return." : {
 
     },
     "Type yt or $yt and a space to search YouTube." : {
 
     },
     "Typing" : {
+
+    },
+    "typing ranking learned results" : {
 
     },
     "uBlock filters" : {
@@ -17503,6 +18815,9 @@
     "Unlock a Space to check its download folder" : {
 
     },
+    "Unlock selected data from %@" : {
+
+    },
     "Unlock these Spaces to export their tabs and history." : {
 
     },
@@ -17513,6 +18828,9 @@
 
     },
     "Unlock your first Space to open Getting Started." : {
+
+    },
+    "Unlock your Space to finish setup." : {
 
     },
     "Unmute" : {
@@ -17534,6 +18852,12 @@
 
     },
     "Unpin Tab" : {
+
+    },
+    "Unselected passwords were left out." : {
+
+    },
+    "Unsent drafts stay in Ode until you quit." : {
 
     },
     "Untitled Space" : {
@@ -17640,6 +18964,9 @@
         }
       }
     },
+    "update updates software new version" : {
+
+    },
     "Updated" : {
 
     },
@@ -17730,6 +19057,9 @@
           }
         }
       }
+    },
+    "Updates are off in this build" : {
+
     },
     "Updates can't be checked in this copy of Ode." : {
       "localizations" : {
@@ -17896,6 +19226,12 @@
         }
       }
     },
+    "Use the Boost bar over the page: Colors, Font, Zap to hide things, or CSS." : {
+
+    },
+    "Use the published feed" : {
+
+    },
     "Use This Device" : {
       "localizations" : {
         "ar" : {
@@ -17905,6 +19241,9 @@
           }
         }
       }
+    },
+    "Use this layout" : {
+
     },
     "Use Translate Page Again after a page loads new content. Show Original restores text changed by Ode while preserving later website changes and your edits." : {
       "localizations" : {
@@ -17975,6 +19314,9 @@
     "version build updates changelog what's new feedback Reddit GitHub issues roadmap support community" : {
 
     },
+    "Version, build, and OS only. No logs or browsing history." : {
+
+    },
     "Version, updates, and support" : {
 
     },
@@ -17982,7 +19324,6 @@
 
     },
     "Vertical" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -18053,7 +19394,6 @@
 
     },
     "Vigil" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -18130,7 +19470,6 @@
 
     },
     "Waves" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -18141,6 +19480,9 @@
       }
     },
     "Web Access" : {
+
+    },
+    "Web Answers" : {
 
     },
     "WebKit" : {
@@ -18160,6 +19502,9 @@
 
     },
     "WebKit fallback for protected video" : {
+
+    },
+    "WebKit license" : {
 
     },
     "Webpages" : {
@@ -18193,6 +19538,9 @@
     "Wedges" : {
       "extractionState" : "manual"
     },
+    "Weekend" : {
+
+    },
     "Weekend plans" : {
 
     },
@@ -18214,6 +19562,9 @@
           }
         }
       }
+    },
+    "What %@ brings" : {
+
     },
     "What syncs" : {
 
@@ -18296,6 +19647,9 @@
     "When URL" : {
 
     },
+    "Where this Space goes" : {
+
+    },
     "Wide Desktop" : {
 
     },
@@ -18306,6 +19660,9 @@
 
     },
     "Width and height in CSS pixels, from 1 to 8192. Apply to resize the preview." : {
+
+    },
+    "Wikipedia" : {
 
     },
     "Willow" : {
@@ -18337,8 +19694,10 @@
     "Windows, open tabs, and pinned tabs" : {
       "comment" : "What importing from another browser brings. Keep product names as they are."
     },
+    "Windows, open tabs, pinned tabs, bookmarks, and history" : {
+      "comment" : "What importing from another browser brings. Keep product names as they are."
+    },
     "Winter" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -18480,6 +19839,9 @@
         }
       }
     },
+    "You can still set up Spaces by hand." : {
+
+    },
     "You can still set up Spaces manually." : {
 
     },
@@ -18496,7 +19858,13 @@
     "You choose the sender and send from your email app. Ode can’t confirm delivery." : {
 
     },
+    "You choose the sender in your email app. Ode can’t confirm delivery." : {
+
+    },
     "You chose this before" : {
+
+    },
+    "You set %@ a day here. It opens again tomorrow." : {
 
     },
     "You’ll be signed out of every site in this Space and the others of its group." : {
@@ -18514,6 +19882,9 @@
           }
         }
       }
+    },
+    "You’re offline. Retry when connected." : {
+
     },
     "Your browser is ready" : {
 
@@ -18536,7 +19907,22 @@
     "Your Lists" : {
 
     },
+    "Your Mac's login password" : {
+
+    },
     "Your pinned and saved tabs are still in the sidebar." : {
+
+    },
+    "Your report and app details go to Ode." : {
+
+    },
+    "Your report and screenshot go to Ode." : {
+
+    },
+    "Your report goes to Ode." : {
+
+    },
+    "Your report, screenshot, and app details go to Ode." : {
 
     },
     "Your saved files are preserved. Browsing and iCloud sync will stay stopped until your session can be opened." : {
@@ -18559,6 +19945,9 @@
 
     },
     "Your Spaces are ready." : {
+
+    },
+    "Your Spaces, tabs and settings stay as they are. Ode offers the newest version again once a newer one is out." : {
 
     },
     "Your tabs, your Spaces, your agents." : {

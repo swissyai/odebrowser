@@ -17,6 +17,9 @@ struct BrowserCommandPaletteRowTrailing: View {
 
     private var usesCompactTouchLayout: Bool { capabilities.supportsTouch && horizontalSizeClass == .compact }
     private var showsKeyboardHints: Bool { !capabilities.supportsTouch }
+    private var actionTitle: LocalizedStringResource? {
+        row.answer.map(model.isDirectFeedbackAction) == true ? "Open" : row.kind.action
+    }
 
     var body: some View {
         HStack(spacing: OdeSpacing.small) {
@@ -71,7 +74,7 @@ struct BrowserCommandPaletteRowTrailing: View {
                 Text(row.kind.label)
                     .font(BrowserCommandPaletteMetrics.rowDetailFont)
                     .foregroundStyle(.paletteDetail)
-            } else if let action = row.kind.action, row.kind != .searchSuggestion {
+            } else if let action = actionTitle, row.kind != .searchSuggestion {
                 Text(action)
                     .font(BrowserCommandPaletteMetrics.rowDetailFont)
                     .foregroundStyle(.paletteDetail)

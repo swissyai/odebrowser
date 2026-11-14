@@ -48,6 +48,7 @@ struct BrowserImportSidebarExtensionStrip: View {
                         tile(item, included: included)
                     }
                     .buttonStyle(.plain)
+                    .odeControlPointer()
                     .help(item.name)
                     .accessibilityLabel(item.name)
                     .accessibilityValue(included ? "Included" : "Not included")

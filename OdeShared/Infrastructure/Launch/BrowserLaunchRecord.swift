@@ -31,6 +31,10 @@ struct BrowserLaunchHistory: Codable, Equatable, Sendable {
         var safeMode: Bool
         var finishedAt: Date?
         var endedAt: Date?
+        /// The process generation, when recorded, to attribute OS crash reports
+        /// without confusing a reused PID or another isolated profile.
+        var processID: Int? = nil
+        var processStartedAt: Double? = nil
     }
 
     // MARK: - Static Variables
@@ -229,10 +233,11 @@ final class BrowserLaunchRecord {
     // MARK: - Actions - Writing
 
     /// Opens this launch's entry as `started` for `build`.
-    func begin(build: String) {
+    func begin(build: String, processID: Int? = nil, processStartedAt: Double? = nil) {
         guard currentID == nil else { return }
         let launch = BrowserLaunchHistory.Launch(
-            id: UUID(), startedAt: now(), build: build, outcome: .started, safeMode: false)
+            id: UUID(), startedAt: now(), build: build, outcome: .started, safeMode: false,
+            processID: processID, processStartedAt: processStartedAt)
         currentID = launch.id
         history.append(launch)
         save()

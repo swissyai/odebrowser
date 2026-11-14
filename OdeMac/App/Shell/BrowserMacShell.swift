@@ -174,9 +174,13 @@ final class BrowserMacShell {
         let current = record.currentID
         let directory = sessionDirectory
         let build = Self.build
+        let isolated = context?.environment.requiresIsolation ?? true
         Task { @MainActor in
             let now = Date()
-            let crashes = await Task.detached(priority: .utility) { BrowserCrashReportReaders.crashes(now: now) }.value
+            let crashes = await Task.detached(priority: .utility) {
+                BrowserCrashReportReaders.crashes(now: now, launches: history.launches, isolated: isolated)
+            }.value
+            reports.confirmCrashOwnership(Set(crashes.map(\.id)))
             let hangs = directory.map {
                 BrowserCrashReportReaders.hangs(in: BrowserHangLog.read(in: $0), build: build, now: now)
             }
@@ -361,7 +365,9 @@ final class BrowserMacShell {
     private func openLaunchRecord(in directory: URL?) -> BrowserLaunchRecord? {
         guard let directory else { return nil }
         let record = BrowserLaunchRecord(directory: directory)
-        record.begin(build: Self.build)
+        record.begin(
+            build: Self.build, processID: Int(getpid()),
+            processStartedAt: BrowserMoments.processStartDate()?.timeIntervalSince1970)
         BrowserMoments.shared.open(in: directory)
         terminationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification, object: nil, queue: .main

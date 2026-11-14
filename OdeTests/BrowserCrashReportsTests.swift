@@ -66,12 +66,14 @@ final class BrowserCrashReportsTests: XCTestCase {
     /// addresses, registers and a run of raw bytes.
     private func ipsData(
         bundleID: String = "com.odebrowser.ode", name: String = "Ode",
-        path: String = "/Applications/Ode.app/Contents/MacOS/Chromium"
+        path: String = "/Applications/Ode.app/Contents/MacOS/Chromium",
+        pid: Int = 27888, launchedAt: String = "2026-11-14 08:38:48.5814 -0500",
+        version: String = "0.9.4", build: String = "1"
     ) -> Data {
         let header =
-            #"{"app_name":"\#(name)","bundleID":"\#(bundleID)","app_version":"0.9.4","build_version":"1","bug_type":"309","name":"\#(name)"}"#
+            #"{"app_name":"\#(name)","bundleID":"\#(bundleID)","app_version":"\#(version)","build_version":"\#(build)","bug_type":"309","name":"\#(name)"}"#
         let body = """
-            {"procName":"\(name)","procPath":"\(path)","exception":{"type":"EXC_BAD_ACCESS","signal":"SIGSEGV","codes":"0x0000000000000001, 0x00000001045a8000"},
+            {"pid":\(pid),"procLaunch":"\(launchedAt)","procName":"\(name)","procPath":"\(path)","exception":{"type":"EXC_BAD_ACCESS","signal":"SIGSEGV","codes":"0x0000000000000001, 0x00000001045a8000"},
              "asi":{"WebKit":["Loading https://bank.example.com/account?id=42 titled My Bank Statement"]},
              "faultingThread":0,
              "threads":[{"triggered":true,"threadState":{"x":[{"value":4372430848}],"pc":{"value":4372430852}},
@@ -87,6 +89,68 @@ final class BrowserCrashReportsTests: XCTestCase {
     private func released(_ bundleID: String?, _ name: String?, _ path: String?) -> Bool {
         BrowserCrashReportReaders.isOde(
             bundleID: bundleID, name: name, path: path, app: "com.odebrowser.ode", appPath: "/Applications/Ode.app")
+    }
+
+    func testAnIsolatedProfileClaimsOnlyItsOwnProcessGenerationAndBuild() throws {
+        let ownStart = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-11-14T14:21:41Z")) + 0.1234
+        let launch = BrowserLaunchHistory.Launch(
+            id: UUID(), startedAt: ownStart + 2, build: "0.8.157 (202611141414)", outcome: .finished,
+            safeMode: false, processID: 68702, processStartedAt: ownStart.timeIntervalSince1970)
+        let wildcard = "/Users/USER/*/Ode.app/Contents/MacOS/Chromium"
+        let copy = "/Users/person/release-r2/Ode.app"
+        func belongs(_ bundle: String?, _ name: String?, _ path: String?) -> Bool {
+            BrowserCrashReportReaders.isOde(
+                bundleID: bundle, name: name, path: path,
+                app: "com.odebrowser.ode", appPath: copy)
+        }
+        func read(_ data: Data, launches: [BrowserLaunchHistory.Launch] = []) -> BrowserCrashReport? {
+            BrowserCrashReportReaders.crash(
+                fromIPS: data, named: "Observed.ips", modified: now,
+                launches: launches, isolated: true, belongs: belongs)
+        }
+        let foreign = ipsData(path: wildcard, version: "0.8.157", build: "202611141328")
+        XCTAssertNil(read(foreign, launches: [launch]), "The rejected copy's 08:40 crash predates this profile")
+        let own = ipsData(
+            path: wildcard, pid: 68702, launchedAt: "2026-11-14 09:21:41.1234 -0500",
+            version: "0.8.157", build: "202611141414")
+        XCTAssertNotNil(read(own, launches: [launch]))
+        XCTAssertNil(read(own), "A fresh profile has no ownership evidence")
+        var reused = launch
+        reused.processStartedAt = ownStart.timeIntervalSince1970 - 60
+        XCTAssertNil(read(own, launches: [reused]), "Matching a reused PID is insufficient")
+        var otherBuild = launch
+        otherBuild = BrowserLaunchHistory.Launch(
+            id: otherBuild.id, startedAt: otherBuild.startedAt,
+            build: "0.8.157 (202611141328)", outcome: .finished, safeMode: false,
+            processID: 68702, processStartedAt: ownStart.timeIntervalSince1970)
+        XCTAssertNil(read(own, launches: [otherBuild]))
+        XCTAssertNotNil(
+            BrowserCrashReportReaders.crash(
+                fromIPS: ipsData(), named: "Installed.ips", modified: now,
+                launches: [], isolated: false, belongs: released),
+            "An unambiguous installed copy keeps legacy own reports")
+        let helper = ipsData(
+            bundleID: "com.odebrowser.ode.helper.renderer", name: "Ode Helper (Renderer)",
+            path: "/Applications/Ode.app/Contents/Frameworks/Ode Helper (Renderer).app/Contents/MacOS/Ode Helper")
+        XCTAssertNotNil(
+            BrowserCrashReportReaders.crash(
+                fromIPS: helper, named: "Helper.ips", modified: now,
+                launches: [], isolated: false, belongs: released), "A normal installed copy keeps its helper reports")
+    }
+
+    func testAPreviouslyCollectedUnattributedCrashStaysAvailableWithoutAnAutomaticNotice() throws {
+        let reports = BrowserCrashReports(sessionDirectory: try directory(), defaults: defaults(), now: { self.now })
+        let old = report("ips-Chromium-2026-11-14-084042.ips")
+        reports.collect([old])
+        XCTAssertEqual(reports.reports.map(\.id), [old.id])
+        XCTAssertTrue(reports.unnoticed.isEmpty)
+        let reopened = BrowserCrashReports(
+            sessionDirectory: reports.directory.deletingLastPathComponent(),
+            defaults: defaults(), now: { self.now })
+        XCTAssertEqual(reopened.reports.map(\.id), [old.id], "Unconfirmed data remains available locally")
+        XCTAssertTrue(reopened.unnoticed.isEmpty)
+        reopened.confirmCrashOwnership([old.id])
+        XCTAssertEqual(reopened.unnoticed.map(\.id), [old.id], "A genuinely attributed report still gets a notice")
     }
 
     func testAMacOSCrashReportKeepsTheFailingStackAndNothingThatNamesAPageOrThePerson() throws {
@@ -203,6 +267,7 @@ final class BrowserCrashReportsTests: XCTestCase {
             sessionDirectory: try directory(), uploader: { uploads.add($0) }, defaults: defaults(),
             now: { [now] in now })
         XCTAssertEqual(store.sending, .ask)
+        store.confirmCrashOwnership(["ips-a"])
         let new = store.collect([report("ips-a")])
         await store.sendNewIfChosen(new)
         XCTAssertEqual(uploads.count, 0)
@@ -234,6 +299,7 @@ final class BrowserCrashReportsTests: XCTestCase {
         let sessionDirectory = try directory()
         let defaults = defaults()
         let store = BrowserCrashReports(sessionDirectory: sessionDirectory, defaults: defaults, now: { [now] in now })
+        store.confirmCrashOwnership(["ips-a", "ips-b", "ips-c"])
         store.collect([report("ips-a", ago: 120)])
         let first = store.unnoticed
         XCTAssertEqual(first.count, 1)
@@ -251,6 +317,7 @@ final class BrowserCrashReportsTests: XCTestCase {
         XCTAssertEqual(Set(store.reports.map(\.id)), ["ips-a", "ips-b", "ips-c"])
         // Reviewing answers the notice without counting as Don't send.
         let fresh = BrowserCrashReports(sessionDirectory: try directory(), defaults: defaults, now: { [now] in now })
+        fresh.confirmCrashOwnership(["ips-d"])
         fresh.collect([report("ips-d")])
         fresh.reviewNotice(about: fresh.unnoticed)
         XCTAssertEqual(fresh.memory.declinedInARow, 0)

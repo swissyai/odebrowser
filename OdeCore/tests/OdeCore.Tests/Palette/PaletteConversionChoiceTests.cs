@@ -67,8 +67,6 @@ public sealed partial class BrowserContractsTests {
     [InlineData("how many oz in a word")]
     [InlineData("how many ounces in a poundcake")]
     [InlineData("how many ounces in a pound cake")]
-    [InlineData("how many oz in a cup")]
-    [InlineData("how many oz in a US cup")]
     [InlineData("how many oz in a cup of coffee")]
     [InlineData("how many cm in a kg")]
     [InlineData("how many cm in a cm")]

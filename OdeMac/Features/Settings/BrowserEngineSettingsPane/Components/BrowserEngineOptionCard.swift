@@ -45,7 +45,7 @@ struct BrowserEngineOptionCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(.rect)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(OdeSelectableCardStyle(isSelected: isSelected, density: .compact))
         .disabled(!isAvailable)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityIdentifier("default-engine-\(option.engine.name)")

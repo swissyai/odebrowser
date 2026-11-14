@@ -417,6 +417,42 @@ public sealed partial class BrowserContractsTests {
     }
 
     [Fact]
+    public void AReviewedImportKeepsTabOriginsWhenGroupingMovesSpacesWithDifferentTabCounts() {
+        var session = SavedSession().Document["session"]!.AsObject();
+        using var device = new TestDevice(session);
+        var window = device.Showing(session);
+        var primary = ImportedSpace("Primary", ImportedTab("https://primary.example/"));
+        var separate = ImportedSpace("Separate", ImportedTab("https://separate.example/one"),
+            ImportedTab("https://separate.example/two"), ImportedTab("https://separate.example/three"));
+        var member = ImportedSpace("Member", ImportedTab("https://member.example/one"), ImportedTab("https://member.example/two"));
+        member["primarySpaceID"] = primary["id"]!.DeepClone();
+        member["sharedProfileID"] = primary["profile"]!["id"]!.DeepClone();
+        member["membershipModifiedAt"] = 800000000.0;
+        var sources = ReadSpaces(primary, separate, member);
+        Reviewing(device, primary, separate, member);
+        var import = new ImportReviewedSpaces(device.Workspace, window);
+
+        var before = device.Authority.Current;
+        var preview = device.Query(new ImportPreview(import));
+
+        Assert.Same(before, device.Authority.Current);
+        Assert.Equal(["Primary", "Member", "Separate"], preview.Session.Spaces.Select(space => space.Settings.Name));
+        Assert.Equal(6, preview.Imported.Count);
+        foreach (var imported in preview.Imported) {
+            var source = sources[imported.Source].Tabs.Single(tab => tab.Id == imported.SourceTabId);
+            var destination = preview.Session.Spaces.SelectMany(space => space.Tabs).Single(tab => tab.Id == imported.TabId);
+            Assert.Equal(source.Url, destination.Url);
+        }
+        device.Send(new BeginImportCommit());
+        device.Send(import);
+        Assert.Equal(StoredSessionCodec.Encode(preview.Session).ToJsonString(),
+            StoredSessionCodec.Encode(device.Authority.Current).ToJsonString());
+        Assert.Equal(SpaceId(primary), device.Space(window));
+        foreach (var space in preview.Session.Spaces)
+            Assert.Equal(space.Tabs[0].Id, device.Tab(window, space.Id));
+    }
+
+    [Fact]
     public void AReviewStartsFromTheWorkspaceAndThePreviewIsWhatTheImportCommits() {
         var fixture = SavedSession();
         var session = fixture.Document["session"]!.AsObject();

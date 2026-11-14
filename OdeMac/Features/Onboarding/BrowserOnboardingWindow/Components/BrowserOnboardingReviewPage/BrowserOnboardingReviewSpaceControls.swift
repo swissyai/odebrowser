@@ -218,6 +218,7 @@ private struct BrowserOnboardingReviewRow<Content: View>: View {
         HStack(spacing: 12) {
             Toggle(isOn: $isOn) { EmptyView() }
                 .toggleStyle(.checkbox)
+                .odeControlPointer()
                 .labelsHidden()
                 .disabled(!canToggle)
                 .accessibilityLabel(Text(accessibilityLabel))
@@ -279,6 +280,7 @@ private struct BrowserOnboardingReviewDestinationMenu: View {
         }
         .menuStyle(.button)
         .buttonStyle(.plain)
+        .odeControlPointer()
         .menuIndicator(.hidden)
         .fixedSize(horizontal: false, vertical: true)
         .help(destinationName)

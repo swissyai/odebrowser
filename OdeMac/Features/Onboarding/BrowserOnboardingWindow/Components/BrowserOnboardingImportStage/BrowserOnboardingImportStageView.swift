@@ -39,6 +39,7 @@ struct BrowserOnboardingImportStageView: View {
         .background(.background)
         .contentShape(.rect)
         .onTapGesture { stage.skip() }
+        .odeControlPointer()
         .focusable()
         .focusEffectDisabled()
         .focused($isFocused)

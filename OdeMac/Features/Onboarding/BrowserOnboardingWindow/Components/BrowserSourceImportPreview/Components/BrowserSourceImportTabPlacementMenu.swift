@@ -20,6 +20,7 @@ struct BrowserSourceImportTabPlacementMenu: View {
         }
         .menuIndicator(.hidden)
         .menuStyle(.borderlessButton)
+        .odeControlPointer()
         .odeMenuActionLabelStyle()
         .fixedSize()
         .accessibilityLabel(Text("Tab placement for \(tab.title)"))

@@ -66,17 +66,14 @@ private struct BrowserOnboardingLookCard: View {
                 ) {
                     EmptyView()
                 }
-                .frame(width: size.width, height: size.height)
-                .overlay {
-                    RoundedRectangle(
-                        cornerRadius: BrowserOnboardingWindowPreviewMetrics.cornerRadius, style: .continuous
-                    )
-                    .strokeBorder(isSelected ? OdeBrandPalette.butter : .clear, lineWidth: 4)
-                }
+                .frame(width: size.width - OdeSpacing.small * 2, height: size.height - OdeSpacing.small * 2)
                 .contentShape(
                     .rect(cornerRadius: BrowserOnboardingWindowPreviewMetrics.cornerRadius, style: .continuous))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(
+                OdeSelectableCardStyle(isSelected: isSelected, density: .compact, tint: OdeBrandPalette.butter)
+            )
+            .frame(width: size.width, height: size.height)
             .accessibilityLabel(Text(look.shownTitle))
             .accessibilityValue(isSelected ? "Selected" : "Not selected")
             .accessibilityAddTraits(isSelected ? .isSelected : [])

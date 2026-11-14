@@ -102,7 +102,8 @@ public sealed partial class Palette {
     /// the text asks the palette to work out.
     private string? SuggestionAddress(string text, PaletteRow? intent, PaletteCandidate? lead, LocalAnswer local,
         PaletteTranslationLookup? translation) {
-        if (translation is not null || !Preferences.Offers(PaletteSource.Suggestions) || Withholds(text, intent, lead, local)) return null;
+        if (translation is not null || local.Conversion is not null || local.NeedsIngredient
+            || !Preferences.Offers(PaletteSource.Suggestions) || Withholds(text, intent, lead, local)) return null;
         return context.Search.Suggest(text);
     }
 

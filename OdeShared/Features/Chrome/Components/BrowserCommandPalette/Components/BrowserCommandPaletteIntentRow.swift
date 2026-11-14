@@ -8,6 +8,7 @@ struct BrowserCommandPaletteIntentRow: View {
     let item: BrowserCommandPaletteItem
 
     private var isSelected: Bool { model.selectedResultIndex == item.index }
+    private var isFeedbackAction: Bool { item.row.answer.map(model.isDirectFeedbackAction) == true }
 
     var body: some View {
         Button {
@@ -16,7 +17,7 @@ struct BrowserCommandPaletteIntentRow: View {
             HStack(spacing: BrowserCommandPaletteMetrics.rowSpacing) {
                 BrowserCommandPaletteRowIcon(model: model, row: item.row)
 
-                BrowserCommandPaletteRowLabel(model: model, row: item.row)
+                BrowserCommandPaletteRowLabel(model: model, row: item.row, showsDetail: !isFeedbackAction)
 
                 Spacer(minLength: BrowserCommandPaletteMetrics.rowSpacing)
 
@@ -29,8 +30,12 @@ struct BrowserCommandPaletteIntentRow: View {
             )
         )
         .accessibilityLabel(Text(verbatim: item.row.title))
-        .accessibilityValue(Text(verbatim: item.row.subtitle))
-        .accessibilityHint(item.row.reason.map { Text($0.text) } ?? Text(verbatim: ""))
+        .accessibilityValue(Text(verbatim: isFeedbackAction ? "" : item.row.subtitle))
+        .accessibilityHint(
+            isFeedbackAction
+                ? Text("Opens the feedback report")
+                : item.row.reason.map { Text($0.text) } ?? Text(verbatim: "")
+        )
         .accessibilityIdentifier("command-palette-primary-action")
         .browserCommandPaletteHoverSelection(model: model, index: item.index)
     }

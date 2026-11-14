@@ -42,6 +42,97 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         XCTAssertTrue(opened[0].absoluteString.contains("why%20are%20leaves%20green"))
     }
 
+    func testTabCopiesOnlyAnAlreadyReadyLocalAnswerAndRechecksOptOut() async throws {
+        let started = expectation(description: "Generation")
+        let gate = PrivateAnswerGate(started: started)
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], perform: { _ in }, copy: { copied.append($0) })
+        let model = try makeModel(commands: commands) { await gate.answer($0) }
+        defer { model.stop() }
+        model.isFieldFocused = true
+        model.query = "why is the sky blue?"
+        await fulfillment(of: [started], timeout: 2)
+        XCTAssertNil(model.tabCopyCandidate)
+        model.pressTab()
+        await gate.finish()
+        await model.waitForPendingResults()
+        XCTAssertTrue(copied.isEmpty, "Tab while pending must not copy delayed output")
+        let requests = await gate.requests
+        XCTAssertEqual(requests.count, 1, "Tab must not request or retry generation")
+        model.selectResult(at: 0)
+        let candidate = try XCTUnwrap(model.tabCopyCandidate)
+        model.pressTab()
+        XCTAssertEqual(copied, [candidate.row.card?.value].compactMap { $0 })
+        XCTAssertTrue(model.isCopied(candidate))
+
+        var preferences = model.browser.workspaceModel?.appPreferences ?? .default
+        preferences.palette = preferences.palette.offering(.askOde, false)
+        try model.browser.core.send(
+            SetAppPreferences(workspaceID: model.browser.family.workspaceID, preferences: preferences))
+        model.copyCard(candidate)
+        XCTAssertEqual(copied.count, 1, "Opt-out revokes copy before a presentation observer runs")
+        XCTAssertNil(model.tabCopyCandidate)
+        XCTAssertFalse(model.isCopied(candidate))
+    }
+
+    func testSemanticNumericCopyAndTabRecheckAskOdeWithoutPresentationRefresh() async throws {
+        for conversion in [false, true] {
+            var copied: [String] = []
+            var dismissals = 0
+            let commands = BrowserCommandPaletteCommandRegistry(
+                commands: [], perform: { _ in }, copy: { copied.append($0) })
+            let model = try makeModel(
+                commands: commands, dismiss: { dismissals += 1 },
+                generate: { lookup in
+                    let interpretation = PaletteInterpretation(
+                        kind: conversion ? .conversion : .calculation, expression: conversion ? nil : "12*4",
+                        amount: conversion ? "6" : nil, fromUnit: conversion ? "kilometres" : nil,
+                        toUnit: conversion ? "metres" : nil, ingredient: nil)
+                    return PaletteGenerativeResult(
+                        lookup: lookup, text: nil, status: .answered, interpretation: interpretation)
+                })
+            defer { model.stop() }
+            model.isFieldFocused = true
+            model.query =
+                conversion ? "Express 6 kilometres in metres please" : "Work out the product of twelve and four"
+            await model.waitForPendingResults()
+            let candidate = try XCTUnwrap(model.tabCopyCandidate)
+            XCTAssertEqual(candidate.row.card?.value, conversion ? "6000" : "48")
+            model.copyCard(candidate)
+            XCTAssertEqual(copied.count, 1)
+            var preferences = model.browser.workspaceModel?.appPreferences ?? .default
+            preferences.palette = preferences.palette.offering(.askOde, false)
+            try model.browser.core.send(
+                SetAppPreferences(workspaceID: model.browser.family.workspaceID, preferences: preferences))
+            XCTAssertFalse(model.canCopyCard(candidate))
+            XCTAssertNil(model.tabCopyCandidate)
+            model.copyCard(candidate)
+            model.pressTab()
+            XCTAssertEqual(copied.count, 1, "Both actions must revoke semantic output before preferencesChanged")
+            model.activate(candidate.row)
+            model.selectResult(at: candidate.index)
+            model.pressReturn()
+            XCTAssertEqual(copied.count, 1, "Activation and Return must also recheck immediate opt-out")
+            XCTAssertEqual(dismissals, 0, "Denied copying must not close the palette")
+            model.query = conversion ? "7 km to m" : "12*5"
+            await model.waitForPendingResults()
+            let deterministic = try XCTUnwrap(model.tabCopyCandidate)
+            XCTAssertEqual(deterministic.row.card?.value, conversion ? "7000" : "60")
+            XCTAssertTrue(model.canCopyCard(deterministic), "Ask Ode opt-out must not disable checked local tools")
+            model.activate(candidate.row)
+            XCTAssertEqual(copied.count, 1, "A retained old card cannot activate against a replacement result set")
+            XCTAssertEqual(dismissals, 0)
+            model.selectResult(at: 0)
+            model.pressTab()
+            XCTAssertEqual(copied.count, 2)
+            model.selectResult(at: deterministic.index)
+            model.pressReturn()
+            XCTAssertEqual(copied.count, 3, "Deterministic Return still copies with Ask Ode disabled")
+            XCTAssertEqual(dismissals, 1, "Return retains its copy-and-close behavior")
+        }
+    }
+
     func testUnavailableAndRefusedAreNotCopyableAndNeverFallBackToRemote() async throws {
         for status: PaletteGenerativeStatus in [.intelligenceDisabled, .modelNotReady, .refused, .failed] {
             let model = try makeModel { lookup in PaletteGenerativeResult(lookup: lookup, text: nil, status: status) }
@@ -70,7 +161,7 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
             let remote = PrivateAnswerRemoteCalls()
             var available = true
             let model = try makeModel(
-                enabled: enabled, isSourceAvailable: { _ in available }, remoteCalls: remote,
+                enabled: false, isSourceAvailable: { _ in available }, remoteCalls: remote,
                 generate: { lookup in
                     XCTFail("Ineligible text must not invoke the local model either")
                     return PaletteGenerativeResult(lookup: lookup, text: nil, status: .failed)
@@ -83,15 +174,18 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
             XCTAssertGreaterThan(control.suggestions, 0)
             XCTAssertGreaterThan(control.summaries, 0)
             await remote.reset()
+            model.query = ""
+            await model.waitForPendingResults()
+            try setAskOde(enabled, on: model)
             let privateText =
                 [
-                    "ask ode hi", "ask ode explain password protection", "ask ode what is example.com",
+                    "ask ode explain password protection", "ask ode what is example.com",
                     "ask ode ", "ask ode explain hunter2!x", "translate P@ssw0rd123 to French",
                     "translate hello to fre", "translate example.com to French", "translate", "how do you say",
                 ]
                 + (enabled
                     ? [
-                        "ask", "ask o", "ask od", "why", "why is", "why is the",
+                        "ask", "ask o", "ask od",
                         "rewrite", "rephrase hi", "proofread:", "summarize hi", "shorten: hi",
                         "rewrite my password hunter2", "rephrase jane@example.test",
                     ] : [])
@@ -122,12 +216,48 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
             let privateCalls = await remote.counts
             XCTAssertEqual(privateCalls.suggestions, 0)
             XCTAssertEqual(privateCalls.summaries, 0)
-            // New ordinary text clears the private latch after source recovery.
-            model.query = enabled ? "rewritten article" : "rewrite hi"
+            // Recovery does not authorize ordinary text to leak. A real opt-out
+            // and a new safe query prove the remote routes still function.
+            try setAskOde(false, on: model)
+            model.query = "Ada Lovelace"
             await model.waitForPendingResults()
             let recovered = await remote.counts
             XCTAssertGreaterThan(recovered.suggestions, 0)
             XCTAssertGreaterThan(recovered.summaries, 0)
+        }
+    }
+
+    func testShortLocalClassificationStaysPrivateAndNumericTextNeverBecomesSelectable() async throws {
+        let prompts = [
+            "ask ode hi", "why", "why is", "why is the", "ordinary local topic",
+            "ask ode explain synthetic topic number 19",
+        ]
+        for enabled in [false, true] {
+            let remote = PrivateAnswerRemoteCalls()
+            let model = try makeModel(enabled: enabled, remoteCalls: remote) { lookup in
+                await remote.recordGeneration(lookup)
+                return PaletteGenerativeResult(lookup: lookup, text: "Synthetic local answer", status: .answered)
+            }
+            defer { model.stop() }
+            // Explicit requests stay private even when disabled; ordinary text
+            // is allowed remotely only after opting out (covered above).
+            for prompt in prompts where enabled || prompt.hasPrefix("ask ode ") {
+                model.query = prompt
+                await model.waitForPendingResults()
+                XCTAssertEqual(
+                    model.items.contains { $0.row.card?.kind == .generativeAnswer },
+                    enabled && (prompt == "ask ode hi" || prompt == "why is the"), prompt)
+            }
+            let requests = await remote.generations
+            // "why" belongs to the dictionary; "why is the" is a recognized
+            // nonnumeric question. Numeric requests still cannot yield text cards.
+            let expected = [
+                "hi", "why is", "why is the", "ordinary local topic", "explain synthetic topic number 19",
+            ]
+            XCTAssertEqual(requests.map(\.text), enabled ? expected : [])
+            let calls = await remote.counts
+            XCTAssertEqual(calls.suggestions, 0)
+            XCTAssertEqual(calls.summaries, 0)
         }
     }
 
@@ -140,7 +270,12 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         defer { model.stop() }
         model.query = "why is the sky blue?"
         await fulfillment(of: [started], timeout: 2)
-        for index in 0..<20 { model.query = "ask ode explain synthetic topic number \(index)" }
+        let topics = [
+            "auroras", "rainbows", "clouds", "oceans", "forests", "deserts", "volcanoes", "glaciers",
+            "rivers", "canyons", "islands", "caves", "tides", "winds", "seasons", "eclipses",
+            "comets", "galaxies", "nebulae", "constellations",
+        ]
+        for topic in topics { model.query = "ask ode explain \(topic)" }
         // Let the newest idle pause expire while the old service ignores cancellation.
         try await Task.sleep(for: .milliseconds(100))
         let before = await gate.requests
@@ -148,10 +283,10 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         await gate.finish()
         await model.waitForPendingResults()
         let requests = await gate.requests
-        XCTAssertEqual(requests.map(\.text), ["why is the sky blue?", "explain synthetic topic number 19"])
+        XCTAssertEqual(requests.map(\.text), ["why is the sky blue?", "explain constellations"])
         XCTAssertEqual(
             model.items.first { $0.row.card?.kind == .generativeAnswer }?.row.card?.value,
-            "explain synthetic topic number 19")
+            "explain constellations")
     }
 
     func testMarkedTextAndCloseDropNoncooperativeOutputAndClearPrompt() async throws {
@@ -238,17 +373,36 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         defer { model.stop() }
         model.query = "why is the sky blue?"
         await fulfillment(of: [started], timeout: 2)
+        let resultSetRevision = model.resultSetRevision
+        let keyboardRevision = model.keyboardSelectionRevision
+        model.selectResult(at: 0, expandsAnswer: false)
+        XCTAssertEqual(model.keyboardSelectionRevision, keyboardRevision)
+        XCTAssertEqual(model.resultSetRevision, resultSetRevision)
         model.moveSelection(by: 1)
+        XCTAssertEqual(model.keyboardSelectionRevision, keyboardRevision + 1)
         let selected = model.items[model.selectedResultIndex].id
         let revision = model.keyboardSelectionRevision
         await gate.finish()
         await model.waitForPendingResults()
         XCTAssertEqual(model.items[model.selectedResultIndex].id, selected)
         XCTAssertEqual(model.keyboardSelectionRevision, revision)
+        XCTAssertEqual(model.resultSetRevision, resultSetRevision)
         XCTAssertEqual(model.items.first?.row.kind, .search)
+
+        model.query = "2 + 2"
+        await model.waitForPendingResults()
+        XCTAssertGreaterThan(model.resultSetRevision, resultSetRevision)
     }
 
     // MARK: - Actions - Fixtures
+
+    private func setAskOde(_ enabled: Bool, on model: BrowserCommandPaletteModel) throws {
+        var preferences = model.browser.workspaceModel?.appPreferences ?? .default
+        preferences.palette = preferences.palette.offering(.askOde, enabled)
+        try model.browser.core.send(
+            SetAppPreferences(workspaceID: model.browser.family.workspaceID, preferences: preferences))
+        model.preferencesChanged()
+    }
 
     private func makeModel(
         enabled: Bool = true,
@@ -257,6 +411,7 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
         isSourceAvailable: @escaping (BrowserTabRuntimeAssignment) -> Bool = { _ in true },
         openURL: @escaping (URL) -> Bool = { _ in false },
         remoteCalls: PrivateAnswerRemoteCalls? = nil,
+        dismiss: @escaping () -> Void = {},
         generate: @escaping @Sendable (PaletteGenerativeLookup) async -> PaletteGenerativeResult
     ) throws -> BrowserCommandPaletteModel {
         let tab = TabState.Seed.startPage()
@@ -291,7 +446,7 @@ final class BrowserCommandPalettePrivateAnswerTests: XCTestCase {
                 },
                 generativeDebounce: debounce, generateAnswer: generate),
             isSourceAvailable: isSourceAvailable, selectTab: { _, _ in false },
-            openURL: { _, url, _ in openURL(url) }, dismiss: {})
+            openURL: { _, url, _ in openURL(url) }, dismiss: dismiss)
     }
 }
 
@@ -299,9 +454,11 @@ private actor PrivateAnswerRemoteCalls {
     // MARK: - Variables
 
     private(set) var counts = (suggestions: 0, summaries: 0)
+    private(set) var generations: [PaletteGenerativeLookup] = []
 
     // MARK: - Actions - Recording
 
+    func recordGeneration(_ lookup: PaletteGenerativeLookup) { generations.append(lookup) }
     func recordSuggestion() { counts.suggestions += 1 }
     func recordSummary() { counts.summaries += 1 }
     func reset() { counts = (0, 0) }

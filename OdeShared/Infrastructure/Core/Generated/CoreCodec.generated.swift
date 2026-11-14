@@ -7,7 +7,7 @@ import Foundation
 enum CoreCodec {
     /// SHA-256 of the canonical contract schema. The core refuses any other.
     static let fingerprint: [UInt8] = [
-        0x58, 0xea, 0xdb, 0x13, 0xac, 0x65, 0x27, 0xfa, 0x27, 0x8b, 0x09, 0x95, 0x8c, 0x92, 0x40, 0x70, 0x60, 0x83, 0x3e, 0x7b, 0x6e, 0xea, 0x24, 0xb0, 0xdb, 0xca, 0xbc, 0xbd, 0x3f, 0x2c, 0x28, 0x06
+        0x7c, 0x00, 0xfd, 0x0d, 0x11, 0x8f, 0x89, 0xaa, 0x61, 0x74, 0xac, 0xd4, 0x34, 0x7f, 0xa6, 0xe5, 0x66, 0xa4, 0x15, 0x8b, 0x3b, 0xf7, 0x89, 0xac, 0xee, 0x85, 0x81, 0x4d, 0x14, 0x66, 0xc3, 0xac
     ]
     /// SHA-256 of the engine contract alone, which an engine binding registers with.
     static let engineFingerprint: [UInt8] = [
@@ -18115,11 +18115,28 @@ extension PaletteEntry {
 extension PaletteGenerativeLookup {
     init(from reader: inout WireReader) throws(WireError) {
         let text = try reader.readString()
-        self.init(text: text)
+        let isExplicitRequest = try reader.readBool()
+        let route = try PaletteGenerativeRoute(from: &reader)
+        let percentageOperation: PaletteCalculationOperation?
+        if try reader.readPresence() {
+            let percentageOperationValue = try PaletteCalculationOperation(from: &reader)
+            percentageOperation = percentageOperationValue
+        } else {
+            percentageOperation = nil
+        }
+        self.init(text: text, isExplicitRequest: isExplicitRequest, route: route, percentageOperation: percentageOperation)
     }
 
     func encode(into writer: inout WireWriter) {
         writer.writeString(text)
+        writer.writeBool(isExplicitRequest)
+        route.encode(into: &writer)
+        if let present0 = percentageOperation {
+            writer.writePresence(true)
+            present0.encode(into: &writer)
+        } else {
+            writer.writePresence(false)
+        }
     }
 }
 
@@ -18134,7 +18151,14 @@ extension PaletteGenerativeResult {
             text = nil
         }
         let status = try PaletteGenerativeStatus(from: &reader)
-        self.init(lookup: lookup, text: text, status: status)
+        let interpretation: PaletteInterpretation?
+        if try reader.readPresence() {
+            let interpretationValue = try PaletteInterpretation(from: &reader)
+            interpretation = interpretationValue
+        } else {
+            interpretation = nil
+        }
+        self.init(lookup: lookup, text: text, status: status, interpretation: interpretation)
     }
 
     func encode(into writer: inout WireWriter) {
@@ -18146,6 +18170,12 @@ extension PaletteGenerativeResult {
             writer.writePresence(false)
         }
         status.encode(into: &writer)
+        if let present0 = interpretation {
+            writer.writePresence(true)
+            present0.encode(into: &writer)
+        } else {
+            writer.writePresence(false)
+        }
     }
 }
 
@@ -18167,6 +18197,134 @@ extension PaletteGroup {
         writer.writeCount(rows.count)
         for element0 in rows {
             element0.encode(into: &writer)
+        }
+    }
+}
+
+extension PaletteInterpretation {
+    init(from reader: inout WireReader) throws(WireError) {
+        let kind = try PaletteInterpretationKind(from: &reader)
+        let expression: String?
+        if try reader.readPresence() {
+            let expressionValue = try reader.readString()
+            expression = expressionValue
+        } else {
+            expression = nil
+        }
+        let amount: String?
+        if try reader.readPresence() {
+            let amountValue = try reader.readString()
+            amount = amountValue
+        } else {
+            amount = nil
+        }
+        let fromUnit: String?
+        if try reader.readPresence() {
+            let fromUnitValue = try reader.readString()
+            fromUnit = fromUnitValue
+        } else {
+            fromUnit = nil
+        }
+        let toUnit: String?
+        if try reader.readPresence() {
+            let toUnitValue = try reader.readString()
+            toUnit = toUnitValue
+        } else {
+            toUnit = nil
+        }
+        let ingredient: String?
+        if try reader.readPresence() {
+            let ingredientValue = try reader.readString()
+            ingredient = ingredientValue
+        } else {
+            ingredient = nil
+        }
+        let operation: PaletteCalculationOperation?
+        if try reader.readPresence() {
+            let operationValue = try PaletteCalculationOperation(from: &reader)
+            operation = operationValue
+        } else {
+            operation = nil
+        }
+        let leftOperand: String?
+        if try reader.readPresence() {
+            let leftOperandValue = try reader.readString()
+            leftOperand = leftOperandValue
+        } else {
+            leftOperand = nil
+        }
+        let rightOperand: String?
+        if try reader.readPresence() {
+            let rightOperandValue = try reader.readString()
+            rightOperand = rightOperandValue
+        } else {
+            rightOperand = nil
+        }
+        let densityQuote: String?
+        if try reader.readPresence() {
+            let densityQuoteValue = try reader.readString()
+            densityQuote = densityQuoteValue
+        } else {
+            densityQuote = nil
+        }
+        self.init(kind: kind, expression: expression, amount: amount, fromUnit: fromUnit, toUnit: toUnit, ingredient: ingredient, operation: operation, leftOperand: leftOperand, rightOperand: rightOperand, densityQuote: densityQuote)
+    }
+
+    func encode(into writer: inout WireWriter) {
+        kind.encode(into: &writer)
+        if let present0 = expression {
+            writer.writePresence(true)
+            writer.writeString(present0)
+        } else {
+            writer.writePresence(false)
+        }
+        if let present0 = amount {
+            writer.writePresence(true)
+            writer.writeString(present0)
+        } else {
+            writer.writePresence(false)
+        }
+        if let present0 = fromUnit {
+            writer.writePresence(true)
+            writer.writeString(present0)
+        } else {
+            writer.writePresence(false)
+        }
+        if let present0 = toUnit {
+            writer.writePresence(true)
+            writer.writeString(present0)
+        } else {
+            writer.writePresence(false)
+        }
+        if let present0 = ingredient {
+            writer.writePresence(true)
+            writer.writeString(present0)
+        } else {
+            writer.writePresence(false)
+        }
+        if let present0 = operation {
+            writer.writePresence(true)
+            present0.encode(into: &writer)
+        } else {
+            writer.writePresence(false)
+        }
+        if let present0 = leftOperand {
+            writer.writePresence(true)
+            writer.writeString(present0)
+        } else {
+            writer.writePresence(false)
+        }
+        if let present0 = rightOperand {
+            writer.writePresence(true)
+            writer.writeString(present0)
+        } else {
+            writer.writePresence(false)
+        }
+        if let present0 = densityQuote {
+            writer.writePresence(true)
+            writer.writeString(present0)
+        } else {
+            writer.writePresence(false)
         }
     }
 }
@@ -29347,6 +29505,20 @@ extension PageScriptWorld {
     }
 }
 
+extension PaletteGenerativeRoute {
+    init(from reader: inout WireReader) throws(WireError) {
+        let rawValue = try reader.readEnum()
+        guard let value = PaletteGenerativeRoute(rawValue: rawValue) else {
+            throw WireError.malformed("Unknown PaletteGenerativeRoute \(rawValue)")
+        }
+        self = value
+    }
+
+    func encode(into writer: inout WireWriter) {
+        writer.writeEnum(rawValue)
+    }
+}
+
 extension PointerButton {
     init(from reader: inout WireReader) throws(WireError) {
         let rawValue = try reader.readEnum()
@@ -30647,6 +30819,20 @@ extension PaletteActivation {
     }
 }
 
+extension PaletteCalculationOperation {
+    init(from reader: inout WireReader) throws(WireError) {
+        let tag = try reader.readEnum()
+        guard Self.all.indices.contains(tag) else {
+            throw WireError.malformed("Unknown PaletteCalculationOperation \(tag)")
+        }
+        self = Self.all[tag]
+    }
+
+    func encode(into writer: inout WireWriter) {
+        writer.writeEnum(tag)
+    }
+}
+
 extension PaletteCardKind {
     init(from reader: inout WireReader) throws(WireError) {
         let tag = try reader.readEnum()
@@ -30666,6 +30852,20 @@ extension PaletteGenerativeStatus {
         let tag = try reader.readEnum()
         guard Self.all.indices.contains(tag) else {
             throw WireError.malformed("Unknown PaletteGenerativeStatus \(tag)")
+        }
+        self = Self.all[tag]
+    }
+
+    func encode(into writer: inout WireWriter) {
+        writer.writeEnum(tag)
+    }
+}
+
+extension PaletteInterpretationKind {
+    init(from reader: inout WireReader) throws(WireError) {
+        let tag = try reader.readEnum()
+        guard Self.all.indices.contains(tag) else {
+            throw WireError.malformed("Unknown PaletteInterpretationKind \(tag)")
         }
         self = Self.all[tag]
     }

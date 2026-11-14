@@ -56,6 +56,23 @@ final class BrowserLaunchRecordTests: XCTestCase {
         return record
     }
 
+    func testProcessGenerationPersistsWithoutDiscardingLegacyLaunches() throws {
+        let old = launch()
+        XCTAssertNil(old.currentLaunch?.processID)
+        XCTAssertNil(old.currentLaunch?.processStartedAt)
+        let clock = clock
+        let next = BrowserLaunchRecord(directory: directory, files: files, now: { clock.now })
+        let kernelStart = clock.now.timeIntervalSince1970 - 1.123456
+        next.begin(build: "0.8.157 (202611141414)", processID: 68702, processStartedAt: kernelStart)
+        let reopened = BrowserLaunchRecord(directory: directory, files: files, now: { clock.now })
+        XCTAssertEqual(reopened.history.launches.count, 2)
+        XCTAssertEqual(reopened.history.launches.first?.id, old.currentID)
+        XCTAssertNil(reopened.history.launches.first?.processID)
+        XCTAssertEqual(reopened.history.launches.last?.processID, 68702)
+        XCTAssertEqual(try XCTUnwrap(reopened.history.launches.last?.processStartedAt), kernelStart, accuracy: 0.000001)
+        XCTAssertNotNil(BrowserMoments.processStartDate())
+    }
+
     // MARK: - Warm and cold
 
     func testALaunchIsColdUntilOdeHasRunSinceTheMacStarted() {

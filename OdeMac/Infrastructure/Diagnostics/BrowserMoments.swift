@@ -73,14 +73,21 @@ final class BrowserMoments {
     /// loader ran, so a launch counts from the moment it was asked for. Nil
     /// when the system does not say.
     static func processStart(now: UInt64 = now, wallClock: Date = Date()) -> UInt64? {
+        guard let started = processStartDate() else { return nil }
+        let since = wallClock.timeIntervalSince(started)
+        guard since >= 0, UInt64(since * 1_000_000_000) <= now else { return nil }
+        return now - UInt64(since * 1_000_000_000)
+    }
+
+    /// The kernel's process start, kept with the PID so crash intake can
+    /// distinguish process generations without relying on launch work timing.
+    static func processStartDate() -> Date? {
         var info = kinfo_proc()
         var size = MemoryLayout<kinfo_proc>.stride
         var name: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
         guard sysctl(&name, 4, &info, &size, nil, 0) == 0 else { return nil }
         let started = info.kp_proc.p_starttime
-        let since = wallClock.timeIntervalSince1970 - (Double(started.tv_sec) + Double(started.tv_usec) / 1_000_000)
-        guard since >= 0, UInt64(since * 1_000_000_000) <= now else { return nil }
-        return now - UInt64(since * 1_000_000_000)
+        return Date(timeIntervalSince1970: Double(started.tv_sec) + Double(started.tv_usec) / 1_000_000)
     }
 
     /// When the Mac last started, as a date.

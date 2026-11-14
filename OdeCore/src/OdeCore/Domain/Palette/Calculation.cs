@@ -1,4 +1,7 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
+
+using OdeCore.Contracts;
 
 namespace OdeCore.Domain;
 
@@ -7,7 +10,7 @@ namespace OdeCore.Domain;
 /// with at least one operator, or a whole percentage phrase such as
 /// `20% of 80` or `20% off 80`. A bare number or arbitrary prose is never a
 /// calculation. Powers bind before signs and associate to the right.
-public sealed class Calculation {
+public sealed partial class Calculation {
     #region Static Variables
 
     /// The longest text the palette reads as a calculation.
@@ -34,6 +37,7 @@ public sealed class Calculation {
     private int position;
     private int depth;
     private bool operated;
+    private bool? percentageDiscount;
 
     #endregion
 
@@ -59,11 +63,39 @@ public sealed class Calculation {
             double value = calculation.Percentage() ?? calculation.Sum();
             calculation.SkipSpace();
             if (calculation.position != trimmed.Length || !calculation.operated || !double.IsFinite(value)) return null;
-            return new Calculation(trimmed) { Value = value == 0 ? 0 : value };
+            return new Calculation(trimmed) { Value = value == 0 ? 0 : value, percentageDiscount = calculation.percentageDiscount };
         } catch (FormatException) {
             return null;
         }
     }
+
+    /// Authorize a rate/base-only interpretation using the same grammar that checks its roles.
+    /// This selects no quantities: the model must still quote them and core must ground them.
+    internal static PaletteCalculationOperation? PercentageOperation(string source) {
+        var operations = PercentageRequest().Matches(source);
+        return operations.Count != 1 ? null
+            : operations[0].Groups["operation"].Value.Equals("off", StringComparison.OrdinalIgnoreCase)
+                ? PaletteCalculationOperation.PercentOff : PaletteCalculationOperation.PercentOf;
+    }
+
+    /// Percentage grammar owns both the operation and the source spans for its rate and base.
+    internal bool PreservesPercentage(string source, IReadOnlyList<(int Start, int Length)> operands) {
+        if (!PercentageMarker().IsMatch(source)) return percentageDiscount is null;
+        var operations = PercentageRequest().Matches(source);
+        if (operations.Count != 1 || percentageDiscount is null || operands.Count != 2) return false;
+        var operation = operations[0];
+        int rateEnd = operands[0].Start + operands[0].Length;
+        int operationEnd = operation.Index + operation.Length;
+        return percentageDiscount == operation.Groups["operation"].Value.Equals("off", StringComparison.OrdinalIgnoreCase)
+            && rateEnd <= operation.Index && source[rateEnd..operation.Index].All(char.IsWhiteSpace)
+            && operands[1].Start >= operationEnd && source[operationEnd..operands[1].Start].All(char.IsWhiteSpace);
+    }
+
+    [GeneratedRegex(@"%|\bpercent(?:age)?\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex PercentageMarker();
+
+    [GeneratedRegex(@"(?:%|\bpercent(?:age)?\b)\s+(?<operation>of|off)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex PercentageRequest();
 
     /// Only two numeric literals and one percentage operation, not an
     /// expression embedded in prose. "Off" subtracts the percentage of the
@@ -84,6 +116,7 @@ public sealed class Calculation {
         if (position != percent) throw new FormatException();
         position = amountStart;
         double amount = SignedNumber();
+        percentageDiscount = discount;
         operated = true;
         double portion = Finite(rate / 100 * amount);
         return discount ? Finite(amount - portion) : portion;

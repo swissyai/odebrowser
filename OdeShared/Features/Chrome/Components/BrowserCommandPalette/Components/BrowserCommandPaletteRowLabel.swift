@@ -9,10 +9,11 @@ import SwiftUI
 struct BrowserCommandPaletteRowLabel: View {
     let model: BrowserCommandPaletteModel
     let row: PaletteRow
+    var showsDetail = true
 
     var body: some View {
-        let reason = model.preferences.showsReasons ? row.reason : nil
-        let detail = Self.detail(for: row)
+        let reason = showsDetail && model.preferences.showsReasons ? row.reason : nil
+        let detail = showsDetail ? Self.detail(for: row) : ""
         // A title too long for the line keeps it alone, rather than leave a
         // dash with nothing after it.
         ViewThatFits(in: .horizontal) {

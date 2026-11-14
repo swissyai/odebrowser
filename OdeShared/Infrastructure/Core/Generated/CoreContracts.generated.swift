@@ -5232,17 +5232,34 @@ struct PaletteEntry: Equatable, Sendable {
 
 struct PaletteGenerativeLookup: Equatable, Sendable {
     var text: String
+    var isExplicitRequest: Bool
+    var route: PaletteGenerativeRoute
+    var percentageOperation: PaletteCalculationOperation?
 }
 
 struct PaletteGenerativeResult: Equatable, Sendable {
     var lookup: PaletteGenerativeLookup
     var text: String?
     var status: PaletteGenerativeStatus
+    var interpretation: PaletteInterpretation?
 }
 
 struct PaletteGroup: Equatable, Sendable {
     let section: PaletteSection
     let rows: [PaletteRow]
+}
+
+struct PaletteInterpretation: Equatable, Sendable {
+    var kind: PaletteInterpretationKind
+    var expression: String?
+    var amount: String?
+    var fromUnit: String?
+    var toUnit: String?
+    var ingredient: String?
+    var operation: PaletteCalculationOperation?
+    var leftOperand: String?
+    var rightOperand: String?
+    var densityQuote: String?
 }
 
 struct PalettePreferences: Equatable, Sendable {
@@ -8485,6 +8502,12 @@ enum PageResourceKind: Int, CaseIterable, Sendable {
 enum PageScriptWorld: Int, CaseIterable, Sendable {
     case agent = 0
     case page = 1
+}
+
+enum PaletteGenerativeRoute: Int, CaseIterable, Sendable {
+    case nonnumeric = 0
+    case calculation = 1
+    case conversion = 2
 }
 
 enum PointerButton: Int, CaseIterable, Sendable {
@@ -16627,6 +16650,47 @@ struct PaletteActivation: Hashable, Sendable {
     }
 }
 
+/// The members of the core's `PaletteCalculationOperation`. A member's wire tag is its index in `all`.
+struct PaletteCalculationOperation: Hashable, Sendable {
+    let tag: Int
+    var name: String { facts.name }
+    private let facts: Facts
+
+    private init(tag: Int, name: String) {
+        self.tag = tag
+        facts = Facts(name: name)
+    }
+
+    static let add = PaletteCalculationOperation(tag: 0, name: "add")
+    static let subtract = PaletteCalculationOperation(tag: 1, name: "subtract")
+    static let multiply = PaletteCalculationOperation(tag: 2, name: "multiply")
+    static let divide = PaletteCalculationOperation(tag: 3, name: "divide")
+    static let percentOf = PaletteCalculationOperation(tag: 4, name: "percentOf")
+    static let percentOff = PaletteCalculationOperation(tag: 5, name: "percentOff")
+
+    static let all: [PaletteCalculationOperation] = [add, subtract, multiply, divide, percentOf, percentOff]
+
+    static func named(_ name: String?) -> PaletteCalculationOperation? {
+        all.first { $0.name == name }
+    }
+
+    static func == (lhs: PaletteCalculationOperation, rhs: PaletteCalculationOperation) -> Bool {
+        lhs.tag == rhs.tag
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(tag)
+    }
+
+    private final class Facts: Sendable {
+        let name: String
+
+        init(name: String) {
+            self.name = name
+        }
+    }
+}
+
 /// The members of the core's `PaletteCardKind`. A member's wire tag is its index in `all`.
 struct PaletteCardKind: Hashable, Sendable {
     let tag: Int
@@ -16705,6 +16769,14 @@ struct PaletteCardKind: Hashable, Sendable {
         copiesValue: true,
         looksUpTerm: false
     )
+    static let clarification = PaletteCardKind(
+        tag: 7,
+        name: "clarification",
+        label: LocalizedStringResource("Conversion"),
+        symbol: "questionmark.circle",
+        copiesValue: false,
+        looksUpTerm: false
+    )
 
     static let all: [PaletteCardKind] = [
         conversion,
@@ -16713,7 +16785,8 @@ struct PaletteCardKind: Hashable, Sendable {
         encyclopedia,
         calculation,
         translation,
-        generativeAnswer
+        generativeAnswer,
+        clarification
     ]
 
     static func named(_ name: String?) -> PaletteCardKind? {
@@ -16830,6 +16903,46 @@ struct PaletteGenerativeStatus: Hashable, Sendable {
         init(name: String, message: LocalizedStringResource) {
             self.name = name
             self.message = message
+        }
+    }
+}
+
+/// The members of the core's `PaletteInterpretationKind`. A member's wire tag is its index in `all`.
+/// Core-only behavior, not emitted: `resolve`.
+struct PaletteInterpretationKind: Hashable, Sendable {
+    let tag: Int
+    var name: String { facts.name }
+    private let facts: Facts
+
+    private init(tag: Int, name: String) {
+        self.tag = tag
+        facts = Facts(name: name)
+    }
+
+    static let calculation = PaletteInterpretationKind(tag: 0, name: "calculation")
+    static let conversion = PaletteInterpretationKind(tag: 1, name: "conversion")
+    static let clarification = PaletteInterpretationKind(tag: 2, name: "clarification")
+    static let noAnswer = PaletteInterpretationKind(tag: 3, name: "noAnswer")
+
+    static let all: [PaletteInterpretationKind] = [calculation, conversion, clarification, noAnswer]
+
+    static func named(_ name: String?) -> PaletteInterpretationKind? {
+        all.first { $0.name == name }
+    }
+
+    static func == (lhs: PaletteInterpretationKind, rhs: PaletteInterpretationKind) -> Bool {
+        lhs.tag == rhs.tag
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(tag)
+    }
+
+    private final class Facts: Sendable {
+        let name: String
+
+        init(name: String) {
+            self.name = name
         }
     }
 }

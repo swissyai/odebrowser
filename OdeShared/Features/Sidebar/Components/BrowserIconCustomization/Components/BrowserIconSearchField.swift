@@ -39,6 +39,7 @@ struct BrowserNativeEmojiPickerButton: View {
         .buttonStyle(.plain)
         .frame(width: OdeLayout.minimumHitTarget, height: OdeLayout.minimumHitTarget)
         .contentShape(.rect)
+        .odeControlPointer()
         .accessibilityHint("Inserts any emoji through the system text input experience.")
     }
 }

@@ -38,6 +38,7 @@ struct OdeSelectableCardSurface: View {
                 value: isSelected
             )
             .onHover { isHovering = $0 && isEnabled }
+            .odeControlPointer()
     }
 
     // MARK: - Actions - Drawing

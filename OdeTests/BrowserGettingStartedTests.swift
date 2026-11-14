@@ -33,6 +33,32 @@ final class BrowserGettingStartedTests: XCTestCase {
         XCTAssertTrue(real.family.isOpen)
     }
 
+    func testSeededPracticeSwitchesItsOwnSpacesAndSavesWithoutTouchingTheRealSession() throws {
+        let real = BrowserStore(seed: .preview)
+        let original = real.sessionSeed
+        let trail = TabState.Seed(
+            title: PracticeTab.trail.title, url: URL(string: PracticeTab.trail.url), placement: .current)
+        let work = SpaceState.Seed(name: "Work", tabs: [.startPage()])
+        let personal = SpaceState.Seed(name: "Personal", tabs: [trail])
+        let practice = BrowserGettingStartedPractice(spaces: [personal, work])
+        XCTAssertTrue(practice.browser.workspaceModel?.kind.isPractice == true)
+        XCTAssertFalse(practice.browser.core === real.core)
+        practice.browser.saveTab(trail.id)
+        XCTAssertEqual(practice.space.tabs.model(trail.id)?.placement, .saved)
+
+        practice.browser.selectSpace(work.id)
+        let context = try XCTUnwrap(
+            practice.listContext(
+                capabilities: BrowserInteractionCapabilities(
+                    supportsHover: true, supportsTouch: false, pairsRowWithPromotedSurface: false)))
+        XCTAssertEqual(practice.space.id, work.id)
+        XCTAssertEqual(context.space.id, work.id)
+        practice.browser.selectSpace(personal.id)
+        XCTAssertEqual(practice.space.tabs.model(trail.id)?.placement, .saved)
+        XCTAssertEqual(real.sessionSeed, original)
+        XCTAssertTrue(real.family.isOpen)
+    }
+
     func testNativeStateSurvivesSelectionAndEndsAtExplicitUnload() throws {
         let browser = BrowserStore.hostingPages()
         let pages = BrowserPagePool(browser: browser, usesEphemeralWebsiteDataStores: true)

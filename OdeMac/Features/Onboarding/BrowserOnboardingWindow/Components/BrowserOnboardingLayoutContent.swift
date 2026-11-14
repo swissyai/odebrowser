@@ -5,13 +5,14 @@ import SwiftUI
 struct BrowserOnboardingLayoutContent: View {
     // MARK: - Variables
 
-    @Binding var storedLayout: String
-    @Binding var storedRight: Bool
+    let storedLayout: String
+    let storedRight: Bool
     @State private var selection: BrowserOnboardingTabPlacement?
     var addressPlacement = BrowserAddressPlacement.defaultValue
 
     let back: BrowserOnboardingBackAction
     let continueSetup: () -> Void
+    let confirmLayout: (BrowserOnboardingTabPlacement) -> Void
 
     private var chosen: BrowserOnboardingTabPlacement {
         selection ?? BrowserOnboardingTabPlacement.current(layout: storedLayout, onRight: storedRight)
@@ -29,6 +30,7 @@ struct BrowserOnboardingLayoutContent: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .odeControlPointer()
                 .frame(maxWidth: 580)
                 BrowserOnboardingWindowPreview(
                     branding: SpaceColorPreset.azure.branding, symbol: "house.fill",
@@ -53,10 +55,7 @@ struct BrowserOnboardingLayoutContent: View {
                         Button("Keep current layout", action: continueSetup)
                             .buttonStyle(.odeSecondary)
                         BrowserOnboardingContinueButton("Use this layout") {
-                            storedLayout = chosen.layout.name
-                            // Top tabs do not change which side a later sidebar uses.
-                            if !chosen.layout.showsTopBar { storedRight = chosen.onRight }
-                            continueSetup()
+                            confirmLayout(chosen)
                         }
                     }
                 }
@@ -71,7 +70,7 @@ struct BrowserOnboardingLayoutContent: View {
 }
 
 /// The three supported combinations of the existing appearance controls.
-private struct BrowserOnboardingTabPlacement: Hashable {
+struct BrowserOnboardingTabPlacement: Hashable {
     // MARK: - Static Variables
 
     static let left = Self(title: "Left sidebar", layout: .sidebar, onRight: false)
@@ -106,8 +105,12 @@ private struct BrowserOnboardingTabPlacement: Hashable {
         @Previewable @State var layout = BrowserTabLayout.sidebar.name
         @Previewable @State var right = false
         BrowserOnboardingLayoutContent(
-            storedLayout: $layout, storedRight: $right, back: BrowserOnboardingBackAction(closes: false, action: {}),
-            continueSetup: {}
+            storedLayout: layout, storedRight: right, back: BrowserOnboardingBackAction(closes: false, action: {}),
+            continueSetup: {},
+            confirmLayout: { placement in
+                layout = placement.layout.name
+                if !placement.layout.showsTopBar { right = placement.onRight }
+            }
         )
         .frame(width: 980, height: 660)
     }

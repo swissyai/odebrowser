@@ -176,10 +176,6 @@ struct MobileBrowserOnboardingView: View {
         if action.waitsOnCloud {
             return String(localized: "Checking iCloud for an existing Ode setup…")
         }
-        if action.opensOde || browser.workspaceModel?.isDisposableSeed != true { return nil }
-        if action.reportsCloudUnavailable {
-            return String(localized: "iCloud is unavailable right now; you can still set up this device.")
-        }
         return nil
     }
 

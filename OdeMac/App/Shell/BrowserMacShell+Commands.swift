@@ -210,10 +210,14 @@ extension BrowserMacShell {
         application?.openSettings(in: context.windowID)
     }
 
-    /// Reuses Settings > About, also reached by the Command Bar's feedback answer.
+    /// Menu and Command Bar share the same draft and pre-form window capture.
     func openFeedbackSettings() {
-        guard let context = windows?.contextBringingBrowserWindowForward() else { return }
-        application?.openSettings(.about, in: context.windowID)
+        guard let windows, let context = windows.contextBringingBrowserWindowForward(),
+            let window = windows.window(for: context.windowID)
+        else { return }
+        context.chrome.dismissCommandPalette()
+        BrowserPlatformFeedbackPresentation.present(
+            draft: .shared, allowsCapture: !context.browser.isPrivateBrowsing, window: window)
     }
 
     /// Whether some tab plays media, or holds media the person can go back

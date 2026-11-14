@@ -85,6 +85,7 @@ struct BrowserSystemSymbolCatalogGrid: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain).help(name)
+        .odeControlPointer()
         .accessibilityLabel(name)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

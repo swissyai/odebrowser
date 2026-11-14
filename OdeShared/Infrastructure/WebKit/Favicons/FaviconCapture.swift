@@ -509,7 +509,8 @@ enum BrowserFaviconCapture {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        const context = canvas.getContext('2d');
+        // This canvas is immediately read back as PNG rather than displayed.
+        const context = canvas.getContext('2d', { willReadFrequently: true });
         if (!context) {
             throw new Error('Canvas 2D context is unavailable');
         }

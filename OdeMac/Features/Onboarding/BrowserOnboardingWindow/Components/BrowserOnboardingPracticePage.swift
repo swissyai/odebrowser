@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The existing setup step hosts a compact real example, not another browser
-/// window. The example cannot reconfigure this window or reach personal tabs.
+/// Optional examples stay in a disposable browser. Finishing remains available
+/// while the examples scroll, without changing the person's unfinished setup.
 struct BrowserOnboardingPracticePage: View {
     // MARK: - Variables
 
@@ -12,21 +12,23 @@ struct BrowserOnboardingPracticePage: View {
     // MARK: - Actions - Presentation
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: OdeSpacing.extraExtraLarge) {
+        VStack(spacing: 0) {
+            ScrollView {
                 BrowserOnboardingTabLesson(branding: branding)
-                BrowserOnboardingFooter(back: back) {
-                    // No global Return shortcut: the focused lesson control
-                    // keeps native keyboard activation while this example is open.
-                    Button("Open Ode", systemImage: "arrow.right", action: finish)
-                        .buttonStyle(.odePrimary)
-                        .accessibilityHint("Finishes setup. Trying the example is optional.")
-                }
+                    .frame(maxWidth: 660)
+                    .padding(BrowserOnboardingStageMetrics.inset)
+                    .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: 560)
-            .padding(BrowserOnboardingStageMetrics.inset)
-            .frame(maxWidth: .infinity)
+            .scrollBounceBehavior(.basedOnSize)
+            BrowserOnboardingFooter(back: back) {
+                // The focused example keeps native Return/Space activation.
+                Button("Open Ode", systemImage: "arrow.right", action: finish)
+                    .buttonStyle(.odePrimary)
+                    .accessibilityHint("Finishes setup. The examples are optional.")
+            }
+            .frame(maxWidth: 660)
+            .padding(.horizontal, BrowserOnboardingStageMetrics.inset)
+            .padding(.bottom, BrowserOnboardingStageMetrics.inset)
         }
-        .scrollBounceBehavior(.basedOnSize)
     }
 }

@@ -16,6 +16,7 @@ struct BrowserSourceImportSectionHeader: View {
                 setIncluded(tabIDs, !includesAll)
             }
             .buttonStyle(.borderless)
+            .odeControlPointer()
             .font(.caption2)
         }
         .frame(minHeight: 24)

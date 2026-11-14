@@ -60,6 +60,9 @@ final class BrowserCrashReports {
     let directory: URL
     private(set) var reports: [BrowserCrashReport] = []
     private(set) var memory = Memory()
+    /// Only OS reports attributed to this profile may trigger an automatic
+    /// notice. Unattributed existing files stay in the manual report list.
+    private var confirmedCrashIDs: Set<String> = []
     /// Whether a report can be sent anywhere; Send is unavailable without it.
     var canSend: Bool { uploader != nil }
     var sending: Sending {
@@ -116,10 +119,16 @@ final class BrowserCrashReports {
 
     /// The reports the notice asks about: kept and not yet noticed, while the
     /// person's choice is to be asked and they have not declined twice in a row.
+    func confirmCrashOwnership(_ ids: Set<String>) {
+        confirmedCrashIDs = ids
+    }
+
     var unnoticed: [BrowserCrashReport] {
         guard sending == .ask, memory.declinedInARow < Self.declinesBeforeQuiet else { return [] }
         return reports.filter { report in
-            report.delivery == .notSent && memory.noticedThrough.map { report.occurredAt > $0 } ?? true
+            (!report.id.hasPrefix("ips-") || confirmedCrashIDs.contains(report.id))
+                && report.delivery == .notSent
+                && (memory.noticedThrough.map { report.occurredAt > $0 } ?? true)
         }
     }
 

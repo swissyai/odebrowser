@@ -68,14 +68,15 @@ The first time Ode opens after an update, the sidebar lists what changed. All ch
 
 ### Send feedback or report a problem {#send-feedback}
 
-1. Choose Ode > Settings, then click About.
-2. Click Share Feedback or Report an Issue and write your report.
-3. Choose Open Email to review and send in your email app, or Copy Report to use webmail.
+Type **bug**, **report bug**, or **feedback** in the Command Bar and choose **Report a problem**. You can also use Help > Share Feedback… on Mac, or Share Feedback in Settings > About on Mac, iPhone, and iPad.
 
-App details are optional and off by default; opening email does not confirm delivery, and your draft stays in Ode until you quit.
+1. Write your report and review the screenshot.
+2. Choose Send to Ode, or Copy Text to use another app.
 
-On Mac, Help > Share Feedback… and the Command Bar’s feedback answer also open About. On iPhone and iPad, open Settings > About, then Share Feedback or Report an Issue. Close returns to Settings without discarding your draft.
+**Retake** captures the same Ode window; **Remove** leaves it out. Automatic screenshots are skipped in private browsing. App details are optional and include only the version, build, and OS shown in the form.
 
-Open Email addresses your report to feedback@odebrowser.com. Only your text and the version, build, and OS you explicitly choose are included; Ode adds no browsing data, logs, or attachments. Email uses your sending address. Copy Report includes the destination and the full report, including when the report is too long for an email link. Nothing is sent automatically.
+Only the report, attached screenshot, and selected app details go to Ode. A failed send keeps your draft. **Retry** tries it again. No browsing history or logs are collected. Ode clears a received report only if you have not edited it while sending. Unsent drafts stay available until you quit.
 
-The Feedback links on this help site open email directly; they do not open Ode’s native composer.
+**Copy Text** copies the recipient and full report text. **Save** in the Screenshot section exports the image for webmail or another app. The optional **Open Email Link** under About feedback includes text only and leaves the screenshot in your Ode draft.
+
+Feedback links on this help site open email directly; they do not open Ode’s native composer.

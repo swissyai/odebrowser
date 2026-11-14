@@ -995,6 +995,50 @@
     "core-release-validation": {
       "category": "internal",
       "message": "Run core contracts and latency limits in the Release configuration used for distribution."
+    },
+    "quick-answer-tab-copy": {
+      "category": "improved",
+      "message": "Copy a quick answer with Tab and keep browsing in the Command Bar."
+    },
+    "private-numeric-interpretation": {
+      "category": "improved",
+      "message": "Use everyday wording for more calculations and conversions with on-device intelligence."
+    },
+    "command-bar-scrolling-sidebar-hide": {
+      "category": "fixed",
+      "message": "Smoother Command Bar scrolling and a steadier sidebar when hiding it."
+    },
+    "favicon-svg-readback": {
+      "category": "fixed",
+      "message": "Restore missing website icons on affected Macs."
+    },
+    "feedback-window-screenshot-draft": {
+      "category": "improved",
+      "message": "Send a bug report and reviewed screenshot directly from Ode, with your draft kept if sending fails."
+    },
+    "apple-intelligence-guide-and-help": {
+      "category": "improved",
+      "message": "Set up Apple Intelligence with a new illustrated guide, and read Help in Ode’s colors in light or dark appearance."
+    },
+    "arc-import-preview": {
+      "category": "fixed",
+      "message": "Import Arc Spaces without an unexpected quit."
+    },
+    "onboarding-import-choice": {
+      "category": "improved",
+      "message": "Continue setup without importing and keep your chosen appearance."
+    },
+    "onboarding-sidebar-placement": {
+      "category": "fixed",
+      "message": "Keep your chosen sidebar side after setup."
+    },
+    "crash-notice-attribution": {
+      "category": "fixed",
+      "message": "Only show crash notices for this Ode profile."
+    },
+    "onboarding-benefit-moments": {
+      "category": "improved",
+      "message": "Try optional examples of local answers, Spaces and sidebar room during setup."
     }
   }
 }

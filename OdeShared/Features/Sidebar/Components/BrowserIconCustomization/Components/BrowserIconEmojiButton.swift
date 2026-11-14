@@ -27,6 +27,7 @@ struct BrowserIconEmojiButton: View {
                     .strokeBorder(Color.accentColor, lineWidth: BrowserIconPickerLayout.selectedBorderWidth)
             }
         }
+        .odeControlPointer()
         .help(choice.name)
         .accessibilityLabel(choice.name)
         .accessibilityAddTraits(isSelected ? .isSelected : [])

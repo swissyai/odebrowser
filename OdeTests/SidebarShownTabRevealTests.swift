@@ -244,7 +244,10 @@ final class SidebarDeferredRevealTests: XCTestCase {
         mouse.send(.leftMouseUp, at: CGPoint(x: 140, y: 370))
         try await pause(700)
         XCTAssertGreaterThan(fixture.scroll.contentView.bounds.minY, owned + 1000)
-        XCTAssertTrue(fixture.model.phases.contains(.animating), "The observer must see the cue's requested scroll")
+        let reduceMotion = try XCTUnwrap(fixture.model.reduceMotion, "The fixture must observe its motion policy")
+        XCTAssertEqual(
+            fixture.model.phases.contains(.animating), !reduceMotion,
+            "The cue's requested scroll must respect the fixture's observed Reduce Motion policy")
     }
 
     func testInactiveSpaceAndLaterSelectionInvalidatePendingWork() async throws {
@@ -368,12 +371,14 @@ private final class DeferredRevealModel {
     var active = true
     var mounted = true
     var phases: [ScrollPhase] = []
+    var reduceMotion: Bool?
 }
 
 private struct DeferredRevealContent: View {
     // MARK: - Variables
 
     let model: DeferredRevealModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // MARK: - Actions - Content
 
@@ -408,5 +413,6 @@ private struct DeferredRevealContent: View {
                 .environment(\.sidebarSpaceIsSelected, model.active)
             }
         }
+        .onChange(of: reduceMotion, initial: true) { _, value in model.reduceMotion = value }
     }
 }

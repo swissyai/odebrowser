@@ -20,11 +20,12 @@ final class BrowserGettingStartedPractice {
     private var splitWidthMembers: [UUID] = []
     /// Each practice tab's identity in the practice the store holds.
     private var practiceTabIDs: [PracticeTab: UUID]
+    private let initialSpaces: [SpaceState.Seed]?
 
-    /// The practice Space as the read model holds it.
+    /// The selected practice Space as the read model holds it.
     var space: SpaceModel {
-        guard let model = browser.workspaceModel?.spaces.models.first else {
-            preconditionFailure("The practice workspace always holds its one Space.")
+        guard let model = browser.shownSpace ?? browser.workspaceModel?.spaces.models.first else {
+            preconditionFailure("The practice workspace always holds a Space.")
         }
         return model
     }
@@ -41,8 +42,9 @@ final class BrowserGettingStartedPractice {
 
     // MARK: - Initializers
 
-    init() {
-        let opened = Self.opened()
+    init(spaces: [SpaceState.Seed]? = nil) {
+        initialSpaces = spaces
+        let opened = Self.opened(spaces: spaces)
         browser = opened.browser
         practiceTabIDs = opened.tabIDs
         sidebarInteraction = BrowserSidebarInteractionState.connected(to: opened.browser)
@@ -58,7 +60,7 @@ final class BrowserGettingStartedPractice {
     /// Starts the practice over in a new practice workspace.
     func reset() {
         sidebarInteraction.cancel()
-        let opened = Self.opened()
+        let opened = Self.opened(spaces: initialSpaces)
         browser = opened.browser
         practiceTabIDs = opened.tabIDs
         sidebarInteraction = BrowserSidebarInteractionState.connected(to: browser)
@@ -69,18 +71,24 @@ final class BrowserGettingStartedPractice {
     /// A window over a new practice workspace, with each practice tab wearing
     /// its icon as a loaded page would leave it, and the practice tabs'
     /// identities in it.
-    private static func opened() -> (browser: BrowserStore, tabIDs: [PracticeTab: UUID]) {
+    private static func opened(spaces: [SpaceState.Seed]? = nil) -> (browser: BrowserStore, tabIDs: [PracticeTab: UUID])
+    {
         let core = OdeCore()
+        let family =
+            spaces.map {
+                BrowserStoreFamily(seed: SessionState.Seed(spaces: $0), core: core, workspaceKind: .practice)
+            } ?? BrowserStoreFamily(startingAs: .practice, in: core)
         let browser = BrowserStore(
             credentialVault: InMemoryCredentialVault(), browsingMode: .standard,
-            family: BrowserStoreFamily(startingAs: .practice, in: core), core: core)
+            family: family, core: core)
         var identities: [PracticeTab: UUID] = [:]
-        guard let space = browser.workspaceModel?.spaces.models.first else { return (browser, identities) }
-        for tab in space.tabs.models {
-            guard let practiceTab = PracticeTab.all.first(where: { $0.url == tab.url }) else { continue }
-            identities[practiceTab] = tab.id
-            if let icon = icon(of: practiceTab) {
-                browser.setTabFavicon(icon, iconAccent: nil, for: tab.id, in: space.id)
+        for space in browser.workspaceModel?.spaces.models ?? [] {
+            for tab in space.tabs.models {
+                guard let practiceTab = PracticeTab.all.first(where: { $0.url == tab.url }) else { continue }
+                identities[practiceTab] = tab.id
+                if let icon = icon(of: practiceTab) {
+                    browser.setTabFavicon(icon, iconAccent: nil, for: tab.id, in: space.id)
+                }
             }
         }
         return (browser, identities)
@@ -132,12 +140,24 @@ final class BrowserGettingStartedPractice {
         _ = browser.moveSplitMember(id, by: offset, matching: assignment)
     }
 
+    // MARK: - Actions - Local answers
+
+    /// Reads the same local rows as the Command Bar, without executing a row
+    /// or performing any of the optional network or model lookups it describes.
+    func answer(for text: String) throws -> PaletteAnswer {
+        try browser.core.query(
+            PaletteSuggestions(
+                windowID: browser.windowID, text: text, commands: [], settingsPages: [], remote: [],
+                provider: nil, scope: nil, allowsCompletion: false, pasteboard: nil, definition: nil,
+                webSummary: nil, spaceID: space.id, translation: nil, generative: nil))
+    }
+
     // MARK: - Actions - Sidebar
 
     /// The practice Space as the read model holds it, and what its rows act
     /// through, in the practice's own memory-only store.
     func listContext(capabilities: BrowserInteractionCapabilities) -> BrowserSidebarListContext? {
-        guard let space = browser.workspaceModel?.spaces.models.first, let window = browser.windowModel else {
+        guard let window = browser.windowModel else {
             return nil
         }
         return BrowserSidebarListContext(

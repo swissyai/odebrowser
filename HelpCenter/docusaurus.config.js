@@ -50,7 +50,7 @@ const config = {
     colorMode: {
       defaultMode: 'light',
       disableSwitch: true,
-      respectPrefersColorScheme: false,
+      respectPrefersColorScheme: true,
     },
     navbar: {
       title: 'Ode Help',
@@ -70,7 +70,7 @@ const config = {
       },
     },
     footer: {
-      style: 'dark',
+      style: 'light',
       links: [
         {
           title: 'Ode',

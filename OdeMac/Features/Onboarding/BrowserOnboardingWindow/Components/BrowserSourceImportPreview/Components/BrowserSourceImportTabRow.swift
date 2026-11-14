@@ -34,6 +34,7 @@ struct BrowserSourceImportTabRow: View {
                 }
             }
             .buttonStyle(.plain)
+            .odeControlPointer()
             .opacity(duplicate || included ? 1 : 0.4)
 
             BrowserSourceImportTabPlacementMenu(

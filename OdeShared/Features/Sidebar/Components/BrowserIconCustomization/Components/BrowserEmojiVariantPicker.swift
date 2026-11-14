@@ -47,6 +47,7 @@ struct BrowserEmojiVariantPicker: View {
                         .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
+                .odeControlPointer()
                 .accessibilityLabel(variant.name)
             }
         }

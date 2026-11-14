@@ -7,6 +7,106 @@ import XCTest
 
 @MainActor
 final class BrowserOnboardingFlowTests: XCTestCase {
+    func testConfirmedOnboardingLayoutUpdatesTheRendererOwnerAndSurvivesItsSave() {
+        let suite = "ode-onboarding-layout-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let appearance = BrowserDeviceAppearanceStore(defaults: defaults)
+        var continued = 0
+        let page = BrowserOnboardingLayoutPage(
+            back: BrowserOnboardingBackAction(closes: false, action: {}), continueSetup: { continued += 1 },
+            appearance: appearance, defaults: defaults)
+        XCTAssertFalse(appearance.sidebarOnRight)
+
+        page.confirmSelection(.right)
+
+        XCTAssertTrue(appearance.sidebarOnRight)
+        XCTAssertTrue(BrowserChromeAppearance.device(appearance, windowCornerRadius: nil).sidebarOnRight)
+        appearance.saveNow()
+        XCTAssertTrue(defaults.bool(forKey: BrowserChromeAppearancePreference.sidebarOnRightKey))
+        XCTAssertTrue(BrowserDeviceAppearanceStore(defaults: defaults).sidebarOnRight)
+        page.confirmSelection(.top)
+        XCTAssertTrue(appearance.sidebarOnRight, "Choosing top tabs preserves the next sidebar's side")
+        page.confirmSelection(.left)
+        XCTAssertFalse(appearance.sidebarOnRight)
+        XCTAssertEqual(continued, 3)
+    }
+
+    func testContinuingWithoutImportingPreservesLookAndLayoutWithoutApplyingASelectedOrReviewedImport() async throws {
+        let defaults = BrowserChromeAppearancePreference.defaults
+        let keys = [
+            BrowserChromeAppearancePreference.tabLayoutKey, BrowserChromeAppearancePreference.sidebarOnRightKey,
+        ]
+        let before = keys.map { defaults.object(forKey: $0) }
+        defer {
+            for (key, value) in zip(keys, before) {
+                if let value { defaults.set(value, forKey: key) } else { defaults.removeObject(forKey: key) }
+            }
+        }
+        defaults.set(BrowserTabLayout.top.name, forKey: keys[0])
+        defaults.set(true, forKey: keys[1])
+        for preparesReview in [false, true] {
+            let reader = SequencedImportReader(
+                results: [.success(readOutput(application: .arc, spaces: [makeSpace(name: "Not Imported")]))])
+            let flow = makeFlow(
+                sourceDiscovery: StubSourceDiscovery(sources: [source(.arc)]), reader: reader, entryPoint: .firstRun)
+            flow.start()
+            flow.chooseLook(.heraldic)
+            flow.show(.importBrowser)
+            flow.discoverInstalledSources()
+            let originalIDs = flow.browser.spaceModels.map(\.id)
+            let originalTabs = flow.browser.spaceModels.flatMap { $0.tabs.values }
+            if preparesReview {
+                flow.continueImportQueue()
+                try await waitUntil(interval: .zero) { flow.step == .review }
+            }
+
+            flow.beginManualSetup()
+
+            XCTAssertEqual(flow.step, .manualSetup)
+            XCTAssertEqual(flow.look, .heraldic)
+            let result = await BrowserSetupFinish.finish(
+                browser: flow.browser, spaceAccess: BrowserSpaceAccessController())
+            XCTAssertTrue(result is BrowserSetupCompleted)
+            XCTAssertEqual(flow.browser.spaceModels.map(\.id), originalIDs)
+            XCTAssertEqual(flow.browser.spaceModels.flatMap { $0.tabs.values }, originalTabs)
+            XCTAssertFalse(flow.browser.spaceModels.contains { $0.settings.name == "Not Imported" })
+            XCTAssertEqual(defaults.string(forKey: keys[0]), BrowserTabLayout.top.name)
+            XCTAssertTrue(defaults.bool(forKey: keys[1]))
+            let reads = await reader.readCount
+            XCTAssertEqual(reads, preparesReview ? 1 : 0)
+        }
+    }
+
+    func testContinuingWithoutImportingDiscardsALateReadAndFinishesTheManualSetup() async {
+        let reader = SuspendedFlowImportReader()
+        let flow = makeFlow(
+            sourceDiscovery: StubSourceDiscovery(sources: [source(.arc)]), reader: reader, entryPoint: .firstRun)
+        flow.start()
+        flow.chooseLook(.heraldic)
+        flow.show(.importBrowser)
+        flow.discoverInstalledSources()
+        let originalIDs = flow.browser.spaceModels.map(\.id)
+        let originalTabs = flow.browser.spaceModels.flatMap { $0.tabs.values }
+        flow.continueImportQueue()
+        await reader.waitUntilStarted()
+
+        flow.beginManualSetup()
+        let discarded = expectation(description: "Continuing without import discards the abandoned read")
+        var output = readOutput(application: .arc, spaces: [makeSpace(name: "Not Imported")])
+        output.discard = { discarded.fulfill() }
+        await reader.complete(output)
+        await fulfillment(of: [discarded], timeout: 2)
+
+        XCTAssertEqual(flow.step, .manualSetup)
+        XCTAssertEqual(flow.look, .heraldic)
+        XCTAssertNil(flow.review)
+        let result = await BrowserSetupFinish.finish(browser: flow.browser, spaceAccess: BrowserSpaceAccessController())
+        XCTAssertTrue(result is BrowserSetupCompleted)
+        XCTAssertEqual(flow.browser.spaceModels.map(\.id), originalIDs)
+        XCTAssertEqual(flow.browser.spaceModels.flatMap { $0.tabs.values }, originalTabs)
+    }
+
     func testAFailedReadRetriesAndTheReviewedImportLandsInTheSession() async throws {
         let reader = SequencedImportReader(
             results: [

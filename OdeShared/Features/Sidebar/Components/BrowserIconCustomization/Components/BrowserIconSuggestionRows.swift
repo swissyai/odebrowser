@@ -77,6 +77,7 @@ struct BrowserIconSuggestionRows: View {
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .odeControlPointer()
         .help(help)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

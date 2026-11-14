@@ -467,11 +467,14 @@ internal sealed class NativeWorkspaceImport {
             DefaultSpaceId = defaultSpace,
             DisposableSeedMarker = seedMarker
         };
-        var repaired = NativeSessionMaintenance.Repair(imported, now, null, ids, out _);
+        var repaired = NativeSessionMaintenance.Repair(imported, now, null, ids, out _, out var positions);
         // Show the imported instance even when repair replaced a colliding ID.
-        if (affectedIndex >= 0) followUp.ShowSpace(repaired.Spaces[affectedIndex].Id);
-        foreach (var (si, ti) in shown) followUp.ShowTab(repaired.Spaces[si].Id, repaired.Spaces[si].Tabs[ti].Id);
-        var (importedTabs, copies) = Placed(before, repaired);
+        if (affectedIndex >= 0) followUp.ShowSpace(repaired.Spaces[positions[affectedIndex]].Id);
+        foreach (var (si, ti) in shown) {
+            var space = repaired.Spaces[positions[si]];
+            followUp.ShowTab(space.Id, space.Tabs[ti].Id);
+        }
+        var (importedTabs, copies) = Placed(before, repaired, positions);
         return new(repaired, importedTabs, copies);
     }
 
@@ -480,7 +483,7 @@ internal sealed class NativeWorkspaceImport {
     /// the session's own tabs repair gave a new identity. A Space repair kept
     /// as it was, such as one being deleted, placed nothing.
     private (IReadOnlyList<ImportedTab> Imported, IReadOnlyList<SessionTabCopy> Copied) Placed(IReadOnlyList<SpaceState> before,
-        SessionState repaired) {
+        SessionState repaired, IReadOnlyList<int> positions) {
         var imported = new List<ImportedTab>();
         var copied = new List<SessionTabCopy>();
         void Place(object record, Guid id) {
@@ -489,7 +492,7 @@ internal sealed class NativeWorkspaceImport {
             else if (id != origin.TabId) copied.Add(new(origin.TabId, id));
         }
         for (int si = 0; si < before.Count; si++) {
-            var space = repaired.Spaces[si];
+            var space = repaired.Spaces[positions[si]];
             if (ReferenceEquals(space, before[si])) continue;
             for (int ti = 0; ti < before[si].Tabs.Count; ti++) Place(before[si].Tabs[ti], space.Tabs[ti].Id);
             // Repair drops a Start Page from the archive.

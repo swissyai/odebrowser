@@ -145,6 +145,7 @@ struct BrowserPlatformCommandPaletteField: NSViewRepresentable {
         }
 
         func controlTextDidBeginEditing(_ notification: Notification) {
+            model.isFieldFocused = true
             guard let editor = field?.currentEditor() as? NSTextView else { return }
             editor.insertionPointColor = caretColor ?? .controlAccentColor
             editor.isAutomaticTextCompletionEnabled = false
@@ -194,12 +195,14 @@ struct BrowserPlatformCommandPaletteField: NSViewRepresentable {
         func controlTextDidChange(_ notification: Notification) { editingChanged() }
 
         func controlTextDidEndEditing(_ notification: Notification) {
+            model.isFieldFocused = false
             model.rejectURLCompletion()
             stopWatchingKeys()
             detachSuffix()
         }
 
         func dismantle(_ field: NSTextField) {
+            model.isFieldFocused = false
             stopWatchingKeys()
             detachSuffix()
             if field.delegate === self { field.delegate = nil }

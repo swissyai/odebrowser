@@ -31,10 +31,6 @@ struct BrowserOnboardingStepContent: View, BrowserOnboardingPages {
             action: BrowserOnboardingWelcomeAction(
                 flow: flow.state, cloudPhase: cloudSync.phase, wait: cloudWait.stage,
                 forcesSetup: progress.forcesSetup),
-            hasCompletedSetup: progress.hasCompletedSetup,
-            hasDisposableSeedState: flow.hasDisposableSeedState,
-            cloudUnavailableInBuild: cloudSync.status.problem == .notConfigured
-                || cloudSync.status.problem == .entitlementMissing,
             continueSetup: continueSetup,
             setUpWithoutCloud: {
                 cloudWait.setUpWithoutCloud()
