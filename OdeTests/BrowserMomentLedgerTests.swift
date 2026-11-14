@@ -227,7 +227,7 @@ final class BrowserMomentLedgerTests: XCTestCase {
     }
 
     @MainActor
-    func testTheCommandBarOpenIsTimedToTheFrameThatShowsItsField() {
+    func testTheCommandBarOpenIsTimedToTheFrameThatShowsItsField() async {
         BrowserMoments.shared.reset()
         defer { BrowserMoments.shared.reset() }
         BrowserChromeState().presentCommandPalette()
@@ -236,7 +236,12 @@ final class BrowserMomentLedgerTests: XCTestCase {
             defer: true)
         window.contentView?.addSubview(BrowserPlatformCommandPaletteField.Field())
         XCTAssertEqual(BrowserMoments.shared.ledger.count(.commandBarOpen), 0, "The frame is not committed yet.")
-        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        let committed = expectation(description: "The command field’s frame committed")
+        BrowserMoments.shared.afterNextCommit {
+            // Let every observer of this commit finish before inspecting the ledger.
+            DispatchQueue.main.async { committed.fulfill() }
+        }
+        await fulfillment(of: [committed], timeout: 5)
         XCTAssertEqual(BrowserMoments.shared.ledger.count(.commandBarOpen), 1)
     }
 
