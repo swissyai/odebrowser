@@ -312,6 +312,7 @@ class BuiltProducts:
         self.profile = None
         self.signed_entitlements = {"com.apple.security.device.audio-input": True}
         self.commands = []
+        self.plutil_run = None
 
     def relative(self, part: str) -> str:
         return part.replace(str(self.root), "<root>")
@@ -336,6 +337,8 @@ class BuiltProducts:
                 shutil.copytree(source, destination, symlinks=True, dirs_exist_ok=True)
             else:
                 shutil.copy2(source, destination)
+        elif command[0] == "plutil" and self.plutil_run is not None:
+            return self.plutil_run(command, **kwargs)
         elif command[:2] == ["codesign", "-d"]:
             return subprocess.CompletedProcess(command, 0, plistlib.dumps(self.signed_entitlements), b"")
         return subprocess.CompletedProcess(command, 0, b"", b"")
@@ -411,6 +414,37 @@ class ChromiumPackageAssemblyTests(unittest.TestCase):
         self.assertEqual(read_plist(contents / "Resources/de.lproj/InfoPlist.strings"),
                          {"NSMicrophoneUsageDescription": f"{product_name} braucht das Mikrofon."})
 
+    @unittest.skipUnless(sys.platform == "darwin", "Requires macOS Foundation plutil serialization")
+    def test_packaged_info_is_foundation_stable_without_changing_dictionary_semantics(self) -> None:
+        built = self.products(product=True)
+        built.plutil_run = subprocess.run  # Real Foundation serialization; copying and signing stay mocked.
+        built.package("--product", "--distribution", "--ui", str(built.ui), "--core", str(built.core))
+
+        info_path = built.output / "Contents/Info.plist"
+        packaged = info_path.read_bytes()
+        info = plistlib.loads(packaged)
+        self.assertIsInstance(info["SUScheduledCheckInterval"], float)
+        self.assertEqual(info["SUScheduledCheckInterval"], 3600.0)
+        python_xml = plistlib.dumps(info)
+        self.assertIn(b"<real>3600.0</real>", python_xml)
+        source = self.root / "python-info.plist"
+        source.write_bytes(python_xml)
+        foundation_xml = subprocess.check_output(
+            ["plutil", "-convert", "xml1", "-o", "-", str(source)])
+        self.assertEqual(plistlib.loads(foundation_xml), info)
+        self.assertEqual(packaged, foundation_xml)
+        self.assertEqual(subprocess.check_output(
+            ["plutil", "-convert", "xml1", "-o", "-", str(info_path)]), packaged)
+
+    def test_failed_info_normalization_stops_before_signing(self) -> None:
+        built = self.products(product=True)
+        built.plutil_run = mock.Mock(side_effect=subprocess.CalledProcessError(1, "plutil"))
+        with self.assertRaises(subprocess.CalledProcessError):
+            built.package("--product", "--distribution", "--ui", str(built.ui), "--core", str(built.core))
+        built.plutil_run.assert_called_once_with(
+            ["plutil", "-convert", "xml1", str(built.output / "Contents/Info.plist")], check=True)
+        self.assertFalse(any(command[0] == "codesign" for command in built.commands))
+
     def test_a_release_package_claims_the_product_identity_and_signs_for_notarization(self) -> None:
         built = self.products(product=True)
         built.profile = {"Entitlements": {
@@ -450,6 +484,11 @@ class ChromiumPackageAssemblyTests(unittest.TestCase):
         self.assertEqual((contents / "embedded.provisionprofile").read_bytes(), b"signed profile")
         self.assert_host_contents(built, "Ode")
 
+        normalization = ["plutil", "-convert", "xml1", "<root>/Out/Ode.app/Contents/Info.plist"]
+        self.assertEqual(built.commands.count(normalization), 1)
+        first_signature = next(index for index, command in enumerate(built.commands)
+                               if command[0] == "codesign" and "--sign" in command)
+        self.assertLess(built.commands.index(normalization), first_signature)
         signed = built.signatures()
         self.assert_innermost_first(signed)
         jit = {"com.apple.security.cs.allow-jit": True}

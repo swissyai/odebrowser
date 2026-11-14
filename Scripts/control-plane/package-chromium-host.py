@@ -598,6 +598,10 @@ def write_info(package, icon):
         info.pop("CFBundleDocumentTypes", None)
     with info_path.open("wb") as stream:
         plistlib.dump(info, stream)
+    # Chromium dynamically validates Foundation's XML serialization against
+    # the signed Info.plist slot. Normalize Python's XML before signing so
+    # equivalent values (such as real 3600.0) have identical signed bytes.
+    subprocess.run(["plutil", "-convert", "xml1", str(info_path)], check=True)
     return info
 
 
