@@ -45,13 +45,22 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
                 readPasteboard: { nil }),
             isSourceAvailable: { _ in true }, selectTab: { _, _ in false }, openURL: { _, _, _ in false }, dismiss: {})
 
-        // The production model must actually reach both clients through the
-        // loopback fixture before a lack of arithmetic requests proves anything.
+        // Ordinary text stays private while Ask Ode is enabled. Opt out to
+        // prove both remote clients work, then restore privacy for arithmetic.
+        preferences.palette = preferences.palette.offering(.askOde, false)
+        try browser.core.send(SetAppPreferences(workspaceID: browser.family.workspaceID, preferences: preferences))
+        model.preferencesChanged()
         model.query = "Ada Lovelace"
         await model.waitForPendingResults()
         XCTAssertTrue(server.requests.contains { $0.path.hasPrefix("/www.google.com/") })
         XCTAssertTrue(server.requests.contains { $0.path.contains("en.wikipedia.org") })
         let before = server.requests.count
+        model.query = ""
+        await model.waitForPendingResults()
+        preferences.palette = preferences.palette.offering(.askOde, true)
+        try browser.core.send(SetAppPreferences(workspaceID: browser.family.workspaceID, preferences: preferences))
+        model.preferencesChanged()
+        await model.waitForPendingResults()
         for (query, expected) in [("1e3+2", "1002"), ("20% of 80", "16"), ("20% off 80", "64")] {
             model.query = query
             await model.waitForPendingResults()

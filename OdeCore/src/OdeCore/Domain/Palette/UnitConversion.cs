@@ -222,6 +222,11 @@ internal sealed partial class UnitConversion {
         if (units.Any(unit => unit != origin && unit != target
             && !(unit.Start == directionStart && source.Substring(unit.Start, unit.Length).Equals("in", StringComparison.OrdinalIgnoreCase))))
             return null;
+        return QuotedQuantity(source, quote, from, to, number, end);
+    }
+
+    private static double? QuotedQuantity(string source, string? quote, Unit from, Unit to,
+        (string Quote, double Value, int Start) number, int end) {
         bool article = number.Quote.Equals("a", StringComparison.OrdinalIgnoreCase)
             || number.Quote.Equals("an", StringComparison.OrdinalIgnoreCase);
         if (article && (quote is null || quote == "1") && from.Offset == 0 && to.Offset == 0) return 1;
