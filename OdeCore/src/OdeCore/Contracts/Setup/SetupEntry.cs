@@ -7,10 +7,10 @@ namespace OdeCore.Contracts;
 public sealed class SetupEntry {
     #region Static Variables
 
-    /// The first launch on a device. Lessons are embedded in setup, so
-    /// finishing enters browsing without opening a second guide.
+    /// The first launch on a device. Desktop finishing opens the short
+    /// Getting Started tour once, after setup completes.
     public static readonly SetupEntry FirstRun = new(name: "firstRun", firstStep: SetupStep.Welcome, isGuided: true,
-        startsManualSetupOver: false, opensGuide: _ => false);
+        startsManualSetupOver: false, opensGuide: completed => !completed);
     /// Importing from another browser, asked for from the app.
     public static readonly SetupEntry ImportBrowser = new(name: "importBrowser", firstStep: SetupStep.ImportBrowser, isGuided: false,
         startsManualSetupOver: false, opensGuide: _ => false);

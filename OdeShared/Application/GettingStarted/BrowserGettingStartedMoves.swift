@@ -42,6 +42,63 @@ enum BrowserGettingStartedMove: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// The guide's immediate action, without repeating the reference answer.
+    var cue: LocalizedStringResource {
+        switch self {
+        case .commandBar: "Find anything"
+        case .siteSearch: "Search a site"
+        case .splitView: "See two pages together"
+        case .peek: "Take a quick look"
+        case .switchSpace: "Switch spaces"
+        case .boost: "Make a site yours"
+        case .askAI: "Ask an assistant"
+        }
+    }
+
+    var hint: LocalizedStringResource {
+        switch self {
+        case .commandBar: "Find a tab, a setting or something on the web."
+        case .siteSearch: "Choose a site in Search settings."
+        case .splitView: "Drag a tab from the sidebar onto a page."
+        case .peek: "Option-click a link on a web page."
+        case .switchSpace: "Choose another Space in the sidebar."
+        case .boost: "On a website, choose Page > Boost This Site."
+        case .askAI: "Choose an assistant in Search settings."
+        }
+    }
+
+    var consequence: LocalizedStringResource? {
+        switch self {
+        case .splitView: "The split stays until you remove it."
+        case .boost: "Ode saves the changes for this site in this Space."
+        case .askAI: "Your question opens on the assistant’s website."
+        default: nil
+        }
+    }
+
+    /// Guidance stays with the requested site or assistant, and yields when
+    /// the person starts an unrelated task. No text is retained here.
+    func paletteHint(
+        for text: String, provider: SearchProvider?, offer: SearchProvider?, example: String? = nil
+    ) -> LocalizedStringResource? {
+        if self == .commandBar { return text.isEmpty ? "Type an address or a search." : nil }
+        guard self == .siteSearch || self == .askAI else { return nil }
+        if let provider {
+            guard accepts(provider) else { return nil }
+            return self == .askAI ? "Type a question and press Return." : "Type a search and press Return."
+        }
+        if let offer, accepts(offer) {
+            return "Press Tab to use \(offer.title)."
+        }
+        guard let example, example.lowercased().hasPrefix(text.trimmingCharacters(in: .whitespaces).lowercased())
+        else { return nil }
+        return "Type \(example)."
+    }
+
+    func accepts(_ provider: SearchProvider) -> Bool {
+        self == .askAI ? provider.kind == .assistant : self == .siteSearch && provider.kind == .website
+    }
+
     /// The steps, in order.
     var steps: [String] {
         switch self {
@@ -55,13 +112,13 @@ enum BrowserGettingStartedMove: String, CaseIterable, Identifiable, Sendable {
             [
                 String(
                     localized:
-                        "Open the Command Bar and type a site's shortcut, such as yt for YouTube or w for Wikipedia."),
-                String(localized: "Press Tab. The site's name appears beside the field."),
+                        "In Settings > Search, enable a site and Tab to search providers, and check its shortcut."),
+                String(localized: "Type that shortcut in the Command Bar. Press Tab when the site is offered."),
                 String(localized: "Type your search and press Return."),
             ]
         case .splitView:
             [
-                String(localized: "Drag a tab from the sidebar onto the page you're looking at."),
+                String(localized: "Open two pages, then drag one tab from the sidebar onto the other page."),
                 String(localized: "Or right-click a tab in the sidebar and choose Split with Current Tab."),
                 String(localized: "Click a side to choose which page the keyboard and address bar use."),
             ]
@@ -73,7 +130,10 @@ enum BrowserGettingStartedMove: String, CaseIterable, Identifiable, Sendable {
             ]
         case .switchSpace:
             [
-                String(localized: "Press Control-1 to Control-9 to jump to a Space by its place, as in Arc."),
+                String(
+                    localized:
+                        "With one Space, show the sidebar and right-click an empty area, then choose New Space… Press Control-1 to Control-9 to jump to a Space."
+                ),
                 String(localized: "Or click the Space's icon at the bottom of the sidebar."),
                 String(localized: "Or swipe left or right with two fingers over the sidebar."),
             ]
@@ -89,8 +149,9 @@ enum BrowserGettingStartedMove: String, CaseIterable, Identifiable, Sendable {
             [
                 String(
                     localized:
-                        "Open the Command Bar and type the assistant's name, such as chatgpt, claude or perplexity."),
-                String(localized: "Press Tab."),
+                        "In Settings > Search, enable an AI website and Tab to search providers, and check its shortcut."
+                ),
+                String(localized: "Type that shortcut in the Command Bar. Press Tab when the assistant is offered."),
                 String(localized: "Type your question and press Return. It opens on the assistant's own site."),
             ]
         }
@@ -115,6 +176,33 @@ enum BrowserGettingStartedMove: String, CaseIterable, Identifiable, Sendable {
         case .switchSpace: .nextSpace
         case .peek, .boost: nil
         }
+    }
+}
+
+/// The current window's prerequisites, read without changing its preferences or browsing data.
+@MainActor
+struct BrowserGettingStartedGuideContext {
+    let searchesWithTab: Bool
+    let hasOtherSpace: Bool
+    let canSplit: Bool
+    private let providers: [SearchProvider]
+
+    init(browser: BrowserStore) {
+        let catalog = BrowserSearchCatalog(core: browser.core)
+        providers = catalog.providers.filter { catalog.isEnabled($0) }
+        searchesWithTab = BrowserAppPreferenceStore.shared.preferences.palette.searchesSitesWithTab
+        hasOtherSpace = browser.availableSpaces.count > 1
+        canSplit = browser.nextSplitJoinCandidate != nil
+    }
+
+    func provider(for move: BrowserGettingStartedMove) -> SearchProvider? {
+        guard searchesWithTab else { return nil }
+        return providers.first { move.accepts($0) }
+    }
+
+    func keyword(for move: BrowserGettingStartedMove) -> String? {
+        guard let provider = provider(for: move) else { return nil }
+        return provider.shortcuts.first ?? provider.site
     }
 }
 
@@ -149,6 +237,13 @@ final class BrowserGettingStartedMoves {
         self.defaults = defaults
         done = Set(
             (defaults?.stringArray(forKey: Self.defaultsKey) ?? []).compactMap(BrowserGettingStartedMove.init))
+    }
+
+    /// The next unfinished move after the current one, wrapping once.
+    func next(after move: BrowserGettingStartedMove) -> BrowserGettingStartedMove? {
+        let all = BrowserGettingStartedMove.allCases
+        let start = all.firstIndex(of: move) ?? 0
+        return (1...all.count).lazy.map { all[(start + $0) % all.count] }.first { !done.contains($0) }
     }
 
     // MARK: - Actions - Recording

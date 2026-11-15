@@ -36,6 +36,11 @@ Concise copy removes repetition, not information needed to make a choice.
 - Keep errors short and specific: what failed and the next useful action.
   Preserve the draft or other recoverable work; do not imply it was lost or
   promise a recovery the product cannot perform.
+- Interactive guides show one current action, with other topics available on
+  demand. Keep feedback tied to real completion; guidance must never intercept
+  or delay input, and must yield when the person starts an unrelated task.
+- Guide actions and examples match enabled capabilities and configured shortcuts;
+  offer an explicit setup route when a prerequisite is unavailable.
 - Keep required credits, license links and legal notices accessible in About’s
   Credits and Licenses area. Preserve exact upstream notices and copyright.
   Mention Arc or another browser only for a useful, truthful migration or

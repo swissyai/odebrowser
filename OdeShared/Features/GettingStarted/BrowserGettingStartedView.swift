@@ -3,220 +3,265 @@
 
     struct BrowserGettingStartedView: View {
         let openURL: (URL) -> Void
+        let browse: () -> Void
+        let guideContext: () -> BrowserGettingStartedGuideContext?
+        let openSearchSettings: () -> Bool
         @Bindable var state: BrowserGettingStartedState
         private var practice: BrowserGettingStartedPractice { state.practice }
-        private var chapter: BrowserGettingStartedChapter {
-            get { state.chapter }
-            nonmutating set { state.chapter = newValue }
-        }
-        private var lesson: BrowserGettingStartedLesson {
-            get { state.lesson }
-            nonmutating set { state.lesson = newValue }
-        }
-
-        init(state: BrowserGettingStartedState = BrowserGettingStartedState(), openURL: @escaping (URL) -> Void) {
-            self.state = state
-            self.openURL = openURL
-        }
         @Environment(\.accessibilityReduceMotion) private var reduceMotion
         @Environment(BrowserGettingStartedMoves.self) private var moves: BrowserGettingStartedMoves?
         @Environment(\.browserNativeTabActions) private var actions
+        @Environment(BrowserGettingStartedTour.self) private var tour: BrowserGettingStartedTour?
+
+        init(
+            state: BrowserGettingStartedState = BrowserGettingStartedState(),
+            guideContext: @escaping () -> BrowserGettingStartedGuideContext? = { nil },
+            openSearchSettings: @escaping () -> Bool = { false }, browse: @escaping () -> Void = {},
+            openURL: @escaping (URL) -> Void
+        ) {
+            self.state = state
+            self.browse = browse
+            self.guideContext = guideContext
+            self.openSearchSettings = openSearchSettings
+            self.openURL = openURL
+        }
 
         var body: some View {
             GeometryReader { geometry in
-                let wide = geometry.size.width >= 820
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
+                if let tour, tour.isShowingGuide {
+                    VStack(spacing: OdeSpacing.large) {
                         masthead
-                        chapterPicker
-                        practiceStage(wide: wide, height: max(560, min(680, geometry.size.height - 175)))
-                        footer
+                        BrowserGettingStartedTourView(tour: tour, runCommand: actions.runCommand) {
+                            tour.dismiss(completed: true)
+                            state.chapter = .moves
+                        }
                     }
-                    .padding(geometry.size.width < 600 ? 20 : 30)
-                    .frame(maxWidth: 1240)
-                    .frame(maxWidth: .infinity)
+                    .padding(geometry.size.width < 600 ? OdeSpacing.large : 30)
+                    .background(OdeBrandTheme.canvas)
+                } else {
+                    ScrollView {
+                        VStack(spacing: OdeSpacing.extraExtraLarge) {
+                            masthead
+                            if state.chapter.showsMoves, let moves {
+                                BrowserGettingStartedMovesStage(
+                                    moves: moves, selection: $state.move, runCommand: actions.runCommand,
+                                    context: guideContext(), openSearchSettings: openSearchSettings,
+                                    practiceSplit: { selectChapter(.splitView) },
+                                    compact: geometry.size.height < 500
+                                )
+                                .frame(minHeight: max(260, geometry.size.height - 140))
+                            } else {
+                                practiceStage(wide: geometry.size.width >= 820, height: geometry.size.height)
+                            }
+                        }
+                        .padding(geometry.size.width < 600 ? OdeSpacing.large : 30)
+                        .frame(maxWidth: 1080).frame(maxWidth: .infinity)
+                    }
+                    .browserNativeScrollState(state.scroll)
+                    .background(OdeBrandTheme.canvas)
                 }
-                .browserNativeScrollState(state.scroll)
-                .contentMargins(.trailing, 8, for: .scrollContent)
-                .background(OdeBrandTheme.canvas)
             }
             .environment(practice.sidebarInteraction)
             .onDisappear { practice.sidebarInteraction.cancel() }
             .onChange(of: moves?.requestedMove, initial: true) { _, requested in
                 guard let requested else { return }
-                chapter = .moves
+                tour?.dismiss()
+                state.chapter = .moves
                 state.move = requested
                 moves?.requestedMove = nil
             }
             .font(OdeTypography.sans(14))
-            .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: chapter)
-        }
-
-        /// The everyday moves, which happen in the person's own window, or
-        /// the practice window for the other chapters.
-        @ViewBuilder
-        private func practiceStage(wide: Bool, height: CGFloat) -> some View {
-            if chapter.showsMoves, let moves {
-                VStack(alignment: .leading, spacing: 24) {
-                    heading
-                    BrowserGettingStartedMovesStage(
-                        moves: moves, selection: $state.move, wide: wide, runCommand: actions.runCommand)
-                }
-                .frame(maxWidth: .infinity, minHeight: height, alignment: .topLeading)
-                .transition(.opacity)
-            } else {
-                practiceWindowStage(wide: wide, height: height)
-            }
-        }
-
-        /// The practice window, beside the lessons when there is room, under
-        /// them when there is not. One window keeps its identity as its place
-        /// and width change between chapters, and it always fits the guide's
-        /// width, so its rounded corners and shadow are never cut.
-        private func practiceWindowStage(wide: Bool, height: CGFloat) -> some View {
-            GeometryReader { stage in
-                let instructionsWidth: CGFloat = wide ? 280 : 220
-                let windowX: CGFloat = chapter.showsLessons && wide ? instructionsWidth + 28 : 0
-                let windowY: CGFloat = chapter.showsLessons && !wide ? 310 : 0
-                ZStack(alignment: .topLeading) {
-                    if chapter.showsLessons {
-                        VStack(alignment: .leading, spacing: 24) {
-                            heading
-                            tabLesson
-                        }
-                        .frame(width: wide ? instructionsWidth : stage.size.width, alignment: .leading)
-                        .frame(height: wide ? height : 290, alignment: .center)
-                        .transition(.opacity)
-                    }
-                    BrowserGettingStartedPracticeWindow(practice: practice, showsSplit: chapter.showsSplit)
-                        .frame(
-                            width: chapter.showsLessons && wide
-                                ? max(0, stage.size.width - windowX) : stage.size.width,
-                            height: height
-                        )
-                        .offset(x: windowX, y: windowY)
-                }
-                .animation(reduceMotion ? nil : .spring(response: 0.55, dampingFraction: 0.9), value: chapter)
-            }
-            .frame(height: height + (chapter.showsLessons && !wide ? 310 : 0))
-        }
-
-        private var heading: some View {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(chapter.title).font(OdeTypography.display(34))
-                Text(chapter.introduction).font(OdeTypography.sans(14)).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
         }
 
         private var masthead: some View {
-            HStack(spacing: 9) {
+            HStack(spacing: OdeSpacing.small) {
                 OdeMark().frame(width: 22, height: 22)
                 Text("Getting Started").font(OdeTypography.sans(13, weight: .semibold))
                 Spacer()
-                Button("Reset practice", systemImage: "arrow.counterclockwise") {
-                    practice.reset()
-                    lesson = .pin
-                    if chapter.showsMoves {
-                        moves?.reset()
-                        state.move = nil
+                if tour?.isRunning != true {
+                    topics
+                    Button("Browse", systemImage: "arrow.right", action: browse).buttonStyle(.odeSecondary)
+                }
+            }
+        }
+
+        private var topics: some View {
+            Menu {
+                Group {
+                    if let tour {
+                        Button("Take the quick tour", systemImage: "play") { tour.replay() }
+                    }
+                    Menu("Everyday moves", systemImage: "command") {
+                        ForEach(BrowserGettingStartedMove.allCases) { move in
+                            Button {
+                                state.chapter = .moves
+                                state.move = move
+                            } label: {
+                                Label(
+                                    move.cue,
+                                    systemImage: moves?.done.contains(move) == true ? "checkmark.circle" : "circle")
+                            }
+                        }
+                        .odeMenuActionLabelStyle()
+                    }
+                    Menu("Tabs & folders", systemImage: "folder") {
+                        ForEach(BrowserGettingStartedLesson.all) { lesson in
+                            Button(lesson.title, systemImage: "rectangle.on.rectangle") {
+                                state.chapter = .tabs
+                                state.lesson = lesson
+                            }
+                        }
+                        .odeMenuActionLabelStyle()
+                    }
+                    Button("Split View", systemImage: "rectangle.split.2x1") { selectChapter(.splitView) }
+                    Divider()
+                    Button(
+                        state.chapter.showsMoves ? "Reset progress" : "Reset practice",
+                        systemImage: "arrow.counterclockwise"
+                    ) {
+                        practice.reset()
+                        state.lesson = .pin
+                        if state.chapter.showsMoves {
+                            moves?.reset()
+                            state.move = .commandBar
+                        }
                     }
                 }
-                .buttonStyle(.plain).foregroundStyle(.secondary)
+                .odeMenuActionLabelStyle()
+            } label: {
+                Label("Explore", systemImage: "book")
             }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .odeControlPointer()
+            .accessibilityLabel("Explore Getting Started")
         }
 
-        private var chapterPicker: some View {
-            HStack(spacing: 8) {
-                ForEach(BrowserGettingStartedChapter.all) { option in
-                    chapterButton(option)
-                }
-            }
-        }
-
-        private func chapterButton(_ option: BrowserGettingStartedChapter) -> some View {
-            OdeSelectableCard(
-                isSelected: chapter == option, accessibilityLabel: Text(option.pickerTitle), density: .compact
-            ) {
-                selectChapter(option)
-            } content: {
-                Text(option.pickerTitle).font(OdeTypography.sans(13, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, OdeSpacing.extraSmall)
-            }
-        }
-
-        private var tabLesson: some View {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack {
-                    Text("Try it").font(OdeTypography.sans(12, weight: .semibold)).foregroundStyle(
-                        .secondary)
-                    Spacer()
-                    Text("\(lesson.number) / \(BrowserGettingStartedLesson.all.count)").font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
-                }
-                Text(lesson.title).font(OdeTypography.display(25))
-                Text(lesson.detail).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        private func practiceStage(wide: Bool, height: CGFloat) -> some View {
+            VStack(spacing: OdeSpacing.large) {
                 ViewThatFits(in: .horizontal) {
-                    HStack {
-                        lessonActions
-                        Spacer()
-                        nextLesson
+                    HStack(spacing: OdeSpacing.extraExtraLarge) {
+                        practiceCue.frame(width: 260)
+                        practiceWindow(height: height).frame(width: wide ? 580 : 480)
                     }
-                    VStack(alignment: .leading, spacing: 12) {
-                        lessonActions
-                        nextLesson
+                    VStack(spacing: OdeSpacing.large) {
+                        practiceCue
+                        practiceWindow(height: height)
+                    }
+                }
+                HStack(spacing: OdeSpacing.large) {
+                    Spacer(minLength: 0)
+                    if state.chapter.showsLessons {
+                        Text("\(state.lesson.number) of \(BrowserGettingStartedLesson.all.count)")
+                            .font(OdeTypography.sans(13)).foregroundStyle(OdeBrandTheme.textSecondary)
+                        Button(lessonIsDone ? "Next" : "Skip", systemImage: "arrow.right") { nextLesson() }
+                            .buttonStyle(.odeSecondary)
                     }
                 }
             }
-
         }
 
-        @ViewBuilder private var lessonActions: some View {
-            switch lesson.kind {
-            case .pin:
-                BrowserGettingStartedPinAction(practice: practice)
-            case .save:
-                BrowserGettingStartedSaveAction(
-                    practice: practice, title: "Save this tab", systemImage: "bookmark.fill")
-            case .folders:
-                HStack { BrowserGettingStartedFolderActions(practice: practice) }
-            case .clear:
-                BrowserGettingStartedClearHint()
-            }
+        private func practiceWindow(height: CGFloat) -> some View {
+            BrowserGettingStartedPracticeWindow(practice: practice, showsSplit: state.chapter.showsSplit)
+                .frame(height: min(400, max(280, height * 0.58)))
         }
 
-        private var nextLesson: some View {
-            Button(lesson.next == nil ? "Try Split View" : "Next", systemImage: "arrow.right") {
-                if let next = lesson.next {
-                    lesson = next
+        private var practiceCue: some View {
+            VStack(spacing: OdeSpacing.medium) {
+                if state.chapter.showsSplit {
+                    splitCue
                 } else {
-                    selectChapter(.splitView)
+                    Text(lessonIsDone ? "Done" : lessonCue).font(OdeTypography.display(30))
+                    if !lessonIsDone {
+                        Text("Only this example Space changes.")
+                            .font(OdeTypography.sans(12)).foregroundStyle(OdeBrandTheme.textSecondary)
+                        lessonAction
+                    }
                 }
-            }.buttonStyle(.odeSecondary)
+                Image(decorative: "OdeWelcomeBeret").resizable().scaledToFit().frame(height: 64)
+                    .accessibilityHidden(true)
+            }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: 480)
+        }
+
+        private var lessonCue: LocalizedStringKey {
+            switch state.lesson.kind {
+            case .pin: "Keep an app close"
+            case .save: "Keep a tab for later"
+            case .folders: "Give ideas a home"
+            case .clear: "Clear some space"
+            }
+        }
+
+        private var lessonIsDone: Bool {
+            switch state.lesson.kind {
+            case .pin:
+                practice.tabID(.mail).flatMap { practice.space.tabs.model($0) }?.placement == .pinned
+            case .save:
+                practice.tabID(.trail).flatMap { practice.space.tabs.model($0) }?.placement == .saved
+            case .folders:
+                practice.space.folders.models.contains { $0.parentID != nil }
+            case .clear:
+                !practice.space.tabs.models.contains { $0.placement == .current }
+            }
+        }
+
+        @ViewBuilder private var lessonAction: some View {
+            switch state.lesson.kind {
+            case .pin:
+                Text("Pins stay at the top.").foregroundStyle(OdeBrandTheme.textSecondary)
+                BrowserGettingStartedPinAction(practice: practice, style: .odePrimary)
+            case .save:
+                Text("Saved tabs stay until you remove them.").foregroundStyle(OdeBrandTheme.textSecondary)
+                BrowserGettingStartedSaveAction(
+                    practice: practice, title: "Save A weekend away", systemImage: "bookmark", style: .odePrimary)
+            case .folders:
+                let hasFolder = practice.space.folders.models.contains { $0.title == "Weekends" }
+                Button(hasFolder ? "Nest Ideas" : "Add Weekends", systemImage: "folder.badge.plus") {
+                    practice.addFolder(nested: hasFolder)
+                }
+                .buttonStyle(.odePrimary)
+            case .clear:
+                Text("Current tabs go to Archive. Pins and saved tabs stay.")
+                    .font(OdeTypography.sans(14)).foregroundStyle(OdeBrandTheme.textSecondary)
+                BrowserGettingStartedCleanUpAction(practice: practice)
+            }
+        }
+
+        @ViewBuilder private var splitCue: some View {
+            if practice.members.count < 2 {
+                Text("Put two pages together").font(OdeTypography.display(30))
+                Text("Only this example Space changes.")
+                    .font(OdeTypography.sans(12)).foregroundStyle(OdeBrandTheme.textSecondary)
+                Button("Add Packing list", systemImage: "plus.rectangle.on.rectangle") { practice.makeSplit() }
+                    .buttonStyle(.odePrimary)
+            } else {
+                Text("Move a page").font(OdeTypography.display(30))
+                Text("Only this example Space changes.")
+                    .font(OdeTypography.sans(12)).foregroundStyle(OdeBrandTheme.textSecondary)
+                Text("Click a page to choose it.").foregroundStyle(OdeBrandTheme.textSecondary)
+                if let selected = practice.selectedTabID {
+                    HStack(spacing: OdeSpacing.small) {
+                        Button("Move left", systemImage: "arrow.left") { practice.move(selected, by: -1) }
+                            .disabled(
+                                !practice.browser.canMoveSplitMember(selected, by: -1, matching: practice.assignment))
+                        Button("Move right", systemImage: "arrow.right") { practice.move(selected, by: 1) }
+                            .disabled(
+                                !practice.browser.canMoveSplitMember(selected, by: 1, matching: practice.assignment))
+                    }
+                    .buttonStyle(.odeSecondary)
+                }
+            }
+        }
+
+        private func nextLesson() {
+            if let next = state.lesson.next { state.lesson = next } else { selectChapter(.splitView) }
         }
 
         private func selectChapter(_ next: BrowserGettingStartedChapter) {
-            if next.showsSplit && chapter != next { practice.reset() }
-            chapter = next
-        }
-
-        private var footer: some View {
-            HStack {
-                Text(
-                    chapter.showsMoves
-                        ? "These moves happen in your own window. A Split View or a Boost you make stays until you remove it."
-                        : "Practice changes affect only this example Space."
-                )
-                .font(OdeTypography.sans(12)).foregroundStyle(.secondary)
-                Spacer()
-                if let next = chapter.next {
-                    Button("Next chapter", systemImage: "arrow.right") { selectChapter(next) }.buttonStyle(.plain)
-                } else {
-                    Text("This guide stays in your Saved tabs.").font(OdeTypography.sans(12, weight: .semibold))
-                }
-            }
+            if next.showsSplit && state.chapter != next { practice.reset() }
+            state.chapter = next
         }
     }
-
 #endif

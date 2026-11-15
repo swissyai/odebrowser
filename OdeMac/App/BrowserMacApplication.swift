@@ -440,6 +440,7 @@ final class BrowserMacApplication {
         .environment(\.filterListUpdater, filterLists)
         .environment(gettingStartedMoves)
         .modifier(BrowserGettingStartedMoveObserver(model: model, moves: gettingStartedMoves))
+        .modifier(BrowserGettingStartedTourPresentation(model: model))
         #if DEBUG || ODE_REVIEW_BUILD
             .modifier(BrowserMacHarnessActiveAppearanceModifier())
         #endif

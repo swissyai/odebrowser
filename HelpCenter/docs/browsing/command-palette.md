@@ -65,8 +65,8 @@ Ode finds the result with DuckDuckGo, or Kagi when it's your Space's search engi
 
 ## Search YouTube, Wikipedia or another site from the Command Bar {#search-a-site}
 
-1. Open the Command Bar and type a site's shortcut, such as yt for YouTube or w for Wikipedia.
-2. Press Tab. The site's name appears beside the field.
+1. In Settings > Search, enable a site and Tab to search providers, and check its shortcut.
+2. Type that shortcut in the Command Bar. Press Tab when the site is offered.
 3. Type your search and press Return.
 
 Shortcut: **Tab**
@@ -77,8 +77,8 @@ Tab to search providers and Space to search providers in Settings > Search set h
 
 ## Ask ChatGPT, Claude or Perplexity from the Command Bar {#ask-ai-from-command-bar}
 
-1. Open the Command Bar and type the assistant's name, such as chatgpt, claude or perplexity.
-2. Press Tab.
+1. In Settings > Search, enable an AI website and Tab to search providers, and check its shortcut.
+2. Type that shortcut in the Command Bar. Press Tab when the assistant is offered.
 3. Type your question and press Return. It opens on the assistant's own site.
 
 Shortcut: **Tab**

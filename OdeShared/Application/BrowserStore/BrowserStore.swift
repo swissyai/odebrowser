@@ -28,6 +28,8 @@ final class BrowserStore {
     /// not finish, or a Space deletion whose cleanup needs another attempt.
     /// A rule refusing an intent is never one.
     var localSyncErrorDescription: String?
+    /// A one-shot presentation request made only by a successful first setup.
+    var gettingStartedTourRequest: BrowserTabRuntimeAssignment?
     let browsingMode: BrowserBrowsingMode
     let tabMultiSelection = BrowserTabMultiSelection()
     let family: BrowserStoreFamily

@@ -58,9 +58,13 @@ final class BrowserCommandPaletteModel {
     private(set) var groups: [BrowserCommandPaletteGroup] = []
     /// Every row, in the order the keyboard steps through them.
     private(set) var items: [BrowserCommandPaletteItem] = []
-    private(set) var selectedResultIndex = 0
+    private(set) var selectedResultIndex = 0 {
+        didSet { reportQuickAnswer() }
+    }
     private(set) var keyboardSelectionRevision = 0
-    var isFieldFocused = false
+    var isFieldFocused = false {
+        didSet { reportQuickAnswer() }
+    }
     private(set) var copiedCardID: BrowserCommandPaletteRowID?
     @ObservationIgnored private var copiedFeedbackTask: Task<Void, Never>?
     /// A fresh request's first result set may reveal selection. Enrichment
@@ -301,13 +305,17 @@ final class BrowserCommandPaletteModel {
         // The core leads with the completion only while the field may show
         // it, so a caret that moves away asks again.
         if !isComposing, text == query, couldPropose != completionEditing.canPropose(for: query) { requestAnswer() }
+        reportQuickAnswer()
     }
 
-    func rejectURLCompletion() { completionEditing.reject() }
+    func rejectURLCompletion() {
+        completionEditing.reject()
+        reportQuickAnswer()
+    }
 
     func invalidateURLCompletion() {
         completionProposal = nil
-        completionEditing.reject()
+        rejectURLCompletion()
     }
 
     @discardableResult
@@ -322,6 +330,7 @@ final class BrowserCommandPaletteModel {
             selectedResultIndex = 0
         }
         completionEditing.reject()
+        reportQuickAnswer()
         return true
     }
 
@@ -482,11 +491,13 @@ final class BrowserCommandPaletteModel {
         copiedCardID == item.id && canCopyCard(item)
     }
 
-    func copyCard(_ item: BrowserCommandPaletteItem) {
+    @discardableResult
+    func copyCard(_ item: BrowserCommandPaletteItem) -> Bool {
         guard canCopyCard(item), let card = item.row.card,
             let value = BrowserCommandPaletteCardText.copied(card), let commands
-        else { return }
-        guard commands.copyInPlace(value) else { return }
+        else { return false }
+        guard commands.copyInPlace(value) else { return false }
+        commands.didCopyCard(card.kind)
         resetCopiedFeedback()
         copiedCardID = item.id
         copiedFeedbackTask = Task { [weak self] in
@@ -494,6 +505,27 @@ final class BrowserCommandPaletteModel {
             guard !Task.isCancelled else { return }
             self?.resetCopiedFeedback()
         }
+        return true
+    }
+
+    /// The tour offers the same numeric answer Tab can copy, including its
+    /// focus and selection rules. Pointer activation revalidates that capability.
+    private func reportQuickAnswer() {
+        let hasNumericAnswer = items.contains(where: isTourQuickAnswer)
+        guard let candidate = tabCopyCandidate, isTourQuickAnswer(candidate) else {
+            commands?.didOfferQuickAnswer(nil, hasNumericAnswer)
+            return
+        }
+        commands?.didOfferQuickAnswer(
+            { [weak self] in
+                guard let self, let item = self.tabCopyCandidate, self.isTourQuickAnswer(item) else { return false }
+                return self.copyCard(item)
+            }, true)
+    }
+
+    private func isTourQuickAnswer(_ item: BrowserCommandPaletteItem) -> Bool {
+        guard item.row.card?.kind == .calculation || item.row.card?.kind == .conversion else { return false }
+        return canCopyQuickAnswer(item)
     }
 
     private func resetCopiedFeedback() {
@@ -700,6 +732,7 @@ final class BrowserCommandPaletteModel {
     }
 
     private func cancelPendingWork() {
+        commands?.didOfferQuickAnswer(nil, false)
         resetCopiedFeedback()
         sequence &+= 1
         waitingKey = nil
@@ -712,6 +745,7 @@ final class BrowserCommandPaletteModel {
     /// A temporary source loss revokes work but does not tear down a mounted
     /// editor. If its assignment becomes usable again, answer its current text.
     func sourceAvailabilityChanged(_ available: Bool) {
+        commands?.didOfferQuickAnswer(nil, false)
         resetCopiedFeedback()
         invalidateURLCompletion()
         sequence &+= 1
@@ -729,6 +763,7 @@ final class BrowserCommandPaletteModel {
     /// Ends this presentation, including work a provider might not cancel
     /// cooperatively. No query-bearing answer survives closing the palette.
     func stop() {
+        commands?.didOfferQuickAnswer(nil, false)
         resetCopiedFeedback()
         isFieldFocused = false
         isActive = false
@@ -875,6 +910,7 @@ final class BrowserCommandPaletteModel {
     /// selected.
     private func requestAnswer() {
         guard isActive else { return }
+        commands?.didOfferQuickAnswer(nil, false)
         isCopySessionActive = true
         resetCopiedFeedback()
         cancelGenerativeAnswer()
@@ -961,6 +997,7 @@ final class BrowserCommandPaletteModel {
         matchingProviders = answer.matchingProviders
         offeredScope = answer.offeredScope
         if !items.indices.contains(selectedResultIndex) { selectedResultIndex = 0 }
+        reportQuickAnswer()
         // A key waiting on this answer acts once the entry's own answer arrives.
         if asked == sequence, isUnscoped, let entry = answer.entry { enter(entry) }
         if asked == sequence, waitingKey != nil { runWaitingKey() }

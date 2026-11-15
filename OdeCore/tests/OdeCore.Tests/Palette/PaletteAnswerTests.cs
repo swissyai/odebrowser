@@ -31,6 +31,18 @@ public sealed partial class BrowserContractsTests {
     }
 
     [Theory]
+    [InlineData("get started")]
+    [InlineData("getting started")]
+    public void AGettingStartedRequestLeadsWithTheAvailableGuideAction(string text) {
+        var (session, space) = PaletteSession([]);
+        using var device = new TestDevice(session);
+        var window = device.Open(space);
+        var lead = device.Query(Asking(window, text)).Groups[0].Rows[0];
+        Assert.Equal(PaletteRowKind.Answer, lead.Kind);
+        Assert.Equal("getting-started", lead.Answer?.Action?.ApplicationAction);
+    }
+
+    [Theory]
     [InlineData("explain the difference between tcp and udp")]
     [InlineData("what time is it in tokyo right now")]
     [InlineData("how long should I boil an egg")]

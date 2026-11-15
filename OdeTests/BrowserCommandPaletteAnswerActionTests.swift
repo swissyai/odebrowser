@@ -381,6 +381,100 @@ final class BrowserCommandPaletteAnswerActionTests: XCTestCase {
         XCTAssertGreaterThan(named, 50)
     }
 
+    func testExactGettingStartedQueriesReplayThroughRealPaletteSelection() async throws {
+        for query in ["get started", "getting started"] {
+            let browser = BrowserStore(seed: .preview)
+            let source = try XCTUnwrap(browser.shownTabAssignment)
+            let guideID = try XCTUnwrap(browser.openGettingStarted())
+            browser.selectTab(source.tabID)
+            let root = makeRoot(browser: browser)
+            defer { root.pages.reconcile(validTabIDs: []) }
+            let tour = BrowserGettingStartedTour(defaults: nil, browser: browser, chrome: root.chrome)
+            root.chrome.gettingStartedTour = tour
+            let action = BrowserMacApplicationAction.gettingStarted.name
+            let commands = BrowserCommandPaletteCommandRegistry(
+                commands: [], applicationActions: [action],
+                runApplicationAction: { name in
+                    guard name == action else { return false }
+                    browser.openGettingStarted()
+                    root.pages.select()
+                    tour.replay()
+                    return true
+                })
+            let model = BrowserCommandPaletteModel(
+                browser: browser, space: browser.shownSpace, selectedTabID: source.tabID,
+                initialQuery: "", commands: commands,
+                lookups: BrowserCommandPaletteLookups(
+                    suggestionDebounce: .zero, fetchSuggestions: { _ in [] },
+                    lookUpDefinition: { _ in nil }, fetchWebSummary: { _ in nil }),
+                isSourceAvailable: root.isPaletteSourceAvailable, selectTab: root.selectPaletteTab,
+                openURL: { _, _, _ in false }, dismiss: root.chrome.dismissCommandPalette)
+            defer { model.stop() }
+            root.chrome.presentCommandPalette()
+            // Match the real field's text/caret update, which authorizes a leading action.
+            model.updateCompletionEditing(
+                text: query, selection: NSRange(location: query.utf16.count, length: 0), isComposing: false)
+            await model.waitForPendingResults()
+            let lead = try XCTUnwrap(model.items.first?.row)
+            XCTAssertTrue(
+                lead.tabID == guideID || lead.answer?.action?.applicationAction == action,
+                "Unexpected lead for \(query): \(lead.kind.name), \(lead.title)")
+            model.pressReturn()
+            XCTAssertEqual(browser.shownTab?.id, guideID)
+            XCTAssertTrue(tour.isShowingGuide)
+            XCTAssertEqual(tour.step, .commandBar)
+            XCTAssertFalse(root.chrome.isCommandPalettePresented)
+            XCTAssertEqual(browser.shownSpace?.tabs.models.filter { $0.nativeTabContent == .gettingStarted }.count, 1)
+        }
+    }
+
+    func testEmptySelectionPaletteReplaysSavedGuideThroughProductionActionsAndPreservesOrdinaryTabs() async throws {
+        for query in ["get started", "getting started", "Tour regression notes"] {
+            let other = TabState.Seed(
+                title: "Tour regression notes", url: URL(string: "https://example.com/notes"), placement: .current)
+            let space = SpaceState.Seed(
+                id: UUID(), profileID: UUID(), name: "Replay", symbol: "circle", accent: .indigo,
+                folders: [], tabs: [other])
+            let browser = BrowserStore(
+                seed: SessionState.Seed(spaces: [space]), showing: space.id, tabs: [space.id: other.id])
+            let guideID = try XCTUnwrap(browser.openGettingStarted())
+            let root = makeRoot(browser: browser)
+            defer { root.pages.reconcile(validTabIDs: []) }
+            let tour = BrowserGettingStartedTour(defaults: nil, browser: browser, chrome: root.chrome)
+            root.chrome.gettingStartedTour = tour
+            tour.start(try XCTUnwrap(browser.shownTabAssignment), automatically: false)
+            tour.finishBrowsing(completed: false)
+            browser.clearPresentedTabSelection(in: space.id)
+            XCTAssertNil(browser.shownTab)
+            let destination = try XCTUnwrap(root.emptySelectionPaletteActions)
+            let model = BrowserCommandPaletteModel(
+                browser: browser, space: browser.shownSpace, selectedTabID: nil, initialQuery: "",
+                commands: root.paletteRegistry(windows: nil, layoutDirection: .leftToRight, shortcuts: nil),
+                lookups: BrowserCommandPaletteLookups(
+                    suggestionDebounce: .zero, fetchSuggestions: { _ in [] },
+                    lookUpDefinition: { _ in nil }, fetchWebSummary: { _ in nil }),
+                isSourceAvailable: root.isPaletteSourceAvailable, selectTab: root.selectPaletteTab,
+                openURL: { _, _, _ in false }, dismiss: root.chrome.dismissCommandPalette,
+                destination: destination)
+            defer { model.stop() }
+            root.chrome.presentCommandPalette()
+            model.updateCompletionEditing(
+                text: query, selection: NSRange(location: query.utf16.count, length: 0), isComposing: false)
+            await model.waitForPendingResults()
+            let expectsReplay = query != other.title
+            let targetID = expectsReplay ? guideID : other.id
+            let lead = try XCTUnwrap(model.items.first?.row)
+            guard lead.tabID == targetID else { return XCTFail("Expected the saved tab to lead for \(query)") }
+            model.pressReturn()
+            XCTAssertEqual(browser.shownTab?.id, targetID)
+            XCTAssertEqual(tour.isShowingGuide, expectsReplay)
+            XCTAssertEqual(tour.isRunning, expectsReplay)
+            XCTAssertEqual(tour.step, .commandBar)
+            XCTAssertFalse(root.chrome.isCommandPalettePresented)
+            XCTAssertEqual(browser.shownSpace?.tabs.models.filter { $0.nativeTabContent == .gettingStarted }.count, 1)
+        }
+    }
+
     // MARK: - Actions - Fixtures
 
     private func makeRoot(browser: BrowserStore) -> BrowserRootModel {

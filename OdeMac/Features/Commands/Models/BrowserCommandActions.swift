@@ -63,6 +63,10 @@ struct BrowserCommandActions: BrowserNumberedSelectionPerformer {
             reopenArchivedTab: reopenArchivedTab,
             copy: copy,
             copyInline: copyInline,
+            didCopyCard: { [chrome] kind in chrome.gettingStartedTour?.copiedCard(kind) },
+            didOfferQuickAnswer: { [chrome] copy, hasNumericAnswer in
+                chrome.gettingStartedTour?.offerAnswer(copy, hasNumericAnswer: hasNumericAnswer)
+            },
             currentTitle: menuTitle(of:)
         )
     }
@@ -222,6 +226,14 @@ struct BrowserCommandActions: BrowserNumberedSelectionPerformer {
 
     func openNewTab() {
         chrome.openNewTab(isStartPageSelected: browser.shownTab?.surface == .startPage)
+        prepareCommandPaletteEditor()
+    }
+
+    /// The next native text event may precede SwiftUI's idle render. Let
+    /// the opening's field mount and take the keyboard before that event.
+    private func prepareCommandPaletteEditor() {
+        guard let targetWindowID, targetWindowID == browser.windowID, quickWindowPage == nil else { return }
+        windows?.window(for: targetWindowID)?.contentView?.layoutSubtreeIfNeeded()
     }
 
     func openNewWindow() {
@@ -321,6 +333,7 @@ struct BrowserCommandActions: BrowserNumberedSelectionPerformer {
     /// already showing, as pressing its keys again does.
     func openLocation() {
         chrome.toggleLocation(browser.shownTab?.url ?? "")
+        prepareCommandPaletteEditor()
     }
 
     // MARK: - Layout

@@ -1039,6 +1039,10 @@
     "onboarding-benefit-moments": {
       "category": "improved",
       "message": "Try optional examples of local answers, Spaces and sidebar room during setup."
+    },
+    "first-run-quick-tour": {
+      "category": "new",
+      "message": "Try the Command Bar, quick answers, and sidebar after setup, with a quieter guide that teaches one action at a time."
     }
   }
 }

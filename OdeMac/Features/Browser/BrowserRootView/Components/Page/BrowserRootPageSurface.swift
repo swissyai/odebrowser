@@ -17,6 +17,7 @@ struct BrowserRootPageSurface: View, @MainActor Equatable {
     let tabPromotionNamespace: Namespace.ID
     /// The chords the window's commands show in a Start Page's palette.
     let shortcuts: BrowserShortcutStore?
+    var settings: BrowserSpaceSettingsPresentationState? = nil
     var layoutDirection = LayoutDirection.leftToRight
 
     /// The retained host needs a new root only when its inputs change. The
@@ -29,7 +30,8 @@ struct BrowserRootPageSurface: View, @MainActor Equatable {
             && lhs.isSelectedSpace == rhs.isSelectedSpace
             && lhs.transientBrowsing === rhs.transientBrowsing
             && lhs.tabPromotionNamespace == rhs.tabPromotionNamespace
-            && lhs.shortcuts === rhs.shortcuts && lhs.layoutDirection == rhs.layoutDirection
+            && lhs.shortcuts === rhs.shortcuts && lhs.settings === rhs.settings
+            && lhs.layoutDirection == rhs.layoutDirection
     }
 
     private var isInteractive: Bool {
@@ -207,7 +209,8 @@ struct BrowserRootPageSurface: View, @MainActor Equatable {
                             isCommandPalettePresented:
                                 model.chrome.isCommandPalettePresented,
                             commands: model.paletteRegistry(
-                                windows: windows, layoutDirection: layoutDirection, shortcuts: shortcuts),
+                                windows: windows, layoutDirection: layoutDirection, shortcuts: shortcuts,
+                                settings: settings),
                             previewsStartPage: previewsStartPage
                         )
                     }

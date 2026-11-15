@@ -7,6 +7,78 @@ import XCTest
 /// about the moves from the features themselves.
 @MainActor
 final class BrowserGettingStartedMovesTests: XCTestCase {
+    func testUnavailableAssistantDoesNotAdvertiseAnUnofferedTabAction() throws {
+        let browser = BrowserStore(seed: .preview)
+        let catalog = BrowserSearchCatalog(core: browser.core)
+        XCTAssertFalse(catalog.providers(of: .assistant).contains { catalog.isEnabled($0) })
+        let answer = try browser.core.query(
+            PaletteSuggestions(
+                windowID: browser.windowID, text: "chatgpt", commands: [], settingsPages: [], remote: [],
+                provider: nil, scope: nil, allowsCompletion: false, pasteboard: nil, definition: nil,
+                webSummary: nil, spaceID: nil, translation: nil, generative: nil))
+        XCTAssertNil(answer.offeredSearch)
+        XCTAssertNil(
+            BrowserGettingStartedMove.askAI.paletteHint(for: "chatgpt", provider: nil, offer: nil),
+            "The guide cannot offer Tab when the real palette cannot enter an assistant.")
+    }
+
+    func testProviderExamplesFollowEnabledCatalogShortcutsAndTabPreferenceWithoutEditingThem() throws {
+        let browser = BrowserStore(seed: .preview)
+        let catalog = BrowserSearchCatalog(core: browser.core)
+        let preferences = BrowserAppPreferenceStore.shared.palette
+        defer { BrowserAppPreferenceStore.shared.palette = preferences }
+        var withTab = preferences
+        withTab.searchesSitesWithTab = true
+        BrowserAppPreferenceStore.shared.palette = withTab
+        XCTAssertNil(BrowserGettingStartedGuideContext(browser: browser).keyword(for: .askAI))
+        catalog.setEnabled(.chatGPT, true)
+        try catalog.setShortcuts(.chatGPT, ["myassistant"])
+        try catalog.setShortcuts(.youTube, ["videos"])
+        let context = BrowserGettingStartedGuideContext(browser: browser)
+        XCTAssertEqual(context.keyword(for: .askAI), "myassistant")
+        XCTAssertEqual(context.keyword(for: .siteSearch), "videos")
+        let before = browser.core.state.searchCatalog
+        for move in [BrowserGettingStartedMove.askAI, .siteSearch] {
+            let keyword = try XCTUnwrap(context.keyword(for: move))
+            let answer = try browser.core.query(
+                PaletteSuggestions(
+                    windowID: browser.windowID, text: keyword, commands: [], settingsPages: [], remote: [],
+                    provider: nil, scope: nil, allowsCompletion: false, pasteboard: nil, definition: nil,
+                    webSummary: nil, spaceID: nil, translation: nil, generative: nil))
+            XCTAssertEqual(answer.offeredSearch?.provider, context.provider(for: move))
+            XCTAssertNotNil(move.paletteHint(for: keyword, provider: nil, offer: answer.offeredSearch?.provider))
+            XCTAssertNil(move.paletteHint(for: "unrelated task", provider: nil, offer: nil, example: keyword))
+        }
+        XCTAssertEqual(browser.core.state.searchCatalog, before)
+        withTab.searchesSitesWithTab = false
+        BrowserAppPreferenceStore.shared.palette = withTab
+        XCTAssertNil(BrowserGettingStartedGuideContext(browser: browser).keyword(for: .askAI))
+        XCTAssertNil(BrowserGettingStartedGuideContext(browser: browser).keyword(for: .siteSearch))
+        XCTAssertTrue(catalog.isEnabled(try XCTUnwrap(catalog.providers.first { $0.builtIn == .chatGPT })))
+        XCTAssertEqual(catalog.settings(.chatGPT)?.shortcuts, ["myassistant"])
+        withTab.searchesSitesWithTab = true
+        BrowserAppPreferenceStore.shared.palette = withTab
+        for provider in catalog.providers(of: .website) {
+            if let builtIn = provider.builtIn { catalog.setEnabled(builtIn, false) }
+        }
+        XCTAssertNil(BrowserGettingStartedGuideContext(browser: browser).keyword(for: .siteSearch))
+    }
+
+    func testFreshGuideRequiresAnotherSpaceAndUsesOnlyDisposableSplitPractice() throws {
+        let space = SpaceState.Seed(name: "Personal", tabs: [.startPage()])
+        let browser = BrowserStore(seed: SessionState.Seed(spaces: [space]))
+        _ = try XCTUnwrap(browser.openGettingStarted())
+        let before = browser.sessionSeed
+        let context = BrowserGettingStartedGuideContext(browser: browser)
+        XCTAssertFalse(context.hasOtherSpace)
+        XCTAssertFalse(context.canSplit)
+        let practice = BrowserGettingStartedPractice()
+        practice.makeSplit()
+        XCTAssertEqual(practice.members.count, 2)
+        XCTAssertEqual(browser.sessionSeed, before)
+        XCTAssertNil(browser.selectAdjacentSpace(.next))
+    }
+
     func testEachMoveUsesItsAnswerCardsWordsAndKeys() throws {
         let answers = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
             .appending(path: "OdeCore/src/OdeCore/Domain/Answers/answers.json")

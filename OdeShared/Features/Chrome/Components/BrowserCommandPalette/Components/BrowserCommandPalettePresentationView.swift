@@ -9,7 +9,7 @@ struct BrowserCommandPalettePresentationView: View {
     /// The frame of the address field a palette grows out of, in the space
     /// the palette is laid out in.
     var fieldFrame: CGRect? = nil
-    let queryIsFocused: FocusState<Bool>.Binding
+    let queryIsFocused: BrowserCommandPaletteFocusBinding
 
     @ViewBuilder
     var body: some View {

@@ -57,6 +57,11 @@ enum BrowserShortcutLocalization {
 }
 
 extension BrowserShortcut {
+    /// One modifier glyph per cap, with a named key kept whole.
+    var keycapLabels: [String] {
+        modifiers.displayString.map { String($0) } + [key.displayString]
+    }
+
     var displayString: String {
         displayString()
     }

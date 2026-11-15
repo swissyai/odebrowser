@@ -379,8 +379,8 @@
         "search providers"
       ],
       "steps": [
-        "Open the Command Bar and type a site's shortcut, such as yt for YouTube or w for Wikipedia.",
-        "Press Tab. The site's name appears beside the field.",
+        "In Settings > Search, enable a site and Tab to search providers, and check its shortcut.",
+        "Type that shortcut in the Command Bar. Press Tab when the site is offered.",
         "Type your search and press Return."
       ],
       "keys": "⇥",
@@ -419,8 +419,8 @@
         "chat"
       ],
       "steps": [
-        "Open the Command Bar and type the assistant's name, such as chatgpt, claude or perplexity.",
-        "Press Tab.",
+        "In Settings > Search, enable an AI website and Tab to search providers, and check its shortcut.",
+        "Type that shortcut in the Command Bar. Press Tab when the assistant is offered.",
         "Type your question and press Return. It opens on the assistant's own site."
       ],
       "keys": "⇥",
@@ -2472,14 +2472,14 @@
         "screen"
       ],
       "steps": [
-        "Drag a tab from the sidebar onto the page you're looking at.",
+        "Open two pages, then drag one tab from the sidebar onto the other page.",
         "Or right-click a tab in the sidebar and choose Split with Current Tab.",
         "Click a side to choose which page the keyboard and address bar use."
       ],
       "action": {
         "command": "splitWithNextTab"
       },
-      "note": "Split With Next Tab splits the current tab with the one below it.",
+      "note": "Split With Next Tab needs another available tab in the same sidebar list.",
       "help": "/split-view/#split-view-create",
       "related": [
         "split-view-add-tab",
@@ -2899,7 +2899,7 @@
         "fingers"
       ],
       "steps": [
-        "Press Control-1 to Control-9 to jump to a Space by its place, as in Arc.",
+        "With one Space, show the sidebar and right-click an empty area, then choose New Space… Press Control-1 to Control-9 to jump to a Space.",
         "Or click the Space's icon at the bottom of the sidebar.",
         "Or swipe left or right with two fingers over the sidebar."
       ],
@@ -8517,14 +8517,16 @@
       "status": "live",
       "kind": "task",
       "topic": "app",
-      "title": "Learn everyday moves with Getting Started",
+      "title": "Getting Started with Ode",
       "questions": [
         "tutorial",
+        "get started",
         "getting started",
         "how do i use ode",
         "learn the basics",
         "onboarding",
-        "show me around"
+        "show me around",
+        "quick tour"
       ],
       "aliases": [
         "Getting Started with Ode",
@@ -8542,14 +8544,11 @@
         "lessons"
       ],
       "steps": [
-        "Choose Help > Getting Started with Ode.",
-        "Try the seven everyday moves: the Command Bar, searching a site, Split View, Peek, switching Spaces, Boosts and asking an assistant.",
-        "Then practice tabs, folders and Split View in an example Space. Your own tabs don't change."
+        "Try three everyday actions."
       ],
       "action": {
         "app": "getting-started"
       },
-      "note": "Show Me starts a move for you where it can. Ode checks off each move when you make it anywhere, and remembers where you stopped.",
       "help": "/install-and-update-mac/#getting-started",
       "related": [
         "sidebar-sections",

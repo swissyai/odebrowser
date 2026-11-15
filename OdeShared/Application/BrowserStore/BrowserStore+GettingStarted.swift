@@ -29,7 +29,10 @@ extension BrowserStore {
         else { return nil }
         selectSpace(firstSpace.id)
         guard let tabID = openGettingStarted() else { return nil }
-        return BrowserTabRuntimeAssignment(tabID: tabID, spaceID: assignment.spaceID, profileID: assignment.profileID)
+        let guide = BrowserTabRuntimeAssignment(
+            tabID: tabID, spaceID: assignment.spaceID, profileID: assignment.profileID)
+        gettingStartedTourRequest = guide
+        return guide
     }
 
     /// Settings is one ordinary, closable native tab per Space. Repeated menu

@@ -139,8 +139,14 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
 
     func testAmbiguousAnswersRequireAnExplicitSelectedCardForTabCopy() async throws {
         var copied: [String] = []
+        var offered: (@MainActor () -> Bool)?
+        var hasNumericAnswer = false
         let commands = BrowserCommandPaletteCommandRegistry(
-            commands: [], perform: { _ in }, copy: { copied.append($0) })
+            commands: [], perform: { _ in }, copy: { copied.append($0) },
+            didOfferQuickAnswer: { copy, hasAnswer in
+                offered = copy
+                hasNumericAnswer = hasAnswer
+            })
         let (model, shown) = makeModel(definition: nil, commands: commands)
         defer { model.stop() }
         model.isFieldFocused = true
@@ -149,8 +155,11 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
         let cards = model.items.filter { model.canCopyCard($0) }
         XCTAssertGreaterThan(cards.count, 1)
         XCTAssertNil(model.tabCopyCandidate)
+        XCTAssertTrue(hasNumericAnswer)
+        XCTAssertNil(offered, "The tour cannot offer an arbitrary answer among several numeric cards")
         let selected = try XCTUnwrap(cards.last)
         model.selectResult(at: selected.index)
+        XCTAssertNotNil(offered)
 
         model.pressTab()
 
@@ -181,8 +190,9 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
 
     func testCopyRevalidatesFocusSourceAndPresentationWithoutStealingFocus() async throws {
         var copied: [String] = []
+        var reported: [PaletteCardKind] = []
         let commands = BrowserCommandPaletteCommandRegistry(
-            commands: [], perform: { _ in }, copy: { copied.append($0) })
+            commands: [], perform: { _ in }, copy: { copied.append($0) }, didCopyCard: { reported.append($0) })
         let (model, shown) = makeModel(definition: nil, commands: commands)
         defer { model.stop() }
         model.query = "5 km in miles"
@@ -196,6 +206,7 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
         model.copyCard(card)
         XCTAssertFalse(model.isCopied(card))
         XCTAssertEqual(copied.count, 1)
+        XCTAssertEqual(reported, [.conversion])
         model.sourceAvailabilityChanged(false)
         XCTAssertNil(model.copiedCardID)
         shown.sourceAvailable = true
@@ -205,14 +216,17 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
         model.dismiss()
         model.copyCard(current)
         XCTAssertEqual(copied.count, 1)
+        XCTAssertEqual(reported, [.conversion])
         XCTAssertNil(model.copiedCardID)
     }
 
     func testUnavailableOrRefusedCopyDoesNotReportSuccess() async throws {
+        var reported: [PaletteCardKind] = []
         let registries: [BrowserCommandPaletteCommandRegistry?] = [
             nil,
             BrowserCommandPaletteCommandRegistry(commands: [], perform: { _ in }),
-            BrowserCommandPaletteCommandRegistry(commands: [], perform: { _ in }, copyInline: { _ in false }),
+            BrowserCommandPaletteCommandRegistry(
+                commands: [], perform: { _ in }, copyInline: { _ in false }, didCopyCard: { reported.append($0) }),
         ]
         for commands in registries {
             let (model, _) = makeModel(definition: nil, commands: commands)
@@ -221,8 +235,90 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
             let card = try XCTUnwrap(model.items.first { $0.row.card?.kind == .conversion })
             model.copyCard(card)
             XCTAssertNil(model.copiedCardID)
+            XCTAssertTrue(reported.isEmpty)
             model.stop()
         }
+    }
+
+    func testQuickAnswerOfferCopiesOnlyAFreshNumericCardAndIsRevokedOnEditAndClose() async throws {
+        var offered: (@MainActor () -> Bool)?
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [],
+            copyInline: {
+                copied.append($0)
+                return true
+            },
+            didOfferQuickAnswer: { copy, _ in offered = copy })
+        let (model, _) = makeModel(definition: nil, commands: commands)
+        defer { model.stop() }
+        model.isFieldFocused = true
+        model.query = "12 * 3"
+        await model.waitForPendingResults()
+        let stale = try XCTUnwrap(offered)
+        model.query = "an ordinary query"
+        XCTAssertNil(offered)
+        XCTAssertFalse(stale())
+        XCTAssertTrue(copied.isEmpty)
+        await model.waitForPendingResults()
+        model.query = "12 * 3"
+        await model.waitForPendingResults()
+        let ready = try XCTUnwrap(offered)
+        XCTAssertTrue(ready())
+        XCTAssertEqual(copied, ["36"])
+        model.stop()
+        XCTAssertNil(offered)
+        XCTAssertFalse(ready())
+    }
+
+    func testQuickAnswerOfferTracksActualTabEligibilityAcrossSelectionAndFieldFocus() async throws {
+        var offered: (@MainActor () -> Bool)?
+        var hasNumericAnswer = false
+        var copied: [String] = []
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], copy: { copied.append($0) },
+            didOfferQuickAnswer: { copy, hasAnswer in
+                offered = copy
+                hasNumericAnswer = hasAnswer
+            })
+        let other = TabState.Seed(
+            title: "12 * 3 notes", url: URL(string: "https://example.com/arithmetic"), placement: .current)
+        let (model, _) = makeModel(definition: nil, commands: commands, otherTabs: [other])
+        defer { model.stop() }
+        model.isFieldFocused = true
+        model.updateCompletionEditing(text: "12 * 3", selection: NSRange(location: 6, length: 0), isComposing: false)
+        await model.waitForPendingResults()
+        let card = try XCTUnwrap(model.items.first { $0.row.card?.kind == .calculation })
+        model.selectResult(at: card.index)
+        let ready = try XCTUnwrap(offered)
+        XCTAssertEqual(model.tabCopyCandidate?.id, card.id)
+
+        let otherResult = try XCTUnwrap(model.items.first { $0.row.tabID == other.id })
+        model.selectResult(at: otherResult.index, expandsAnswer: false)
+        XCTAssertNil(model.tabCopyCandidate)
+        XCTAssertTrue(hasNumericAnswer, "The completed query still has an answer to choose")
+        XCTAssertNil(offered, "Hovering another result must revoke the tour's Tab instruction")
+        XCTAssertFalse(ready(), "The pointer action must revalidate the same capability")
+        let beforeTab = copied
+        model.pressTab()
+        XCTAssertEqual(copied, beforeTab)
+        XCTAssertTrue(copied.isEmpty, "Tab preserves normal navigation when another result is selected")
+
+        model.selectResult(at: card.index)
+        let beforeBlur = try XCTUnwrap(offered, "Selecting the numeric card offers Tab again")
+        model.isFieldFocused = false
+        XCTAssertNil(model.tabCopyCandidate)
+        XCTAssertTrue(hasNumericAnswer)
+        XCTAssertNil(offered, "The instruction must follow the native field's focus")
+        XCTAssertFalse(beforeBlur())
+        XCTAssertTrue(copied.isEmpty)
+        model.isFieldFocused = true
+        let restored = try XCTUnwrap(offered)
+        XCTAssertTrue(restored(), "Pointer fallback uses the currently eligible answer")
+        XCTAssertEqual(copied, ["36"])
+        model.pressTab()
+        XCTAssertEqual(copied, ["36", "36"])
+        XCTAssertEqual(model.selectedResultIndex, card.index)
     }
 
     func testADefinitionFromTheDictionaryJoinsWithoutMovingTheSelection() async throws {
@@ -303,12 +399,12 @@ final class BrowserCommandPaletteCardTests: XCTestCase {
 
     private func makeModel(
         definition: PaletteDefinition?, summary: PaletteWebSummary? = nil, asked: Asked = Asked(),
-        commands: BrowserCommandPaletteCommandRegistry? = nil
+        commands: BrowserCommandPaletteCommandRegistry? = nil, otherTabs: [TabState.Seed] = []
     ) -> (BrowserCommandPaletteModel, Shown) {
         let source = TabState.Seed.startPage(id: UUID(), lastActivatedAt: Date(timeIntervalSinceReferenceDate: 600))
         let space = SpaceState.Seed(
             id: UUID(), profileID: UUID(), name: "Cards", symbol: "text.bubble", accent: .indigo, folders: [],
-            tabs: [source])
+            tabs: [source] + otherTabs)
         let browser = BrowserStore(
             seed: SessionState.Seed(spaces: [space]), showing: space.id, tabs: [space.id: source.id])
         let shown = Shown()

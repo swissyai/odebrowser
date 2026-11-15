@@ -36,9 +36,11 @@ struct BrowserRootCommandPaletteLayer: View {
                 openings: BrowserCommandPaletteOpening.all,
                 readPasteboard: { NSPasteboard.general.string(forType: .string) }
             )
+            .environment(\.browserNativeTabs, model.pages.nativeTabs)
             .id(
                 BrowserCommandPalettePresentationIdentity(
                     mode: mode,
+                    focusRequest: model.chrome.commandPaletteFocusRequest,
                     space: paletteSpace,
                     source: model.selectedTabAssignment
                 )

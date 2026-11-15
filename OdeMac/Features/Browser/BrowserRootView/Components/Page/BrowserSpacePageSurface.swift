@@ -5,6 +5,7 @@ struct BrowserSpacePageSurface: NSViewRepresentable {
     let transientBrowsing: BrowserTransientBrowsingCoordinator
     let tabPromotionNamespace: Namespace.ID
     let shortcuts: BrowserShortcutStore?
+    var settings: BrowserSpaceSettingsPresentationState? = nil
 
     @AppStorage(SpacePageMotionPreference.key)
     private var animatesSpacePages = SpacePageMotionPreference.defaultValue
@@ -40,6 +41,7 @@ struct BrowserSpacePageSurface: NSViewRepresentable {
                     transientBrowsing: transientBrowsing,
                     tabPromotionNamespace: tabPromotionNamespace,
                     shortcuts: shortcuts,
+                    settings: settings,
                     layoutDirection: context.environment.layoutDirection),
                 assignment: BrowserSpaceRuntimeAssignment(space: space), objects: objects)
         }

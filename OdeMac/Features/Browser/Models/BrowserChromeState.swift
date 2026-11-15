@@ -7,6 +7,8 @@ final class BrowserChromeState {
     // MARK: - Variables
 
     let utilityPresentation: BrowserUtilityPresentationState
+    /// This window alone owns a running first-run tour.
+    var gettingStartedTour: BrowserGettingStartedTour?
     /// Which pinned or saved tab's preview card the window shows.
     let tabPreviewHover = BrowserTabPreviewHover()
     /// The title the sidebar as icons shows beside the icon under the pointer.
@@ -15,7 +17,10 @@ final class BrowserChromeState {
     let notices = BrowserNotices()
     var columnVisibility: NavigationSplitViewVisibility {
         get { observed(\.columnVisibilityStorage, as: \.columnVisibility) }
-        set { publish(newValue, into: \.columnVisibilityStorage, as: \.columnVisibility) }
+        set {
+            publish(newValue, into: \.columnVisibilityStorage, as: \.columnVisibility)
+            gettingStartedTour?.sidebarChanged(isPresented: newValue != .detailOnly)
+        }
     }
     @ObservationIgnored private var columnVisibilityStorage: NavigationSplitViewVisibility
     /// Whether the undocked sidebar is floating over the page, as it does while
@@ -59,6 +64,9 @@ final class BrowserChromeState {
         set { publish(newValue, into: \.commandPaletteModeStorage, as: \.commandPaletteMode) }
     }
     @ObservationIgnored private var commandPaletteModeStorage: BrowserCommandPaletteMode?
+    /// A new invocation must not reuse an outgoing editor when close/open
+    /// changes share one SwiftUI render turn.
+    private(set) var commandPaletteFocusRequest = 0
     private(set) var addressFocusRequest = 0
     private(set) var startPageFocusRequest = 0
     /// The recent tabs a held Most Recent Tab shortcut shows over the window,
@@ -158,6 +166,7 @@ final class BrowserChromeState {
 
     func openLocation(_ address: String = "") {
         BrowserMoments.shared.begin(.commandBarOpen)
+        commandPaletteFocusRequest &+= 1
         commandPaletteMode = .editLocation(address)
     }
 
@@ -174,7 +183,9 @@ final class BrowserChromeState {
     func presentCommandPalette() {
         BrowserCommandBarTiming.mark(.command)
         BrowserMoments.shared.begin(.commandBarOpen)
+        commandPaletteFocusRequest &+= 1
         commandPaletteMode = .newTab
+        gettingStartedTour?.commandBarOpened()
     }
 
     /// New Tab opens the Command Bar, focuses a start page already shown, or

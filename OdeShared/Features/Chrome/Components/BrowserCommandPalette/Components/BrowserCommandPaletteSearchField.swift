@@ -6,7 +6,7 @@ struct BrowserCommandPaletteSearchField: View {
 
     let model: BrowserCommandPaletteModel
     let presentation: BrowserCommandPalettePresentation
-    let queryIsFocused: FocusState<Bool>.Binding
+    let queryIsFocused: BrowserCommandPaletteFocusBinding
 
     @ScaledMetric private var fieldHeight: CGFloat
 
@@ -14,7 +14,7 @@ struct BrowserCommandPaletteSearchField: View {
 
     init(
         model: BrowserCommandPaletteModel, presentation: BrowserCommandPalettePresentation,
-        queryIsFocused: FocusState<Bool>.Binding
+        queryIsFocused: BrowserCommandPaletteFocusBinding
     ) {
         self.model = model
         self.presentation = presentation
@@ -50,7 +50,9 @@ struct BrowserCommandPaletteSearchField: View {
                 identifier: presentation.fieldIdentifier,
                 focused: queryIsFocused.wrappedValue
             )
-            .focused(queryIsFocused)
+            #if os(iOS)
+                .focused(queryIsFocused)
+            #endif
             .frame(height: fieldHeight)
 
             offer
@@ -193,12 +195,21 @@ private struct BrowserCommandPaletteFieldSurface: ViewModifier {
 }
 
 #if DEBUG
-    #Preview("Panel query row") {
-        @Previewable @FocusState var focused: Bool
-        BrowserCommandPaletteSearchField(
-            model: BrowserCommandPalettePreviewFixture.model(query: "swift"), presentation: .overlay,
-            queryIsFocused: $focused
-        )
-        .padding().frame(width: 600)
+    private struct BrowserCommandPaletteSearchFieldPreview: View {
+        #if os(macOS)
+            @State private var focused = false
+        #else
+            @FocusState private var focused: Bool
+        #endif
+
+        var body: some View {
+            BrowserCommandPaletteSearchField(
+                model: BrowserCommandPalettePreviewFixture.model(query: "swift"), presentation: .overlay,
+                queryIsFocused: $focused
+            )
+            .padding().frame(width: 600)
+        }
     }
+
+    #Preview("Panel query row") { BrowserCommandPaletteSearchFieldPreview() }
 #endif

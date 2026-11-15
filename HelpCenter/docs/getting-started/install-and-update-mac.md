@@ -26,13 +26,15 @@ Ode needs a Mac with Apple silicon and macOS 26.1 or later. There's no version f
 2. Beside Default browser, click Make Default.
 3. Confirm in the question macOS shows.
 
-## Learn everyday moves with Getting Started {#getting-started}
+## Getting Started with Ode {#getting-started}
 
-1. Choose Help > Getting Started with Ode.
-2. Try the seven everyday moves: the Command Bar, searching a site, Split View, Peek, switching Spaces, Boosts and asking an assistant.
-3. Then practice tabs, folders and Split View in an example Space. Your own tabs don't change.
+Try three everyday actions.
 
-Show Me starts a move for you where it can. Ode checks off each move when you make it anywhere, and remembers where you stopped.
+The short tour opens after your first setup. Use the real Command Bar, copy a local answer, and hide and bring back your tabs. The keycaps show your configured shortcuts and can also be clicked.
+
+To replay it, type **get started** or **getting started** in the Command Bar and press Return, or choose **Help > Getting Started with Ode**. Skip returns to browsing. Escape closes an open Command Bar first; press it again to leave the tour. The guide stays in Saved.
+
+Choose **Full guide** to try one move at a time. **Explore** opens other topics, the quick tour and reset controls. **Browse** returns to your browser and keeps the guide in Saved. Ode remembers everyday moves you make; tabs, folders and Split View practice change only the example Space. The Tab key shows both its symbol and its name.
 
 The seven moves use the same steps as these sections: [the Command Bar](../command-palette/#open-command-bar), [searching a site](../command-palette/#search-a-site), [Split View](../split-view/#split-view-create), [Peek](../peek-and-quick-window/#peek), [switching Spaces](../spaces-and-isolation/#switch-space), [Boosts](../boosts/#boost-site) and [asking an assistant](../command-palette/#ask-ai-from-command-bar).
 

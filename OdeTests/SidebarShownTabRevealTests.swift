@@ -180,7 +180,7 @@ final class SidebarDeferredRevealTests: XCTestCase {
         fixture.model.selected = fixture.model.tabs[80]
         try await pause(20)
         fixture.model.phases = []
-        try wheel(fixture.scroll)
+        try await wheel(fixture.scroll, observing: fixture.model)
         try await pause(30)
         let owned = fixture.scroll.contentView.bounds.minY
         XCTAssertGreaterThan(owned, 0)
@@ -199,7 +199,7 @@ final class SidebarDeferredRevealTests: XCTestCase {
         fixture.model.reports = true
         try await pause(60)
         fixture.model.phases = []
-        try wheel(fixture.scroll)
+        try await wheel(fixture.scroll, observing: fixture.model)
         try await pause(30)
         let owned = fixture.scroll.contentView.bounds.minY
         XCTAssertGreaterThan(owned, fractional + 1, "The native wheel must actually move the viewport")
@@ -235,7 +235,7 @@ final class SidebarDeferredRevealTests: XCTestCase {
         fixture.model.reports = true
         try await pause(60)
         fixture.model.phases = []
-        try wheel(fixture.scroll)
+        try await wheel(fixture.scroll, observing: fixture.model)
         try await pause(240)
         let owned = fixture.scroll.contentView.bounds.minY
         XCTAssertGreaterThan(owned, 1001, "The cue must be clicked after actual native scrolling")
@@ -262,7 +262,7 @@ final class SidebarDeferredRevealTests: XCTestCase {
             if change == 2 {
                 let beforeWheel = fixture.scroll.contentView.bounds.minY
                 fixture.model.phases = []
-                try wheel(fixture.scroll)
+                try await wheel(fixture.scroll, observing: fixture.model)
                 try await pause(30)
                 XCTAssertGreaterThan(
                     fixture.scroll.contentView.bounds.minY, beforeWheel + 1,
@@ -329,25 +329,37 @@ final class SidebarDeferredRevealTests: XCTestCase {
         try await Task.sleep(for: .milliseconds(milliseconds))
     }
 
-    private func wheel(_ scroll: NSScrollView) throws {
-        for (phase, delta): (CGScrollPhase, Int32) in [(.began, -1), (.changed, -89), (.ended, 0)] {
-            let cgEvent = try XCTUnwrap(
-                CGEvent(
-                    scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 1, wheel1: delta, wheel2: 0, wheel3: 0))
-            cgEvent.location = CGPoint(x: 140, y: (NSScreen.screens.first?.frame.maxY ?? 0) - 200)
-            cgEvent.timestamp = DispatchTime.now().uptimeNanoseconds
-            cgEvent.setIntegerValueField(.scrollWheelEventScrollPhase, value: Int64(phase.rawValue))
-            let event = try XCTUnwrap(NSEvent(cgEvent: cgEvent))
-            NSApplication.shared.postEvent(event, atStart: true)
-            let queued = try XCTUnwrap(
-                NSApplication.shared.nextEvent(
-                    matching: .scrollWheel, until: .distantPast, inMode: .default, dequeue: true))
-            // A CG-backed event has no associated window. Deliver it to the
-            // owning native scroll view; AppKit performs the actual movement.
-            scroll.scrollWheel(with: queued)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.03))
+    private func wheel(_ scroll: NSScrollView, observing model: DeferredRevealModel) async throws {
+        let firstPhase = model.phases.count
+        try sendWheel(.began, delta: -1, to: scroll)
+        try sendWheel(.changed, delta: -89, to: scroll)
+        // Keep the synthetic gesture alive until SwiftUI has observed it;
+        // otherwise its begin/end may fit inside one display update.
+        let deadline = ContinuousClock.now.advanced(by: .seconds(1))
+        while !model.phases.dropFirst(firstPhase).contains(.interacting), ContinuousClock.now < deadline {
+            try await pause(5)
         }
+        XCTAssertTrue(model.phases.dropFirst(firstPhase).contains(.interacting), "The native gesture must begin")
+        try sendWheel(.ended, delta: 0, to: scroll)
     }
+
+    private func sendWheel(_ phase: CGScrollPhase, delta: Int32, to scroll: NSScrollView) throws {
+        let cgEvent = try XCTUnwrap(
+            CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 1, wheel1: delta, wheel2: 0, wheel3: 0))
+        cgEvent.location = CGPoint(x: 140, y: (NSScreen.screens.first?.frame.maxY ?? 0) - 200)
+        cgEvent.timestamp = DispatchTime.now().uptimeNanoseconds
+        cgEvent.setIntegerValueField(.scrollWheelEventScrollPhase, value: Int64(phase.rawValue))
+        let event = try XCTUnwrap(NSEvent(cgEvent: cgEvent))
+        NSApplication.shared.postEvent(event, atStart: true)
+        let queued = try XCTUnwrap(
+            NSApplication.shared.nextEvent(matching: .scrollWheel, until: .distantPast, inMode: .default, dequeue: true)
+        )
+        // A CG-backed event has no associated window. Deliver it to the
+        // owning native scroll view; AppKit performs the actual movement.
+        scroll.scrollWheel(with: queued)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.03))
+    }
+
 }
 
 @MainActor

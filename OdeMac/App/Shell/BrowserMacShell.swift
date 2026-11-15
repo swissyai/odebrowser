@@ -317,6 +317,7 @@ final class BrowserMacShell {
         menuBar.install()
         finishLaunchRecordOnceSettled()
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            self?.windows?.activeContext?.chrome.gettingStartedTour?.observeKeyDown(event)
             let pageSeesFirst = BrowserWebHostView.isPageContent(NSApp.keyWindow?.firstResponder)
             // Typing into a page asks whether it still answers.
             if pageSeesFirst { self?.windows?.activeContext?.pages.activePage?.responsiveness.interacted() }

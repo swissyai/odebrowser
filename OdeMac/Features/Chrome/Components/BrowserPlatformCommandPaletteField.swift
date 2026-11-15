@@ -349,19 +349,27 @@ struct BrowserPlatformCommandPaletteField: NSViewRepresentable {
                 refreshSuffix()
                 return true
             case #selector(NSResponder.cancelOperation(_:)):
-                if model.leaveScope() {
-                    refreshSuffix()
-                    return true
-                }
-                if model.urlCompletion != nil {
-                    model.rejectURLCompletion()
-                    refreshSuffix()
-                    return true
-                }
-                return false
+                return cancelOperation()
             default:
                 return false
             }
+        }
+
+        private func cancelOperation() -> Bool {
+            if model.leaveScope() {
+                refreshSuffix()
+                return true
+            }
+            if model.urlCompletion != nil {
+                model.rejectURLCompletion()
+                refreshSuffix()
+                return true
+            }
+            if presentation.closesOnExit {
+                model.dismiss()
+                return true
+            }
+            return false
         }
     }
 

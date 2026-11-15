@@ -99,6 +99,16 @@ final class BrowserMacWindowCoordinator {
                 BrowserWindowOpening(id: request.id, saved: true, copying: source.windowID))
             state = BrowserWindowStateStore(id: request.id, browser: windowBrowser, layouts: windowLayouts)
         }
+        // Setup may finish before the held browser window exists. Its one-shot
+        // presentation follows the copied selection into that window alone.
+        if let guide = source.gettingStartedTourRequest,
+            windowBrowser.shownSpace?.id == guide.spaceID,
+            windowBrowser.shownSpace?.profileID == guide.profileID,
+            windowBrowser.selectedTabID(in: guide.spaceID) == guide.tabID
+        {
+            windowBrowser.gettingStartedTourRequest = guide
+            source.gettingStartedTourRequest = nil
+        }
         let transient = BrowserTransientBrowsingCoordinator()
         let windowPages = pages.makeWindowPool(
             browser: windowBrowser, sharesRuntimes: request.kind == .normal,

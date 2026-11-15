@@ -11,11 +11,11 @@ Split View shows two to four tabs side by side in one window. The side you click
 
 ## See two tabs side by side with Split View {#split-view-create}
 
-1. Drag a tab from the sidebar onto the page you're looking at.
+1. Open two pages, then drag one tab from the sidebar onto the other page.
 2. Or right-click a tab in the sidebar and choose Split with Current Tab.
 3. Click a side to choose which page the keyboard and address bar use.
 
-Split With Next Tab splits the current tab with the one below it.
+Split With Next Tab needs another available tab in the same sidebar list.
 
 ## Add a third or fourth tab to Split View {#split-view-add-tab}
 
