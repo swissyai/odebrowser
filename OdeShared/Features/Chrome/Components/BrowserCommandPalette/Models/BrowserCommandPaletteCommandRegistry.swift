@@ -51,6 +51,10 @@ struct BrowserCommandPaletteCommandRegistry {
     private let archiveReopener: (UUID) -> Void
     private let copier: ((String) -> Void)?
     private let inlineCopier: ((String) -> Bool)?
+    /// Reports a successful card copy without exposing its query or value.
+    let didCopyCard: (PaletteCardKind) -> Void
+    /// Tab-eligible copy action and whether a numeric answer exists, without query or value.
+    let didOfferQuickAnswer: (_ copy: (@MainActor () -> Bool)?, _ hasNumericAnswer: Bool) -> Void
     var canCopy: Bool { inlineCopier != nil || copier != nil }
     /// What a command is called now, where that follows what the window
     /// shows, such as Show Tabs on Top; nil for its own title.
@@ -75,6 +79,8 @@ struct BrowserCommandPaletteCommandRegistry {
         reopenArchivedTab: @escaping (UUID) -> Void = { _ in },
         copy: ((String) -> Void)? = nil,
         copyInline: ((String) -> Bool)? = nil,
+        didCopyCard: @escaping (PaletteCardKind) -> Void = { _ in },
+        didOfferQuickAnswer: @escaping ((@MainActor () -> Bool)?, Bool) -> Void = { _, _ in },
         currentTitle: @escaping (ShortcutCommand) -> LocalizedStringResource? = { _ in nil }
     ) {
         self.commands = commands
@@ -101,6 +107,8 @@ struct BrowserCommandPaletteCommandRegistry {
         archiveReopener = reopenArchivedTab
         copier = copy
         inlineCopier = copyInline
+        self.didCopyCard = didCopyCard
+        self.didOfferQuickAnswer = didOfferQuickAnswer
         self.currentTitle = currentTitle
     }
 

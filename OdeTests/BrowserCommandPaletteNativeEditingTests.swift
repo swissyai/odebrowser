@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 import XCTest
 
 @testable import Ode
@@ -183,6 +184,79 @@ final class BrowserCommandPaletteNativeEditingTests: XCTestCase {
         XCTAssertEqual(fixture.model.selectedResultIndex, start)
     }
 
+    func testRapidCopyOrDismissAndNewTabStartsAFreshNativeQuery() async throws {
+        for copiesAnswer in [true, false] {
+            let fixture = try PaletteReopenFixture()
+            defer { fixture.close() }
+            let initial = try await fixture.readyEditor()
+            fixture.type("12 * 3", into: initial)
+            for _ in 0..<100 {
+                await initial.coordinator.model.waitForPendingResults()
+                if initial.coordinator.model.tabCopyCandidate?.row.card?.value == "36" { break }
+                await Task.yield()
+            }
+            let candidate = try XCTUnwrap(
+                initial.coordinator.model.tabCopyCandidate, "Focused numeric answer precondition")
+            XCTAssertEqual(candidate.row.card?.value, "36")
+            if copiesAnswer {
+                XCTAssertTrue(
+                    initial.coordinator.perform(#selector(NSResponder.insertTab(_:)), in: initial.editor, modifiers: [])
+                )
+                XCTAssertEqual(NSPasteboard.general.string(forType: .string), "36")
+                XCTAssertEqual(fixture.tour.step, .sidebar)
+            } else {
+                // The real palette's Exit command calls this same bound action.
+                initial.coordinator.model.dismiss()
+            }
+            XCTAssertFalse(fixture.root.chrome.isCommandPalettePresented)
+            XCTAssertTrue(fixture.commands.perform(.newTab).wasPerformed)
+            // AppKit delivers the next text event after normal host layout;
+            // closing and reopening above deliberately shared one render turn.
+            fixture.host.layoutSubtreeIfNeeded()
+            let reopened = try fixture.currentEditor()
+            XCTAssertEqual(reopened.coordinator.model.query, "")
+            XCTAssertEqual(reopened.editor.string, "")
+            fixture.type("8 * 7", into: reopened)
+            XCTAssertEqual(reopened.editor.string, "8 * 7")
+            XCTAssertEqual(reopened.coordinator.model.query, "8 * 7")
+            for _ in 0..<100 {
+                await reopened.coordinator.model.waitForPendingResults()
+                if reopened.coordinator.model.tabCopyCandidate?.row.card?.value == "56" { break }
+                await Task.yield()
+            }
+            XCTAssertEqual(reopened.coordinator.model.tabCopyCandidate?.row.card?.value, "56")
+            XCTAssertEqual(reopened.editor.string, "8 * 7")
+            if !copiesAnswer { XCTAssertTrue(fixture.tour.answerIsReady) }
+        }
+    }
+
+    func testOpenLocationReopensWithItsAddressSeedAndAnOrdinaryRenderKeepsTheDraft() async throws {
+        let fixture = try PaletteReopenFixture()
+        defer { fixture.close() }
+        _ = try await fixture.readyEditor()
+        let address = "https://example.com/original"
+        fixture.root.chrome.openLocation(address)
+        fixture.host.layoutSubtreeIfNeeded()
+        let location = try fixture.currentEditor()
+        XCTAssertEqual(location.editor.string, address)
+        XCTAssertEqual(location.coordinator.model.query, address)
+        location.editor.selectAll(nil)
+        let draft = "https://edited.example.test/path"
+        fixture.type(draft, into: location)
+        fixture.host.rootView = PaletteReopenSurface(model: fixture.root)
+        fixture.host.layoutSubtreeIfNeeded()
+        let retained = try fixture.currentEditor()
+        XCTAssertTrue(retained.coordinator.model === location.coordinator.model)
+        XCTAssertEqual(retained.editor.string, draft)
+        XCTAssertEqual(retained.coordinator.model.query, draft)
+        fixture.root.chrome.dismissCommandPalette()
+        fixture.root.chrome.openLocation(address)
+        fixture.host.layoutSubtreeIfNeeded()
+        let reopened = try fixture.currentEditor()
+        XCTAssertEqual(reopened.editor.string, address)
+        XCTAssertEqual(reopened.coordinator.model.query, address)
+    }
+
     private func makeEditor(
         tabs: [TabState.Seed] = [
             TabState.Seed(title: "Example", url: URL(string: "https://example.com/path"), placement: .current)
@@ -251,5 +325,108 @@ final class BrowserNativeEmojiTextFieldEditingTests: XCTestCase {
         XCTAssertEqual(field.placeholderSets, 1)
         XCTAssertNotNil(field.currentEditor())
         XCTAssertTrue(field.currentEditor() === editor)
+    }
+}
+
+@MainActor
+private struct PaletteReopenSurface: View {
+    let model: BrowserRootModel
+    @Namespace private var namespace
+
+    var body: some View {
+        BrowserRootCommandPaletteLayer(model: model, shortcuts: nil, commandSurfaceNamespace: namespace)
+    }
+}
+
+@MainActor
+private final class PaletteReopenFixture {
+    typealias Editor = (
+        field: NSTextField, editor: NSTextView, coordinator: BrowserPlatformCommandPaletteField.Coordinator
+    )
+
+    let root: BrowserRootModel
+    let tour: BrowserGettingStartedTour
+    let commands: BrowserCommandPaletteCommandRegistry
+    let host: NSHostingView<PaletteReopenSurface>
+    private let window: NSWindow
+    private let clipboard: [NSPasteboardItem]
+
+    init() throws {
+        clipboard = (NSPasteboard.general.pasteboardItems ?? []).map { source in
+            let item = NSPasteboardItem()
+            for type in source.types {
+                if let data = source.data(forType: type) { item.setData(data, forType: type) }
+            }
+            return item
+        }
+        let browser = BrowserStore(seed: .preview)
+        _ = BrowserShortcutStore(core: browser.core)
+        _ = try XCTUnwrap(browser.openGettingStarted())
+        let pages = BrowserPagePool(browser: browser, usesEphemeralWebsiteDataStores: true)
+        pages.select()
+        root = BrowserRootModel(
+            browser: browser, pages: pages, chrome: BrowserChromeState(),
+            spaceAccess: BrowserSpaceAccessController(), windowState: nil,
+            startupBehavior: .lastActiveTab, persistedSidebarWidth: 260)
+        tour = BrowserGettingStartedTour(defaults: nil, browser: browser, chrome: root.chrome)
+        root.chrome.gettingStartedTour = tour
+        tour.start(try XCTUnwrap(browser.shownTabAssignment), automatically: false)
+        commands = root.paletteRegistry(windows: nil, layoutDirection: .leftToRight, shortcuts: nil)
+        host = NSHostingView(rootView: PaletteReopenSurface(model: root))
+        window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1100, height: 700),
+            styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        window.contentView = host
+        window.orderFront(nil)
+        XCTAssertTrue(commands.perform(.newTab).wasPerformed)
+        host.layoutSubtreeIfNeeded()
+    }
+
+    func close() {
+        window.close()
+        root.pages.reconcile(validTabIDs: [])
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.writeObjects(clipboard)
+    }
+
+    func readyEditor() async throws -> Editor {
+        for _ in 0..<100 {
+            host.layoutSubtreeIfNeeded()
+            if let field = findField(in: host), field.currentEditor() != nil { return try currentEditor() }
+            await Task.yield()
+        }
+        return try currentEditor()
+    }
+
+    func currentEditor() throws -> Editor {
+        let field = try XCTUnwrap(findField(in: host))
+        return (
+            field, try XCTUnwrap(field.currentEditor() as? NSTextView),
+            try XCTUnwrap(field.delegate as? BrowserPlatformCommandPaletteField.Coordinator)
+        )
+    }
+
+    func type(_ text: String, into target: Editor) {
+        if !target.coordinator.model.isFieldFocused {
+            // The offscreen host has a field editor without a key-window
+            // begin-editing notification; deliver AppKit's delegate boundary.
+            target.coordinator.controlTextDidBeginEditing(
+                Notification(name: NSControl.textDidBeginEditingNotification, object: target.field))
+        }
+        target.editor.insertText(text, replacementRange: NSRange(location: NSNotFound, length: 0))
+        target.coordinator.editingChanged()
+    }
+
+    private func findField(in view: NSView) -> NSTextField? {
+        if let field = view as? NSTextField, field.accessibilityIdentifier() == "command-palette-field",
+            field.currentEditor() != nil
+        {
+            return field
+        }
+        for child in view.subviews {
+            if let field = findField(in: child) { return field }
+        }
+        return nil
     }
 }

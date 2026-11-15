@@ -48,7 +48,10 @@ struct BrowserQuickWindowCommandPaletteLayer: View {
                     model: model, isActive: scenePhase == .active, showTab: showTab),
                 readPasteboard: { NSPasteboard.general.string(forType: .string) }
             )
-            .id(BrowserCommandPalettePresentationIdentity(mode: mode, space: space, source: nil))
+            .id(
+                BrowserCommandPalettePresentationIdentity(
+                    mode: mode, focusRequest: chrome.commandPaletteFocusRequest, space: space, source: nil)
+            )
             .transition(.browserCommandPaletteOverlay)
         }
     }

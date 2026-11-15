@@ -51,5 +51,7 @@ final class BrowserMacWindowModel {
         chrome = BrowserChromeState(
             sidebarIsPresented: windowState.sidebarIsPresented ?? true,
             utilityPresentation: BrowserUtilityPresentationState(defaults: utilityDefaults))
+        chrome.gettingStartedTour = BrowserGettingStartedTour(
+            defaults: browser.isPrivateBrowsing ? nil : utilityDefaults, browser: browser, chrome: chrome)
     }
 }

@@ -9,6 +9,8 @@ final class BrowserMacWindow: NSWindow {
     // MARK: - Variables
 
     var closeGate: BrowserWindowCloseGate?
+    /// The guide this window owns, while a first-run tour is on screen.
+    weak var gettingStartedTour: BrowserGettingStartedTour?
     /// What the window's content does with a mouse's Back and Forward buttons
     /// and with swipes, while content that knows its pages is shown.
     weak var pointerNavigation: (any BrowserMacWindowPointerNavigation)?
@@ -46,6 +48,20 @@ final class BrowserMacWindow: NSWindow {
             if !isZoomed { frameBeforeZoom = frame }
         }
         super.toggleFullScreen(nil)
+    }
+
+    // MARK: - Actions - Cancellation
+
+    /// Escape reaches the window only after the focused control leaves it
+    /// unclaimed. A palette, field, popover or sheet keeps its own cancellation.
+    override func cancelOperation(_ sender: Any?) {
+        guard isKeyWindow, NSApp.modalWindow == nil, attachedSheet == nil,
+            let event = sender as? NSEvent ?? NSApp.currentEvent, event.window === self,
+            gettingStartedTour?.handleCancel(event) == true
+        else {
+            super.cancelOperation(sender)
+            return
+        }
     }
 
     // MARK: - Actions - Closing

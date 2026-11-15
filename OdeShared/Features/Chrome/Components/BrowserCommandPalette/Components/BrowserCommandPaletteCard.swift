@@ -15,6 +15,11 @@ struct BrowserCommandPaletteCard: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.browserCommandPaletteTransitionPhase) private var transitionPhase
     @Environment(\.browserChromeAppearance) private var chromeAppearance
+    #if os(macOS)
+        @Environment(BrowserGettingStartedTour.self) private var tour: BrowserGettingStartedTour?
+        @Environment(BrowserGettingStartedMoves.self) private var moves: BrowserGettingStartedMoves?
+        @Environment(\.browserNativeTabs) private var nativeTabs
+    #endif
 
     let model: BrowserCommandPaletteModel
     let presentation: BrowserCommandPalettePresentation
@@ -23,11 +28,12 @@ struct BrowserCommandPaletteCard: View {
     /// The width the card comes to rest at, which its contents keep while the
     /// card's frame morphs. Absent where the card never morphs.
     let restingWidth: CGFloat?
-    let queryIsFocused: FocusState<Bool>.Binding
+    let queryIsFocused: BrowserCommandPaletteFocusBinding
 
     /// How much taller than its minimum the input line has grown at a larger
     /// text size.
     @State private var fieldExcessHeight: CGFloat = 0
+    @State private var tourCueHeight: CGFloat = 0
     /// How tall the provider chips' row is, which a larger text size makes
     /// taller than its least height.
     @State private var chipRowHeight = BrowserCommandPaletteMetrics.providerChipRowHeight
@@ -121,8 +127,88 @@ struct BrowserCommandPaletteCard: View {
                     results
                 }
             }
+            tourCue
         }
     }
+
+    @ViewBuilder
+    private var tourCue: some View {
+        #if os(macOS)
+            if let tour, tour.isShowingGuide, tour.step == .answer || tour.step == .finished {
+                VStack(spacing: OdeSpacing.small) {
+                    Divider()
+                    BrowserGettingStartedTourCue(
+                        tour: tour, runCommand: { model.commands?.perform($0).wasPerformed == true },
+                        compact: maximumResultAreaHeight < 260)
+                    HStack {
+                        Image(decorative: "OdeWelcomeBeret").resizable().scaledToFit().frame(height: 40)
+                        Spacer()
+                        Button("Skip tour") { tour.finishBrowsing(completed: false) }.buttonStyle(.odeSecondary)
+                    }
+                }
+                .padding(OdeSpacing.medium)
+                .onGeometryChange(for: CGFloat.self) {
+                    $0.size.height
+                } action: {
+                    tourCueHeight = $0
+                }
+                .onDisappear { tourCueHeight = 0 }
+            } else if let state = savedGuideState, let moves, state.chapter.showsMoves,
+                let move = state.move ?? moves.next,
+                let hint = move.paletteHint(
+                    for: model.query, provider: model.activeProvider, offer: model.providerOffer,
+                    example: BrowserGettingStartedGuideContext(browser: model.browser).keyword(for: move))
+            {
+                VStack(spacing: OdeSpacing.small) {
+                    Divider()
+                    HStack(spacing: OdeSpacing.medium) {
+                        Text(hint)
+                            .font(OdeTypography.sans(15))
+                        Spacer(minLength: 0)
+                        if let offer = model.providerOffer, move.accepts(offer) {
+                            Button {
+                                model.pressTab()
+                            } label: {
+                                BrowserGettingStartedTourKeycaps(keys: ["⇥"], confirmed: false, compact: true)
+                            }
+                            .buttonStyle(OdeChromeButtonStyle(controlSize: nil, cornerRadius: OdeRadius.control))
+                            .accessibilityLabel("Enter search site")
+                        }
+                    }
+                    if let consequence = move.consequence {
+                        Text(consequence).font(OdeTypography.sans(12)).foregroundStyle(OdeBrandTheme.textSecondary)
+                    }
+                    HStack {
+                        Image(decorative: "OdeWelcomeBeret").resizable().scaledToFit().frame(height: 32)
+                        Spacer()
+                        Button(moves.done.contains(move) ? "Next" : "Skip", systemImage: "arrow.right") {
+                            state.move = moves.next(after: move)
+                            model.dismiss()
+                        }
+                        .buttonStyle(.odeSecondary)
+                    }
+                }
+                .padding(OdeSpacing.medium)
+                .onGeometryChange(for: CGFloat.self) {
+                    $0.size.height
+                } action: {
+                    tourCueHeight = $0
+                }
+                .onDisappear { tourCueHeight = 0 }
+            }
+        #endif
+    }
+
+    #if os(macOS)
+        private var savedGuideState: BrowserGettingStartedState? {
+            guard !model.browser.isPrivateBrowsing, let assignment = model.browser.shownTabAssignment,
+                model.selectedTabID == assignment.tabID,
+                model.browser.shownTab?.nativeTabContent == .gettingStarted,
+                let runtime = nativeTabs?.runtime(matching: assignment, content: .gettingStarted)
+            else { return nil }
+            return runtime.model(BrowserGettingStartedState.self) { BrowserGettingStartedState() }
+        }
+    #endif
 
     private var field: some View {
         BrowserCommandPaletteSearchField(
@@ -165,7 +251,7 @@ struct BrowserCommandPaletteCard: View {
     private var resultAreaHeight: CGFloat {
         let chips = model.providerChips.isEmpty ? 0 : chipRowHeight
         let grownField = presentation.growsFromField ? fieldExcessHeight : 0
-        return max(0, maximumResultAreaHeight - chips - grownField)
+        return max(0, maximumResultAreaHeight - chips - grownField - tourCueHeight)
     }
 
     /// The card's own outline at rest, and the field's while the card is

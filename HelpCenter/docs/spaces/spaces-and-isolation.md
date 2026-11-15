@@ -28,7 +28,7 @@ Make a Space for each account. Sign in to the site once in each Space. Each Spac
 
 ## Switch to another Space {#switch-space}
 
-1. Press Control-1 to Control-9 to jump to a Space by its place, as in Arc.
+1. With one Space, show the sidebar and right-click an empty area, then choose New Space… Press Control-1 to Control-9 to jump to a Space.
 2. Or click the Space's icon at the bottom of the sidebar.
 3. Or swipe left or right with two fingers over the sidebar.
 

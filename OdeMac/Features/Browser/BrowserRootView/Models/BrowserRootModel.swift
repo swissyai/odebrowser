@@ -811,9 +811,7 @@ extension BrowserRootModel {
             browser: browser,
             accessController: spaceAccess,
             didSelectTab: { [weak self] in
-                guard let self else { return }
-                self.pages.select()
-                self.address = self.browser.shownTab?.url ?? ""
+                self?.didSelectPaletteTab()
             }
         )
     }
@@ -899,9 +897,16 @@ extension BrowserRootModel {
         else { return false }
         browser.selectSpace(destination.space.id)
         browser.selectTab(destination.tab.id)
-        pages.select()
-        address = browser.shownTab?.url ?? ""
+        didSelectPaletteTab()
         return true
+    }
+
+    /// Both a tab-backed palette and the empty-selection surface finish
+    /// through the same native guide replay and page-selection route.
+    private func didSelectPaletteTab() {
+        pages.select()
+        if browser.shownTab?.nativeTabContent == .gettingStarted { chrome.gettingStartedTour?.replay() }
+        address = browser.shownTab?.url ?? ""
     }
 
     /// Opens `url` from the palette where `opening` says, from `source`, once

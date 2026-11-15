@@ -41,7 +41,7 @@
             let wide = arguments["wide"] as? Bool ?? true
             return show(
                 BrowserGettingStartedMovesStage(
-                    moves: moves, selection: .constant(move), wide: wide, runCommand: { _ in true }
+                    moves: moves, selection: .constant(move), runCommand: { _ in true }, compact: !wide
                 )
                 .padding(OdeSpacing.large)
                 .background(OdeBrandTheme.canvas),

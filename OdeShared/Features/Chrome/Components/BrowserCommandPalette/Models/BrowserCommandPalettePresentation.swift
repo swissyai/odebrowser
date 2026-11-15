@@ -144,9 +144,12 @@ struct BrowserCommandPalettePresentationIdentity: Hashable {
     // MARK: - Initializers
 
     @MainActor
-    init(mode: BrowserCommandPaletteMode, space: SpaceModel?, source: BrowserTabRuntimeAssignment?) {
+    init(
+        mode: BrowserCommandPaletteMode, focusRequest: Int? = nil,
+        space: SpaceModel?, source: BrowserTabRuntimeAssignment?
+    ) {
         self.mode = mode
-        focusRequest = nil
+        self.focusRequest = focusRequest
         self.source = source
         spaceAssignment = space.map { BrowserSpaceRuntimeAssignment(spaceID: $0.id, profileID: $0.profileID) }
     }

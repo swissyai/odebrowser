@@ -32,11 +32,15 @@
                         Text("Ode").font(OdeTypography.sans(10, weight: .semibold)).foregroundStyle(.secondary)
                     }.padding(14)
                     Divider()
-                    HStack(spacing: 0) {
-                        sidebar.frame(width: geometry.size.width >= 620 ? (showsSplit ? 220 : 285) : nil)
-                        if geometry.size.width >= 620 || showsSplit {
-                            Divider()
-                            documentArea
+                    if showsSplit {
+                        splitPages
+                    } else {
+                        HStack(spacing: 0) {
+                            sidebar.frame(width: geometry.size.width >= 620 ? 285 : nil)
+                            if geometry.size.width >= 620 {
+                                Divider()
+                                documentArea
+                            }
                         }
                     }
                 }
@@ -59,6 +63,37 @@
 
         private var sidebar: some View {
             BrowserGettingStartedPracticeSidebar(practice: practice, capabilities: capabilities)
+        }
+
+        // The miniature teaches choosing and moving real practice members;
+        // full browser card minima would clip a page in this smaller viewport.
+        private var splitPages: some View {
+            HStack(spacing: OdeSpacing.small) {
+                ForEach(practice.members) { tab in
+                    BrowserRootContentSurface(
+                        cornerRadius: chromeAppearance.framedPageCornerRadius,
+                        frameInsets: EdgeInsets(), usesTransparentInnerSurface: false
+                    ) {
+                        practiceDocument(tab)
+                            .contentShape(.rect)
+                            .onTapGesture { practice.browser.selectTab(tab.id) }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .overlay {
+                        if practice.members.count > 1 {
+                            BrowserSplitCardFocusIndicator(
+                                isFocused: tab.id == practice.selectedTabID, accent: OdeBrandPalette.coral,
+                                cornerRadius: chromeAppearance.framedPageCornerRadius)
+                        }
+                    }
+                    .accessibilityElement(children: .contain)
+                    .accessibilityAction(named: "Focus This Split View Card") { practice.browser.selectTab(tab.id) }
+                }
+            }
+            .padding(10)
+            .background(OdeBrandTheme.surface)
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Split View practice pages")
         }
 
         private var documentArea: some View {
@@ -91,7 +126,7 @@
         }
 
         private func practiceDocument(_ tab: TabStateModel) -> some View {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: showsSplit ? 8 : 16) {
                 HStack {
                     TabStateFaviconView(
                         tab: tab, favicons: practice.browser.core.state.favicons, profileID: practice.space.profileID,
@@ -100,84 +135,29 @@
                 }
                 Divider()
                 Spacer(minLength: 0)
-                if showsSplit {
-                    splitInstructions(tab)
-                } else if tab.id == practice.tabID(.packing) || tab.title == PracticeTab.packing.title {
-                    Text("Packing list").font(OdeTypography.display(27))
+                if tab.id == practice.tabID(.packing) || tab.title == PracticeTab.packing.title {
+                    Text("Packing list").font(OdeTypography.display(showsSplit ? 20 : 27))
                     ForEach(["Walking shoes", "Water bottle", "Trail map"], id: \.self) { item in
                         Label(item, systemImage: "checkmark.circle").font(OdeTypography.sans(12)).foregroundStyle(
                             .secondary)
                     }
                 } else {
-                    Image(systemName: "mountain.2").font(.system(size: 54, weight: .ultraLight)).foregroundStyle(
-                        OdeBrandPalette.sage)
-                    Text("Weekend trail guide").font(OdeTypography.display(30))
+                    Image(systemName: "mountain.2").font(.system(size: showsSplit ? 32 : 54, weight: .ultraLight))
+                        .foregroundStyle(
+                            OdeBrandPalette.sage)
+                    Text("Weekend trail guide").font(OdeTypography.display(showsSplit ? 20 : 30))
                     Text("Distance: 4.2 miles\nDuration: 2 hours\nRoute: lakeside loop")
                         .font(OdeTypography.sans(13)).foregroundStyle(.secondary).fixedSize(
                             horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
-                Text(showsSplit ? "Split View practice" : "Example page")
-                    .font(OdeTypography.sans(11, weight: .medium)).foregroundStyle(.tertiary)
+                if !showsSplit {
+                    Text("Example page").font(OdeTypography.sans(11, weight: .medium)).foregroundStyle(.tertiary)
+                }
             }
-            .padding(20)
+            .padding(showsSplit ? 12 : 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .background(OdeBrandTheme.canvas)
-        }
-
-        @ViewBuilder private func splitInstructions(_ tab: TabStateModel) -> some View {
-            if practice.members.count < 2 {
-                Image(systemName: "rectangle.split.2x1")
-                    .font(.system(size: 44, weight: .ultraLight)).foregroundStyle(OdeBrandPalette.sky)
-                Text("Drag another tab here")
-                    .font(OdeTypography.display(30))
-                Text(
-                    "Drag Packing list from the sidebar onto this page. Or right-click it and choose Split with Current Tab."
-                )
-                .font(OdeTypography.sans(14)).foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                Button("Add Packing list", systemImage: "plus.rectangle.on.rectangle") { practice.makeSplit() }
-                    .buttonStyle(.odePrimary(tint: OdeBrandPalette.butter))
-            } else if tab.title == "Packing list" {
-                Image(systemName: "arrow.left.arrow.right")
-                    .font(.system(size: 32, weight: .light)).foregroundStyle(OdeBrandPalette.sage)
-                Text("Rearrange cards").font(OdeTypography.display(26))
-                Text("Move this card to either side. Hold ⇧⌘, then click and drag a card to move it in the browser.")
-                    .font(OdeTypography.sans(13)).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 8) { moveButtons(tab) }
-                    VStack(alignment: .leading, spacing: 8) { moveButtons(tab) }
-                }
-                Text("⇧⌘← / → moves the focused card.")
-                    .font(OdeTypography.sans(12)).foregroundStyle(.secondary)
-            } else {
-                Image(systemName: "cursorarrow")
-                    .font(.system(size: 32, weight: .light)).foregroundStyle(OdeBrandPalette.sky)
-                Text("Choose the focused card").font(OdeTypography.display(26))
-                Text("Click either card. Its border shows which page receives your keyboard commands.")
-                    .font(OdeTypography.sans(13)).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button("Focus this card", systemImage: "cursorarrow.click") { practice.browser.selectTab(tab.id) }
-                    .buttonStyle(.odeSecondary)
-                Text("⌃⌘← / → focuses the previous or next card.")
-                    .font(OdeTypography.sans(12)).foregroundStyle(.secondary)
-                Divider()
-                Text(
-                    "To focus by hovering, choose Ode > Settings, click Tabs and turn on Focus follows pointer. Shortcuts can also be changed in Settings."
-                )
-                .font(OdeTypography.sans(12)).foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-
-        @ViewBuilder private func moveButtons(_ tab: TabStateModel) -> some View {
-            Button("Move left", systemImage: "arrow.left") { practice.move(tab.id, by: -1) }
-                .buttonStyle(.odeSecondary)
-                .disabled(!practice.browser.canMoveSplitMember(tab.id, by: -1, matching: practice.assignment))
-            Button("Move right", systemImage: "arrow.right") { practice.move(tab.id, by: 1) }
-                .buttonStyle(.odeSecondary)
-                .disabled(!practice.browser.canMoveSplitMember(tab.id, by: 1, matching: practice.assignment))
         }
 
         #if os(macOS)

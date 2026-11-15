@@ -44,7 +44,7 @@ public sealed partial class BrowserContractsTests {
     }
 
     [Fact]
-    public void DesktopPracticeFinishesTheSameSetupWithoutOpeningALearningRecord() {
+    public void DesktopFirstSetupOpensItsGuideOnceAfterApplyingTheDraft() {
         var session = SavedSession().Document["session"]!;
         // The legacy fixture is normally a disposable first-launch seed.
         // This contract protects an existing, non-disposable workspace.
@@ -57,18 +57,20 @@ public sealed partial class BrowserContractsTests {
         device.Send(new ShowSetupStep(SetupStep.ManualSetup));
         var added = Drafted(device.Send(new AddSetupSpace())).Spaces.Last().SpaceId;
         var practice = Flowing(device.Send(new ShowSetupStep(SetupStep.Practice)));
-        Assert.Equal((SetupStep.ManualSetup, false), (practice.BackStep, practice.OpensGuide));
+        Assert.Equal((SetupStep.ManualSetup, true), (practice.BackStep, practice.OpensGuide));
         var before = device.Authority.Current.Spaces.ToArray();
 
         // Normal finishing applies the draft once; practice has no saved progress.
         var changes = device.Send(new FinishSetup(window));
         Assert.Contains(new SetupCompletedChanged(true), changes);
-        Assert.Contains(new SetupFinished(device.Workspace, null), changes);
+        Assert.Contains(new SetupFinished(device.Workspace, device.Authority.Current.Spaces.First().Id), changes);
         Assert.Contains(device.Authority.Current.Spaces, space => space.Id == added);
         foreach (var original in before)
             Assert.Equal(original, device.Authority.Current.Spaces.Single(space => space.Id == original.Id));
         Assert.Null(device.Query(new LaunchSetup(LaunchEnvironment.Installed)).Setup);
-        Assert.Empty(device.Send(new FinishSetup(window)).OfType<SetupDraftChanged>());
+        var repeated = device.Send(new FinishSetup(window));
+        Assert.Empty(repeated.OfType<SetupDraftChanged>());
+        Assert.Contains(new SetupFinished(device.Workspace, null), repeated);
     }
 
     [Fact]
@@ -103,13 +105,13 @@ public sealed partial class BrowserContractsTests {
         var added = Drafted(device.Send(new AddSetupSpace())).Spaces.Last().SpaceId;
         device.Send(new ShowSetupStep(SetupStep.Practice));
         var before = device.Authority.Current;
-        Assert.IsType<SpaceLocked>(Assert.Throws<Rejected>(() => device.Send(new FinishSetup(window))).Rejection);
+        Assert.IsType<GuideSpaceLocked>(Assert.Throws<Rejected>(() => device.Send(new FinishSetup(window))).Rejection);
         Assert.Same(before, device.Authority.Current);
         Assert.False(device.Query(new LaunchSetup(LaunchEnvironment.Installed)).Setup is null);
         TestGrants.Unlock(device.Send, device.Workspace, locked.Id);
         var finished = device.Send(new FinishSetup(window));
         Assert.Contains(new SetupCompletedChanged(true), finished);
-        Assert.Contains(new SetupFinished(device.Workspace, null), finished);
+        Assert.Contains(new SetupFinished(device.Workspace, device.Authority.Current.Spaces.First().Id), finished);
         Assert.Contains(new SetupDraftChanged(null), finished);
         Assert.Contains(device.Authority.Current.Spaces, space => space.Id == added);
         Assert.Null(device.Query(new LaunchSetup(LaunchEnvironment.Installed)).Setup);

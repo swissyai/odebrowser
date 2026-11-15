@@ -305,7 +305,12 @@ final class BrowserMacWindows {
         show(
             kind, id: request.id, closeGate: model.closeGate,
             cascadingFrom: NSApp.keyWindow.flatMap { browserWindowID(of: $0) == nil ? nil : $0 },
-            activation: activation, content: { _ in application.browserWindowContent(model) },
+            activation: activation,
+            content: { window in
+                window.gettingStartedTour = model.chrome.gettingStartedTour
+                model.chrome.gettingStartedTour?.attach(to: window)
+                return application.browserWindowContent(model)
+            },
             closed: { [weak self] controller in
                 self?.forget(controller)
                 // The core forgets a window the person closed for the next

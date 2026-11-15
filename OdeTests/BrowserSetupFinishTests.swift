@@ -16,16 +16,16 @@ final class BrowserSetupFinishTests: XCTestCase {
                     filterResourcesURL: nil))
             let browser = BrowserStore(seed: session, core: core)
             let protectedSettings = browser.spaceModels[0].settings
-            try browser.core.send(StartSetup(workspaceID: browser.family.workspaceID, entry: .firstRun))
+            try browser.core.send(StartSetup(workspaceID: browser.family.workspaceID, entry: .manualSetup))
             try browser.core.send(ShowSetupStep(step: .manualSetup))
             let setup = BrowserManualSetupModel(core: browser.core)
             let addedID = try XCTUnwrap(setup.addSpace())
-            if platform == .desktop { try browser.core.send(ShowSetupStep(step: .practice)) }
             let result = await BrowserSetupFinish.finish(
                 browser: browser,
                 spaceAccess: BrowserSpaceAccessController(authenticator: BrowserPreviewAuthenticator(result: false)))
             let completed = try XCTUnwrap(result as? BrowserSetupCompleted)
             XCTAssertNil(completed.guide)
+            XCTAssertNil(browser.gettingStartedTourRequest)
             XCTAssertNotNil(browser.spaceModel(addedID))
             XCTAssertEqual(browser.spaceModel(session.spaces[0].id)?.settings.name, protectedSettings.name)
             XCTAssertEqual(browser.spaceModel(session.spaces[0].id)?.settings.accessPolicy, .deviceOwnerAuthentication)
@@ -71,7 +71,8 @@ final class BrowserSetupFinishTests: XCTestCase {
         authenticator.resolve(true)
         let result = await retry.value
         let completed = try XCTUnwrap(result as? BrowserSetupCompleted)
-        XCTAssertNil(completed.guide)
+        XCTAssertNotNil(completed.guide)
+        XCTAssertEqual(browser.gettingStartedTourRequest, completed.guide)
         XCTAssertEqual(browser.spaceModel(session.spaces[0].id)?.settings.name, "Chosen protected Space")
         XCTAssertEqual(browser.spaceModels.filter { $0.id == addedID }.count, 1)
         XCTAssertNil(setup.draft)

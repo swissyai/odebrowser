@@ -95,6 +95,7 @@ extension BrowserMacApplication {
         guard let host = hostWindow(window) else { return }
         host.browser.openGettingStarted()
         host.pages.select()
+        host.chrome.gettingStartedTour?.replay()
     }
 
     // MARK: - Actions - Lifecycle

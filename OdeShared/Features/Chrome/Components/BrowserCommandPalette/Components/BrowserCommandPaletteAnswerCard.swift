@@ -80,7 +80,7 @@ struct BrowserCommandPaletteAnswerCard: View {
                 BrowserCommandPaletteKeycap { Text(verbatim: chord.displayString) }
                     .accessibilityLabel(Text("Shortcut \(chord.spokenDescription)"))
             } else if let keys = card.keys {
-                BrowserCommandPaletteKeycap { Text(verbatim: keys) }
+                BrowserCommandPaletteKeycap { Text(verbatim: keys == "⇥" ? "⇥ Tab" : keys) }
                     .accessibilityLabel(Text("Shortcut \(keys)"))
             }
         }

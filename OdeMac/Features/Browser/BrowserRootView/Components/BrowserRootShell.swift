@@ -237,7 +237,8 @@ struct BrowserRootShell: View, BrowserChromeAnimating {
                 }
                 BrowserSpacePageSurface(
                     model: model, transientBrowsing: transientBrowsing,
-                    tabPromotionNamespace: tabPromotionNamespace, shortcuts: shortcuts
+                    tabPromotionNamespace: tabPromotionNamespace, shortcuts: shortcuts,
+                    settings: spaceSettingsPresentation
                 )
                 .clipped()
             }

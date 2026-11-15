@@ -114,6 +114,22 @@ final class BrowserGettingStartedTests: XCTestCase {
         XCTAssertEqual(browser.shownTab?.id, first)
     }
 
+    func testNativeGuideRunsAvailableWindowCommandsEvenWhenTheyAreAbsentFromRankedResults() {
+        let browser = BrowserStore(seed: .preview)
+        var performed: [ShortcutCommand] = []
+        var isAvailable = true
+        let commands = BrowserCommandPaletteCommandRegistry(
+            commands: [], supportedCommands: [.newTab], perform: { performed.append($0) },
+            canPerform: { _ in isAvailable })
+        let actions = BrowserNativeTabActions(
+            browser: browser, spaceAccess: BrowserSpaceAccessController(), commands: commands, didOpenURL: {})
+        XCTAssertTrue(actions.runCommand(.newTab))
+        XCTAssertFalse(actions.runCommand(.toggleSidebar))
+        isAvailable = false
+        XCTAssertFalse(actions.runCommand(.newTab))
+        XCTAssertEqual(performed, [.newTab])
+    }
+
     func testNativeActionsRejectAStaleProfileAndKeepGuideWhenOpeningALink() throws {
         let browser = BrowserStore.preview()
         let id = try XCTUnwrap(browser.openGettingStarted())
@@ -131,6 +147,100 @@ final class BrowserGettingStartedTests: XCTestCase {
         XCTAssertEqual(opened, 1)
         XCTAssertEqual(browser.shownTab?.address, url)
         XCTAssertEqual(browser.shownSpace?.tabs.model(id)?.nativeTabContent, .gettingStarted)
+    }
+
+    func testGuideSearchSetupUsesTheOwnedWindowsRealSettingsRouteAndRequiresCurrentSource() throws {
+        let browser = BrowserStore.preview()
+        let guideID = try XCTUnwrap(browser.openGettingStarted())
+        let source = try XCTUnwrap(browser.shownTabAssignment)
+        let pages = BrowserPagePool(browser: browser, usesEphemeralWebsiteDataStores: true)
+        defer { pages.reconcile(validTabIDs: []) }
+        let access = BrowserSpaceAccessController()
+        let root = BrowserRootModel(
+            browser: browser, pages: pages, chrome: BrowserChromeState(), spaceAccess: access, windowState: nil,
+            startupBehavior: .lastActiveTab, persistedSidebarWidth: 260)
+        let settings = BrowserSpaceSettingsPresentationState()
+        let actions = BrowserNativeTabActions(
+            browser: browser, spaceAccess: access,
+            commands: root.paletteRegistry(
+                windows: nil, layoutDirection: .leftToRight, shortcuts: nil, settings: settings),
+            didOpenURL: { pages.select() })
+        let before = browser.sessionSeed
+        _ = BrowserSearchCatalog(core: browser.core)
+        let catalog = browser.core.state.searchCatalog
+        let stale = BrowserTabRuntimeAssignment(tabID: guideID, spaceID: source.spaceID, profileID: UUID())
+        XCTAssertNil(actions.guideContext(stale))
+        XCTAssertFalse(actions.openSearchSettings(stale))
+        browser.openNewTab()
+        XCTAssertNil(actions.guideContext(source))
+        XCTAssertFalse(actions.openSearchSettings(source))
+        browser.selectTab(guideID)
+        browser.updateSpaceAccessPolicy(.deviceOwnerAuthentication, in: source.spaceID)
+        XCTAssertFalse(actions.openSearchSettings(source))
+        browser.unlockForTesting(try XCTUnwrap(browser.shownSpace).value.seed)
+        XCTAssertNil(browser.updateSpaceAccessPolicy(.open, in: source.spaceID))
+        XCTAssertEqual(settings.revision, 0)
+        XCTAssertNotNil(actions.guideContext(source))
+        XCTAssertTrue(actions.openSearchSettings(source))
+        XCTAssertEqual((settings.request as? BrowserSettingsDestinationRequest)?.destination, .search)
+        XCTAssertEqual(
+            settings.requestedAssignment,
+            BrowserSpaceRuntimeAssignment(spaceID: source.spaceID, profileID: source.profileID))
+        XCTAssertEqual(browser.shownTab?.nativeTabContent, .settings)
+        XCTAssertEqual(browser.spaceModel(source.spaceID)?.tabs.model(guideID)?.nativeTabContent, .gettingStarted)
+        XCTAssertEqual(browser.windowID, root.browser.windowID)
+        XCTAssertEqual(browser.core.state.searchCatalog, catalog)
+        XCTAssertEqual(browser.sessionSeed.spaces.count, before.spaces.count)
+        XCTAssertFalse(actions.openSearchSettings(source), "The settings tab now owns selection.")
+    }
+
+    func testBrowseDismissesOnlyTheSelectedUnlockedGuideAndKeepsItsSavedTabAndWindow() throws {
+        let browser = BrowserStore.preview()
+        let id = try XCTUnwrap(browser.openGettingStarted())
+        let space = try XCTUnwrap(browser.shownSpace)
+        let source = BrowserTabRuntimeAssignment(tabID: id, spaceID: space.id, profileID: space.profileID)
+        let windowID = browser.windowID
+        var selections = 0
+        let actions = BrowserNativeTabActions(
+            browser: browser, spaceAccess: BrowserSpaceAccessController(), didOpenURL: { selections += 1 })
+
+        func reject(_ assignment: BrowserTabRuntimeAssignment, content: BrowserNativeTabContent = .gettingStarted) {
+            let seed = browser.sessionSeed
+            let window = browser.window
+            actions.dismiss(assignment, content)
+            XCTAssertEqual(browser.sessionSeed, seed)
+            XCTAssertEqual(browser.window, window)
+            XCTAssertEqual(selections, 0)
+        }
+
+        reject(BrowserTabRuntimeAssignment(tabID: id, spaceID: space.id, profileID: UUID()))
+        reject(source, content: .settings)
+        browser.openNewTab()
+        reject(source)
+        browser.selectTab(id)
+        browser.updateSpaceAccessPolicy(.deviceOwnerAuthentication, in: space.id)
+        reject(source)
+        browser.unlockForTesting(space.value.seed)
+        XCTAssertNil(browser.updateSpaceAccessPolicy(.open, in: space.id))
+        browser.replaceProfileForTesting(of: space.id, with: UUID())
+        reject(source)
+        browser.replaceProfileForTesting(of: space.id, with: source.profileID)
+        browser.selectSpace(space.id)
+        browser.selectTab(id)
+        actions.dismiss(source, .gettingStarted)
+        XCTAssertEqual(selections, 1)
+        XCTAssertNotEqual(browser.shownTab?.id, id)
+        XCTAssertEqual(browser.shownSpace?.tabs.model(id)?.nativeTabContent, .gettingStarted)
+        XCTAssertEqual(browser.shownSpace?.tabs.model(id)?.placement, .saved)
+        XCTAssertEqual(browser.windowID, windowID)
+
+        browser.deleteTab(id, in: space.id)
+        let seed = browser.sessionSeed
+        let window = browser.window
+        actions.dismiss(source, .gettingStarted)
+        XCTAssertEqual(selections, 1)
+        XCTAssertEqual(browser.sessionSeed, seed)
+        XCTAssertEqual(browser.window, window)
     }
 
 }

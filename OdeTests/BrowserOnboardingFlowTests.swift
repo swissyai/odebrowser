@@ -67,9 +67,17 @@ final class BrowserOnboardingFlowTests: XCTestCase {
             XCTAssertEqual(flow.look, .heraldic)
             let result = await BrowserSetupFinish.finish(
                 browser: flow.browser, spaceAccess: BrowserSpaceAccessController())
-            XCTAssertTrue(result is BrowserSetupCompleted)
+            let completed = try XCTUnwrap(result as? BrowserSetupCompleted)
+            let guide = try XCTUnwrap(completed.guide)
             XCTAssertEqual(flow.browser.spaceModels.map(\.id), originalIDs)
-            XCTAssertEqual(flow.browser.spaceModels.flatMap { $0.tabs.values }, originalTabs)
+            let tabs = flow.browser.spaceModels.flatMap { $0.tabs.values }
+            XCTAssertEqual(tabs.filter { $0.id != guide.tabID }, originalTabs)
+            XCTAssertEqual(tabs.filter { $0.id == guide.tabID }.map(\.id), [guide.tabID])
+            XCTAssertEqual(flow.browser.shownTab?.id, guide.tabID)
+            XCTAssertEqual(flow.browser.shownTab?.nativeTabContent, .gettingStarted)
+            XCTAssertEqual(tabs.first { $0.id == guide.tabID }?.placement, .saved)
+            XCTAssertEqual(flow.browser.shownSpace?.id, guide.spaceID)
+            XCTAssertEqual(flow.browser.shownSpace?.profileID, guide.profileID)
             XCTAssertFalse(flow.browser.spaceModels.contains { $0.settings.name == "Not Imported" })
             XCTAssertEqual(defaults.string(forKey: keys[0]), BrowserTabLayout.top.name)
             XCTAssertTrue(defaults.bool(forKey: keys[1]))
@@ -78,7 +86,7 @@ final class BrowserOnboardingFlowTests: XCTestCase {
         }
     }
 
-    func testContinuingWithoutImportingDiscardsALateReadAndFinishesTheManualSetup() async {
+    func testContinuingWithoutImportingDiscardsALateReadAndFinishesTheManualSetup() async throws {
         let reader = SuspendedFlowImportReader()
         let flow = makeFlow(
             sourceDiscovery: StubSourceDiscovery(sources: [source(.arc)]), reader: reader, entryPoint: .firstRun)
@@ -102,9 +110,17 @@ final class BrowserOnboardingFlowTests: XCTestCase {
         XCTAssertEqual(flow.look, .heraldic)
         XCTAssertNil(flow.review)
         let result = await BrowserSetupFinish.finish(browser: flow.browser, spaceAccess: BrowserSpaceAccessController())
-        XCTAssertTrue(result is BrowserSetupCompleted)
+        let completed = try XCTUnwrap(result as? BrowserSetupCompleted)
+        let guide = try XCTUnwrap(completed.guide)
         XCTAssertEqual(flow.browser.spaceModels.map(\.id), originalIDs)
-        XCTAssertEqual(flow.browser.spaceModels.flatMap { $0.tabs.values }, originalTabs)
+        let tabs = flow.browser.spaceModels.flatMap { $0.tabs.values }
+        XCTAssertEqual(tabs.filter { $0.id != guide.tabID }, originalTabs)
+        XCTAssertEqual(tabs.filter { $0.id == guide.tabID }.map(\.id), [guide.tabID])
+        XCTAssertEqual(flow.browser.shownTab?.id, guide.tabID)
+        XCTAssertEqual(flow.browser.shownTab?.nativeTabContent, .gettingStarted)
+        XCTAssertEqual(tabs.first { $0.id == guide.tabID }?.placement, .saved)
+        XCTAssertEqual(flow.browser.shownSpace?.id, guide.spaceID)
+        XCTAssertEqual(flow.browser.shownSpace?.profileID, guide.profileID)
     }
 
     func testAFailedReadRetriesAndTheReviewedImportLandsInTheSession() async throws {

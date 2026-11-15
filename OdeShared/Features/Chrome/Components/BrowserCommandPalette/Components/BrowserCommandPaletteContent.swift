@@ -1,5 +1,11 @@
 import SwiftUI
 
+#if os(macOS)
+    typealias BrowserCommandPaletteFocusBinding = Binding<Bool>
+#else
+    typealias BrowserCommandPaletteFocusBinding = FocusState<Bool>.Binding
+#endif
+
 struct BrowserCommandPaletteContent: View {
     let model: BrowserCommandPaletteModel
     let presentation: BrowserCommandPalettePresentation
@@ -9,7 +15,13 @@ struct BrowserCommandPaletteContent: View {
     var fieldFrame: CGRect? = nil
     var restoresQueryFocus = false
 
-    @FocusState private var queryIsFocused: Bool
+    #if os(macOS)
+        // AppKit owns native focus and selection. This state is only an intent;
+        // a second SwiftUI focus owner would reselect text already entered.
+        @State private var queryIsFocused = false
+    #else
+        @FocusState private var queryIsFocused: Bool
+    #endif
     @Environment(\.spaceContentIsInteractive) private var spaceContentIsInteractive
     @Environment(\.browserCommandPaletteFocusesOnAppear) private var focusesOnAppear
     @Environment(\.isEnabled) private var isEnabled

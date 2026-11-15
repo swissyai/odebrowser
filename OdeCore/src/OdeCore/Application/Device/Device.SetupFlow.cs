@@ -87,7 +87,7 @@ internal sealed partial class Device {
         if (!authority.Kind.KeepsAppPreferences) throw new Rejected(new PersistentWorkspaceRequired(flow.WorkspaceId));
         lock (gate) {
             var draft = !skipsManualSetup && flow.Step.AppliesManualSetup && setupDraft?.WorkspaceId == flow.WorkspaceId ? setupDraft : null;
-            return new(flow.WorkspaceId, draft is not null, !skipsManualSetup && !platform.OffersSetupPractice && flow.Entry.OpensGuide(setupCompleted), draft?.Spaces.Count(space => space.IsNew) ?? 0);
+            return new(flow.WorkspaceId, draft is not null, !skipsManualSetup && platform.OffersSetupPractice && flow.Entry.OpensGuide(setupCompleted), draft?.Spaces.Count(space => space.IsNew) ?? 0);
         }
     }
 
@@ -127,7 +127,7 @@ internal sealed partial class Device {
     /// caller holds the device lock.
     internal void Publish(SetupFlowState flow, ChangeFeed changes) {
         if (ReferenceEquals(flow, setupFlow)) return;
-        bool opensGuide = !platform.OffersSetupPractice && flow.Entry.OpensGuide(setupCompleted);
+        bool opensGuide = platform.OffersSetupPractice && flow.Entry.OpensGuide(setupCompleted);
         setupFlow = flow with {
             BackStep = flow.Step.Back(flow.Entry, platform),
             NextStep = flow.Step.Next(platform, flow.Entry),

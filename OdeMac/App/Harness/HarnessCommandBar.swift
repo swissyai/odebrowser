@@ -7,7 +7,7 @@
         // MARK: - Variables
 
         let model: BrowserCommandPaletteModel
-        @FocusState private var isFocused: Bool
+        @State private var isFocused = false
 
         // MARK: - Actions - Content
 

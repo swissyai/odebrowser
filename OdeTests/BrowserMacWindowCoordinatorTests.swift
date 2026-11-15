@@ -5,6 +5,21 @@ import XCTest
 
 @MainActor
 final class BrowserMacWindowCoordinatorTests: XCTestCase {
+    func testSetupTourRequestFollowsTheHeldLaunchIntoOnlyItsFirstMatchingWindow() throws {
+        let fixture = makeFixture()
+        let space = try XCTUnwrap(fixture.browser.shownSpace)
+        let guide = try XCTUnwrap(
+            fixture.browser.openGettingStartedAfterSetup(matching: BrowserSpaceRuntimeAssignment(space: space)))
+        let initial = try XCTUnwrap(fixture.coordinator.model(for: .initial))
+        defer { fixture.coordinator.closeWindow(initial.id) }
+        XCTAssertEqual(initial.browser.gettingStartedTourRequest, guide)
+        XCTAssertNil(fixture.browser.gettingStartedTourRequest)
+        let second = try XCTUnwrap(fixture.coordinator.model(for: .normal(sourceWindowID: nil)))
+        defer { fixture.coordinator.closeWindow(second.id) }
+        XCTAssertNil(second.browser.gettingStartedTourRequest)
+        XCTAssertFalse(try XCTUnwrap(second.chrome.gettingStartedTour).isRunning)
+    }
+
     func testQuickWindowPromotionReusesAHiddenWindowAndRevealsThePromotedTab() throws {
         let fixture = makeFixture()
         let destination = try XCTUnwrap(fixture.coordinator.model(for: .initial))
