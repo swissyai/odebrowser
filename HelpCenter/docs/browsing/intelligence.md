@@ -13,11 +13,11 @@ Private answers use **Apple’s on-device model** and only what you type. Search
 
 ## Set up Apple Intelligence {#apple-intelligence-setup}
 
-Use a compatible device with its language and Siri language set to the same supported language. [Check Apple’s device, language and region requirements](https://support.apple.com/en-us/121115).
+Ode is available for Mac only. Use a compatible Mac with its language and Siri language set to the same supported language. [Check Apple’s device, language and region requirements](https://support.apple.com/en-us/121115).
 
 <GuideScreenshot
   src="/img/guides/intelligence/apple-setup.svg"
-  alt="In macOS 26 System Settings or iOS and iPadOS 26 Settings, open Apple Intelligence & Siri. Wait for Apple’s model, then enable Answers in the command bar in Ode’s Search settings."
+  alt="In macOS 26 System Settings, open Apple Intelligence & Siri. Wait for Apple’s model, then enable Answers in the command bar in Ode’s Search settings."
   caption="Setup diagram for OS 26. Apple Intelligence is automatically available on eligible devices with OS 27."
 />
 
@@ -25,11 +25,7 @@ Use a compatible device with its language and Siri language set to the same supp
 
 Ode requires macOS 26.1 or later. On macOS 26, open **System Settings > Apple Intelligence & Siri**, then use the button beside **Apple Intelligence** or **Turn on Apple Intelligence** if it’s off. The label depends on your version and previous setup. [Apple’s macOS 26 instructions](https://support.apple.com/guide/mac-help/get-started-with-apple-intelligence-mchl46361784/26/mac/26).
 
-### iPhone and iPad
-
-Ode requires iOS or iPadOS 26.1 or later. On OS 26, open **Settings > Apple Intelligence & Siri** and use the button beside **Apple Intelligence** or **Turn on Apple Intelligence** if it’s off. [Apple’s iPhone instructions](https://support.apple.com/guide/iphone/aside/iph3212e4900/26/ios/26) · [iPad instructions](https://support.apple.com/guide/ipad/aside/ipad0ad254dc/26/ipados/26).
-
-With macOS, iOS or iPadOS 27, Apple Intelligence is [automatically available on eligible devices](https://support.apple.com/en-us/121115). Apple’s other AI features don’t change how Ode’s private answers work.
+With macOS 27, Apple Intelligence is [automatically available on eligible Macs in supported languages and regions](https://support.apple.com/en-us/121115). Ode still checks whether its on-device model is ready. Apple's other AI features don't change how Ode's private answers work.
 
 ### Turn on answers in Ode
 
@@ -46,6 +42,8 @@ Private answers are **off by default**. Calculations and conversions work withou
 ## Does Ode use AI? {#intelligence-off}
 
 Tab organization is off until you turn on Enable suggestions in Settings > Search > Tab organization.
+
+Choose Apple’s model or a local model server for processing on your Mac. With either local option:
 
 When it's on, it only tidies tab titles and suggests folders for open tabs. It can run on your Mac only, with nothing sent to an AI service.
 

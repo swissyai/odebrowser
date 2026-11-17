@@ -47,18 +47,19 @@ and the [install guide](../HelpCenter/docs/getting-started/install-and-update-ma
 
 ## "Build an AI assistant into Ode"
 
-**Reason.** Ode's own interface uses a model in one place only: the optional
-intelligence switch, off by default, which tidies tab titles and suggests
-folders for open tabs, with a model the person chooses. Nothing else in Ode
-uses a model, and the answers in the Command Bar are written by people and
-never generated. Intelligence stays off until the person turns it on and
-picks the model, and coding agents stay off until they turn agents on; until
-then, nothing in Ode reaches a model.
+**Reason.** Ode does not provide a page-chat or page-summary assistant.
+Its optional intelligence features stay off until the person enables them.
+Private answers in the Command Bar use Apple's on-device model and only what
+the person types. Tab organization separately tidies titles and suggests
+folders with the model the person chooses: Apple's model, a model server on
+the same Mac, or ChatGPT. Choosing ChatGPT sends the relevant tab titles and
+names to OpenAI. Written help answers come from the help guides.
 
-**Instead.** Type an assistant's name in the Command Bar and press Tab to
-ask it on its own site; Ode sends it nothing by itself. Or connect a coding
-agent you already run through the bundled `ode-browser` helper, limited to
-the Spaces you allow. See [Intelligence](../HelpCenter/docs/browsing/intelligence.md),
+**Instead.** Enable private answers in Settings > Search > Ode, or type an
+assistant's name in the Command Bar and press Tab to use its website. A
+website shortcut does not enable Ode's intelligence features. Coding agents
+can connect separately through the bundled `ode-browser` helper, limited to
+the Spaces the person allows. See [Intelligence](../HelpCenter/docs/browsing/intelligence.md),
 [the Command Bar](../HelpCenter/docs/browsing/command-palette.md) and
 [coding agents](../HelpCenter/docs/browsing/coding-agents.md).
 
